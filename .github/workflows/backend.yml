@@ -1,0 +1,35 @@
+name: Backend platform
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  backend:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Generate local-only test configuration
+        run: node scripts/setup-backend.mjs
+      - name: Validate and build
+        run: |
+          docker compose --env-file .env.backend.local -f compose.yaml -f compose.test.yaml config --quiet
+          docker compose --env-file .env.backend.local --profile build build api sandbox-image
+      - name: Python checks
+        run: |
+          docker run --rm filenimble-backend:phase5 ruff check --no-cache /app
+          docker run --rm filenimble-backend:phase5 ruff format --check --no-cache /app
+          docker run --rm filenimble-backend:phase5 pip check
+      - name: Start real services
+        run: docker compose --env-file .env.backend.local -f compose.yaml -f compose.test.yaml up -d postgres redis storage migrate api worker lifecycle supervisor
+      - name: Real pipeline and failure-injection tests
+        run: docker compose --env-file .env.backend.local -f compose.yaml -f compose.test.yaml run --rm tests pytest -q
+      - name: Stop disposable test stack
+        if: always()
+        run: docker compose --env-file .env.backend.local -f compose.yaml -f compose.test.yaml down -v --remove-orphans

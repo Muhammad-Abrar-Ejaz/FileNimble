@@ -1,0 +1,150 @@
+import { MEDIA_TOOLS } from './mediaTools';
+import { OCR_TOOLS } from './ocrTools';
+
+export interface DocumentTool {
+  maxFileMiB?: number; processingLimits?: string;
+  ocr?: boolean; inputExtensions?: string[];
+  slug: string; title: string; description: string; extension: string; output: string;
+  explanation: string; limitations: string; steps: string[]; faqs: { q: string; a: string }[];
+}
+
+export const DOCUMENT_TOOLS: DocumentTool[] = [
+  ...OCR_TOOLS,
+  ...MEDIA_TOOLS,
+  {
+    slug: 'word-to-pdf', title: 'Convert DOCX to PDF', extension: 'docx', output: 'pdf',
+    description: 'Turn a supported Word DOCX document into a PDF using an isolated LibreOffice worker.',
+    explanation: 'PDF fixes the document into pages for sharing and printing. The worker uses a fresh LibreOffice profile for each document and a limited set of installed fonts.',
+    limitations: 'DOCX only. Missing fonts may be substituted and pagination can change. Macros, embedded packages, external relationships and encrypted Office documents are unsupported. Review headings, tables and page breaks before sharing.',
+    steps: ['Select a DOCX document.', 'Choose Upload and convert to send it for temporary server processing.', 'Download the PDF and review its layout.'],
+    faqs: [{ q: 'Will the PDF exactly match Microsoft Word?', a: 'Not always. LibreOffice and Microsoft Word can lay out fonts, fields and complex tables differently.' }, { q: 'Can I convert old DOC files?', a: 'This converter accepts DOCX only. Legacy DOC files are outside this release.' }],
+  },
+  {
+    slug: 'powerpoint-to-pdf', title: 'Convert PPTX to PDF', extension: 'pptx', output: 'pdf',
+    description: 'Export supported PowerPoint slides to a static PDF with temporary server processing.',
+    explanation: 'Each slide becomes a PDF page in presentation order. This creates a static handout for reviewing the visible slide content.',
+    limitations: 'PPTX only. Animations, transitions, video and interactive behavior do not survive PDF export. Fonts and chart layout can differ. Embedded packages, macros and external resources are rejected.',
+    steps: ['Select a PPTX presentation.', 'Upload it explicitly to the isolated conversion worker.', 'Download the PDF and check every slide.'],
+    faqs: [{ q: 'Are animations included?', a: 'No. PDF pages show static slide content.' }, { q: 'Are speaker notes exported?', a: 'This release exports slides, not a speaker-notes handout.' }],
+  },
+  {
+    slug: 'excel-to-pdf', title: 'Convert XLSX to PDF', extension: 'xlsx', output: 'pdf',
+    description: 'Export a supported Excel workbook to PDF using its sheet and print-layout settings.',
+    explanation: 'The worker renders workbook print areas and page settings with LibreOffice Calc. Prepare column widths and print areas in your spreadsheet editor first.',
+    limitations: 'XLSX only. Wide sheets can overflow or produce multiple pages. Formula results, fonts and charts may differ from Excel. External links, embedded packages and macros are unsupported.',
+    steps: ['Prepare the workbook print areas and select its XLSX file.', 'Choose Upload and convert.', 'Review the downloaded PDF for clipped columns and page breaks.'],
+    faqs: [{ q: 'Does every sheet fit onto one page?', a: 'No. Output follows supported print settings; wide or long sheets may span pages.' }, { q: 'Can the PDF preserve editable formulas?', a: 'No. PDF contains rendered values and page content, not an editable workbook.' }],
+  },
+  {
+    slug: 'html-to-pdf', title: 'Convert Self-Contained HTML to PDF', extension: 'html', output: 'pdf',
+    description: 'Render UTF-8 HTML and inline CSS into a PDF without fetching external resources.',
+    explanation: 'The worker uses a print-oriented HTML/CSS renderer in a network-disabled container. Text, headings and tables can be laid out with inline CSS and page rules.',
+    limitations: 'Maximum 2 MiB HTML and 100 pages. JavaScript is not executed. Network URLs, local files, linked stylesheets, data URLs and fetched images/fonts are blocked; requested resources cause rejection. This is not a screenshot of a live website.',
+    steps: ['Select a self-contained UTF-8 HTML file.', 'Upload it for isolated rendering.', 'Download and review the print layout.'],
+    faqs: [{ q: 'Can I enter a website URL?', a: 'No. Only uploaded HTML is supported; the renderer cannot access websites or local files.' }, { q: 'Will JavaScript run?', a: 'No. Dynamic JavaScript-generated content is unsupported.' }],
+  },
+  {
+    slug: 'compress-pdf', title: 'Optimize PDF File Size', extension: 'pdf', output: 'pdf',
+    description: 'Try structural PDF compression and compare the actual original and output sizes.',
+    explanation: 'qpdf reorganizes PDF objects and compresses eligible streams. This does not downsample page images or promise a particular percentage reduction.',
+    limitations: 'Some PDFs are already optimized. Output can be the same size or larger; the result reports measured bytes and never calls an increase a size reduction. Encrypted, signed, interactive and active-content PDFs are unsupported.',
+    steps: ['Select a supported PDF.', 'Upload it to try structural optimization.', 'Compare the measured sizes before downloading the output.'],
+    faqs: [{ q: 'Will every PDF become smaller?', a: 'No. Existing compression and document structure determine the result.' }, { q: 'Are images reduced in resolution?', a: 'No. This release performs structural optimization without intentional image downsampling.' }],
+  },
+  {
+    slug: 'pdf-to-powerpoint', title: 'Convert PDF to Image-Based PowerPoint Slides', extension: 'pdf', output: 'pptx',
+    description: 'Place rendered PDF pages as images in a PPTX presentation, with one page per slide.',
+    explanation: 'Each selected document page is rendered at 96 DPI and fitted onto a slide without changing its aspect ratio. The result is useful for presenting a fixed PDF appearance.',
+    limitations: 'Up to 40 pages, 4 megapixels per page and 64 megapixels total. Text, charts and tables are part of slide images; they do not become editable PowerPoint elements. Small text can soften when enlarged. No OCR or original presentation reconstruction.',
+    steps: ['Select a supported PDF of up to 40 pages.', 'Upload it to render page images.', 'Download the PPTX and present its image-based slides.'],
+    faqs: [{ q: 'Can I edit the text and charts?', a: 'No. Each slide contains a rendered page image, not reconstructed text boxes, charts or tables.' }, { q: 'Are pages cropped?', a: 'Pages are fitted proportionally onto a standard slide, which can leave margins.' }],
+  },
+  {
+    slug: 'pdf-to-excel', title: 'Extract PDF Tables to XLSX', extension: 'pdf', output: 'xlsx',
+    description: 'Extract supported machine-generated PDF tables into an XLSX workbook as text cells.',
+    explanation: 'Recognizable ruled tables are placed into new sheets labelled by source page and table number. Extracted values remain text to avoid executing document content as spreadsheet formulas.',
+    limitations: 'Up to 40 pages, 100 tables, 10,000 rows and 100,000 cells. Scanned tables require OCR and are unsupported. Original formulas, workbook formatting, sheets, charts and macros are not restored. Complex or borderless tables can be missed or misaligned; review all values.',
+    steps: ['Select a PDF containing machine-generated tables.', 'Upload it for bounded table extraction.', 'Download the XLSX and compare its cells with the source.'],
+    faqs: [{ q: 'Does this restore the original workbook?', a: 'No. It creates new sheets from supported visible PDF tables; original formulas and workbook structures cannot be recovered.' }, { q: 'Does it read scanned tables?', a: 'No. This release performs no OCR. A document with no supported tables returns an error.' }],
+  },
+  {
+    slug: 'repair-pdf', title: 'Attempt Structural PDF Repair', extension: 'pdf', output: 'pdf',
+    description: 'Attempt bounded PDF structural recovery and download only a validated result.',
+    explanation: 'qpdf can sometimes reconstruct damaged cross-reference information and rewrite a readable document. The rewritten file must pass structural and page checks before download.',
+    limitations: 'Repair is best effort. Missing text, images or pages cannot be recreated, and a parseable output does not prove full content recovery. Encryption, signatures and active/interactive content are unsupported. Keep the original and inspect the result.',
+    steps: ['Select a damaged PDF that still has a PDF header.', 'Upload it for a structural recovery attempt.', 'If recovery succeeds, download and inspect every page.'],
+    faqs: [{ q: 'Can repair recover deleted content?', a: 'No. This tool does not recreate missing bytes, pages or images.' }, { q: 'What happens if recovery fails?', a: 'You receive an error and no output is advertised as repaired.' }],
+  },
+  {
+    slug: 'csv-to-xlsx', title: 'Convert CSV to Excel XLSX', extension: 'csv', output: 'xlsx',
+    description: 'Transform tabular CSV data into a Microsoft Excel XLSX workbook with temporary server processing.',
+    explanation: 'The worker parses CSV rows, auto-detects column structures, and creates a formatted XLSX spreadsheet with formula injection neutralization.',
+    limitations: 'Maximum file size: 25 MiB, up to 50,000 rows and 1,000 columns. Formula prefixes (=, +, -, @) are escaped to prevent formula execution in spreadsheet software.',
+    steps: ['Select a CSV file with comma, semicolon, tab or pipe delimiters.', 'Choose Upload and convert.', 'Download the generated XLSX workbook.'],
+    faqs: [{ q: 'How does it protect against formula injection?', a: 'Cells beginning with dangerous formula prefixes are safely stored as text literals so they cannot execute commands.' }, { q: 'Are multiple sheets supported?', a: 'CSV contains a single table, which is created as the primary sheet in the workbook.' }],
+  },
+  {
+    slug: 'xlsx-to-csv', title: 'Convert Excel XLSX to CSV', extension: 'xlsx', output: 'csv',
+    description: 'Extract Excel workbook data to standard RFC 4180 CSV format.',
+    explanation: 'The isolated worker reads the active sheet from your XLSX file and outputs clean, comma-separated values encoded in UTF-8.',
+    limitations: 'XLSX only. Macros, charts, and multiple sheets are not included in the single CSV stream. Up to 50,000 rows are exported.',
+    steps: ['Select your XLSX workbook.', 'Upload and convert to extract sheet data.', 'Download your standard CSV file.'],
+    faqs: [{ q: 'Which sheet is exported?', a: 'The currently active worksheet in the workbook is exported.' }, { q: 'Are cell formulas exported or values?', a: 'Calculated values are exported as text literals.' }],
+  },
+  {
+    slug: 'json-to-xlsx', title: 'Convert JSON to Excel XLSX', extension: 'json', output: 'xlsx',
+    description: 'Convert JSON data arrays and objects into a structured Excel XLSX spreadsheet.',
+    explanation: 'Generates a clean spreadsheet workbook with styled header rows derived from JSON object keys, auto-sizing columns for readability.',
+    limitations: 'Maximum file size: 25 MiB, up to 50,000 rows. Input must be a JSON array of objects or 2D array.',
+    steps: ['Select a JSON file containing tabular records.', 'Upload and convert to Excel XLSX.', 'Download and open your formatted workbook.'],
+    faqs: [{ q: 'How are nested objects formatted?', a: 'Nested objects and arrays are safely serialized as JSON text within their corresponding cells.' }, { q: 'Is there a limit on object properties?', a: 'Up to 1,000 unique columns are supported.' }],
+  },
+  {
+    slug: 'xlsx-to-json', title: 'Convert Excel XLSX to JSON', extension: 'xlsx', output: 'json',
+    description: 'Extract Excel spreadsheet data into a structured JSON array of objects.',
+    explanation: 'The worker reads row headers and creates a clean JSON array where each object corresponds to a row in your spreadsheet.',
+    limitations: 'XLSX only. Maximum 50,000 rows. Active sheet only.',
+    steps: ['Select an XLSX workbook.', 'Upload and convert to JSON.', 'Download the formatted JSON document.'],
+    faqs: [{ q: 'How are column names determined?', a: 'The first row of the active worksheet is used as the key names for each JSON object.' }],
+  },
+  {
+    slug: 'markdown-to-pdf', title: 'Convert Markdown to PDF', extension: 'md', output: 'pdf',
+    description: 'Render Markdown documents into styled, paginated PDF files.',
+    explanation: 'Converts Markdown text, headings, lists, tables, and code blocks into an elegant, printable PDF document using an isolated WeasyPrint worker.',
+    limitations: 'Maximum 2 MiB Markdown and 100 PDF pages. External images or web references are rejected for privacy and security.',
+    steps: ['Select a Markdown (.md) file.', 'Upload and render to PDF.', 'Download and review the printable document.'],
+    faqs: [{ q: 'Are external image URLs fetched?', a: 'No. External network access is disabled in the worker.' }],
+  },
+  {
+    slug: 'markdown-to-docx', title: 'Convert Markdown to Word DOCX', extension: 'md', output: 'docx',
+    description: 'Transform Markdown files into editable Microsoft Word DOCX documents.',
+    explanation: 'The worker parses Markdown structure (headings, bullet points, numbers, bold, tables) and builds a genuine Word DOCX document.',
+    limitations: 'Maximum 25 MiB file size. Standard Markdown formatting is mapped to Word paragraph and heading styles.',
+    steps: ['Select a Markdown (.md) file.', 'Upload and convert to Word DOCX.', 'Download your editable Word document.'],
+    faqs: [{ q: 'Can I edit the output in Word?', a: 'Yes. The result is a native OpenXML (.docx) file fully editable in Microsoft Word and LibreOffice.' }],
+  },
+  {
+    slug: 'docx-to-markdown', title: 'Convert Word DOCX to Markdown', extension: 'docx', output: 'md',
+    description: 'Convert Microsoft Word DOCX documents into clean GitHub Flavored Markdown.',
+    explanation: 'Extracts headings, paragraphs, bold/italic formatting, lists, and tables into clean, readable Markdown syntax.',
+    limitations: 'DOCX only. Embedded images, macros, and complex shapes are omitted; text and tables are preserved.',
+    steps: ['Select a DOCX file.', 'Upload and convert to Markdown.', 'Download the .md document.'],
+    faqs: [{ q: 'Are Word tables converted?', a: 'Yes. Word tables are converted to standard GitHub Flavored Markdown table syntax.' }],
+  },
+  {
+    slug: 'txt-to-pdf', title: 'Convert Plain Text TXT to PDF', extension: 'txt', output: 'pdf',
+    description: 'Convert plain text files into clean, paginated PDF documents.',
+    explanation: 'Formats text files with monospace typography, line wrap, and automatic pagination for clean printing and archiving.',
+    limitations: 'Maximum 2 MiB text file and 100 pages. UTF-8 character encoding is preferred.',
+    steps: ['Select a .txt plain text file.', 'Upload and convert to PDF.', 'Download your paginated PDF.'],
+    faqs: [{ q: 'Does it wrap long lines?', a: 'Yes. Monospace typography wraps long lines cleanly to avoid clipping.' }],
+  },
+  {
+    slug: 'rtf-to-pdf', title: 'Convert Rich Text RTF to PDF', extension: 'rtf', output: 'pdf',
+    description: 'Convert Rich Text Format (RTF) documents to PDF using an isolated LibreOffice worker.',
+    explanation: 'The headless LibreOffice engine renders RTF formatting, fonts, and layout directly to a fixed PDF page document.',
+    limitations: 'RTF only. Fonts not installed on the server may be substituted with Liberation fonts.',
+    steps: ['Select an RTF file.', 'Upload and convert to PDF.', 'Download and review your document.'],
+    faqs: [{ q: 'Are RTF styles preserved?', a: 'Yes. Font styles, bold, italic, and paragraphs are preserved according to LibreOffice rendering.' }],
+  },
+];

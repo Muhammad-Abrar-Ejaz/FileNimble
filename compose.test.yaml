@@ -1,0 +1,20 @@
+# Explicit test-only override. The fixture never enters the public tool registry.
+x-test: &test
+  APP_ENV: test
+  ENABLE_TEST_CAPABILITY: "1"
+  S3_PUBLIC_ENDPOINT: http://storage:3900
+services:
+  api:
+    environment: *test
+  worker:
+    environment: *test
+  lifecycle:
+    environment: *test
+  tests:
+    environment: *test
+    # The trusted harness retains fixtures/results across the full suite; this
+    # limit is separate from all per-job conversion-worker memory profiles.
+    mem_limit: 1g
+    # Trusted fault-injection harness; never present in a conversion container.
+    user: "0:0"
+    volumes: [/var/run/docker.sock:/var/run/docker.sock]

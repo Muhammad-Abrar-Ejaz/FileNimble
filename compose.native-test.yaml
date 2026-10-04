@@ -1,0 +1,14 @@
+# Qualification only. Public registry entries remain planned until release checks pass.
+services:
+  api:
+    environment:
+      ENABLE_NATIVE_QUALIFICATION: "1"
+  worker:
+    environment:
+      ENABLE_NATIVE_QUALIFICATION: "1"
+  tests:
+    environment:
+      ENABLE_NATIVE_QUALIFICATION: "1"
+  supervisor:
+    tmpfs: ["/tmp:size=160m,noexec,nosuid,nodev"]
+    mem_limit: 256m

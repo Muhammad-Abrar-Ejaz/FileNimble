@@ -1,0 +1,5 @@
+# Apply after compose.test.yaml ONLY for host-side gateway integration tests.
+services:
+  api:
+    environment:
+      S3_PUBLIC_ENDPOINT: http://localhost:3900

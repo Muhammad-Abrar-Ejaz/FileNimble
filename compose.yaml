@@ -1,0 +1,156 @@
+name: filenimble-local
+x-backend: &backend
+  build:
+    context: .
+    dockerfile: worker/Dockerfile
+  image: filenimble-backend:phase5
+  init: true
+  read_only: true
+  cap_drop: [ALL]
+  security_opt: [no-new-privileges:true]
+  tmpfs: ["/tmp:size=32m,noexec,nosuid,nodev"]
+  mem_limit: 256m
+  pids_limit: 64
+  environment: &environment
+    APP_ENV: development
+    DATABASE_URL: postgresql://filenimble:${POSTGRES_PASSWORD:?Run setup-backend}@postgres/filenimble
+    REDIS_URL: redis://:${REDIS_PASSWORD:?Run setup-backend}@redis:6379/0
+    JOB_TOKEN_SECRET: ${JOB_TOKEN_SECRET:?Run setup-backend}
+    CONVERSION_API_SECRET: ${CONVERSION_API_SECRET:?Run setup-backend}
+    RUNNER_SECRET: ${RUNNER_SECRET:?Run setup-backend}
+    RUNNER_URL: http://supervisor:8001
+    S3_ENDPOINT: http://storage:3900
+    S3_PUBLIC_ENDPOINT: http://localhost:3900
+    S3_REGION: garage
+    S3_BUCKET: filenimble
+    S3_ACCESS_KEY_ID: ${S3_ACCESS_KEY_ID:?Run setup-backend}
+    S3_SECRET_ACCESS_KEY: ${S3_SECRET_ACCESS_KEY:?Run setup-backend}
+    SIGNED_URL_TTL_SECONDS: 300
+  depends_on:
+    migrate: {condition: service_completed_successfully}
+    redis: {condition: service_healthy}
+    storage-init: {condition: service_completed_successfully}
+services:
+  postgres:
+    image: postgres:17-alpine@sha256:b0f9560a2de083e2cc7382e75f808c7381a32852a7ec49117deedb300e552b24
+    environment:
+      POSTGRES_USER: filenimble
+      POSTGRES_DB: filenimble
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?Run setup-backend}
+    volumes: [postgres-data:/var/lib/postgresql/data]
+    healthcheck:
+      test: [CMD-SHELL, pg_isready -U filenimble]
+      interval: 2s
+      retries: 30
+    mem_limit: 256m
+    pids_limit: 64
+  redis:
+    image: redis:7.4-alpine@sha256:858f009f9709ce576febc734aa78b8f6d624b82571f9ddb6bda4377c833b3499
+    environment:
+      REDIS_PASSWORD: ${REDIS_PASSWORD:?Run setup-backend}
+    command: [sh, -c, 'exec redis-server --appendonly yes --maxmemory 64mb --maxmemory-policy noeviction --requirepass "$${REDIS_PASSWORD}"']
+    volumes: [redis-data:/data]
+    healthcheck:
+      test: [CMD-SHELL, 'REDISCLI_AUTH="$${REDIS_PASSWORD}" redis-cli ping']
+      interval: 2s
+      retries: 30
+    mem_limit: 128m
+    pids_limit: 32
+  storage:
+    image: dxflrs/garage:v2.3.0@sha256:866bd13ed2038ba7e7190e840482bc27234c4afaf77be8cfa439ae088c1e4690
+    command: [/garage, server, --single-node, --default-bucket]
+    environment:
+      RUST_LOG: warn
+      GARAGE_DEFAULT_ACCESS_KEY: ${S3_ACCESS_KEY_ID:?Run setup-backend}
+      GARAGE_DEFAULT_SECRET_KEY: ${S3_SECRET_ACCESS_KEY:?Run setup-backend}
+      GARAGE_DEFAULT_BUCKET: filenimble
+    volumes:
+      - ./tmp/garage.toml:/etc/garage.toml:ro
+      - storage-data:/var/lib/garage
+    ports: [127.0.0.1:3900:3900]
+    mem_limit: 256m
+    pids_limit: 64
+  migrate:
+    <<: *backend
+    command: [python, -m, app.db]
+    depends_on:
+      postgres: {condition: service_healthy}
+  storage-init:
+    <<: *backend
+    command: [python, -m, app.bootstrap]
+    depends_on:
+      storage: {condition: service_started}
+  api:
+    <<: *backend
+    # AI credentials are isolated to the API service; workers and conversion sandboxes never receive them.
+    environment:
+      <<: *environment
+      AI_ENABLED: ${AI_ENABLED:-false}
+      AI_PROVIDER: ${AI_PROVIDER:-}
+      AI_API_KEY: ${AI_API_KEY:-}
+      AI_MODEL: ${AI_MODEL:-}
+    ports: [127.0.0.1:8000:8000]
+    healthcheck:
+      test: [CMD, python, -c, "import urllib.request; urllib.request.urlopen('http://localhost:8000/health')"]
+      interval: 3s
+      retries: 20
+  worker:
+    <<: *backend
+    command: [celery, -A, app.tasks, worker, --loglevel=WARNING, --concurrency=1, --hostname=worker@%h]
+  lifecycle:
+    <<: *backend
+    command: [python, -m, app.lifecycle]
+  supervisor:
+    image: filenimble-backend:phase5
+    # Trusted host controller. No API, Celery or conversion container has this mount.
+    user: "0:0"
+    read_only: true
+    cap_drop: [ALL]
+    security_opt: [no-new-privileges:true]
+    volumes: [/var/run/docker.sock:/var/run/docker.sock]
+    environment:
+      RUNNER_SECRET: ${RUNNER_SECRET:?Run setup-backend}
+    command: [uvicorn, app.supervisor:app, --host, 0.0.0.0, --port, "8001", --no-access-log]
+    mem_limit: 256m
+    tmpfs: ["/tmp:size=160m,noexec,nosuid,nodev"]
+    pids_limit: 64
+  sandbox-image:
+    profiles: [build]
+    image: filenimble-sandbox:phase5
+    build:
+      context: .
+      dockerfile: worker/sandbox/Dockerfile
+    entrypoint: [python, -c, "print('Sandbox image built; never run as a public converter')"]
+  ocr-image:
+    profiles: [build]
+    image: filenimble-ocr:phase7
+    build:
+      context: .
+      dockerfile: worker/engines/Ocr.Dockerfile
+  media-image:
+    profiles: [build]
+    image: filenimble-media:phase11
+    build:
+      context: .
+      dockerfile: worker/engines/Media.Dockerfile
+      additional_contexts:
+        ffmpeg-source: ./tmp/ffmpeg-source
+  archive-image:
+    profiles: [build]
+    image: filenimble-archive:phase11
+    build:
+      context: .
+      dockerfile: worker/engines/Archive.Dockerfile
+  tests:
+    <<: *backend
+    profiles: [test]
+    command: [pytest, -q]
+    environment:
+      <<: *environment
+      API_URL: http://api:8000
+    depends_on:
+      api: {condition: service_healthy}
+volumes:
+  postgres-data:
+  redis-data:
+  storage-data:

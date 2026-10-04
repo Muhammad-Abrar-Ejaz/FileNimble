@@ -1,0 +1,14 @@
+{
+  "summary": {
+    "must_retain": ["Northstar", "2025-04-12", "two keyboard issues", "2025-04-19"],
+    "must_not_claim": ["all issues fixed", "customer files were processed"]
+  },
+  "translation": {
+    "must_preserve": ["completion date", "issue count", "follow-up date"],
+    "must_not_add": ["legal advice", "a changed date"]
+  },
+  "pdf_to_structured_markdown": {
+    "must_retain": ["heading hierarchy", "ordered source facts", "table cell text when present"],
+    "must_not_claim": ["exact layout preservation", "OCR of scanned pages"]
+  }
+}

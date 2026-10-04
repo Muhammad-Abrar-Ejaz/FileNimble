@@ -1,0 +1,2523 @@
+[
+  {
+    "id": "merge_pdf",
+    "slug": "merge-pdf",
+    "category": "pdf",
+    "status": "live",
+    "indexable": true,
+    "processingMode": "client",
+    "notes": "Phase 4: browser workers only. 50 MiB/200 pages total; encrypted, form, signed and active-content PDFs unsupported. Render up to 40 pages; 8 MP/page, 64 MP total. No server uploads.",
+    "title": "Merge PDF Files",
+    "description": "Combine multiple PDFs into one document in your chosen order. Preserve page sizes and process your files privately in this browser.",
+    "inputFormats": [
+      "pdf"
+    ],
+    "outputFormats": [
+      "pdf"
+    ],
+    "limits": {
+      "maxFileBytes": 26214400,
+      "maxBatchCount": 10,
+      "allowedMimeTypes": [
+        "application/pdf"
+      ],
+      "allowedExtensions": [
+        "pdf"
+      ]
+    },
+    "relatedTools": [
+      "split-pdf",
+      "organize-pdf",
+      "page-numbers-pdf",
+      "image-to-pdf"
+    ],
+    "privacyLabel": "Runs in browser",
+    "seoTitle": "Merge PDF Files | FileNimble",
+    "seoDescription": "Combine multiple PDFs into one document in your chosen order. Preserve page sizes and process your files privately in this browser."
+  },
+  {
+    "id": "split_pdf",
+    "slug": "split-pdf",
+    "category": "pdf",
+    "status": "live",
+    "indexable": true,
+    "processingMode": "client",
+    "notes": "Phase 4: browser workers only. 50 MiB/200 pages total; encrypted, form, signed and active-content PDFs unsupported. Render up to 40 pages; 8 MP/page, 64 MP total. No server uploads.",
+    "title": "Split PDF into Separate Files",
+    "description": "Turn a PDF into individual page files or custom page groups. Download separate PDFs or a ZIP without uploading your document.",
+    "inputFormats": [
+      "pdf"
+    ],
+    "outputFormats": [
+      "pdf"
+    ],
+    "limits": {
+      "maxFileBytes": 26214400,
+      "maxBatchCount": 1,
+      "allowedMimeTypes": [
+        "application/pdf"
+      ],
+      "allowedExtensions": [
+        "pdf"
+      ]
+    },
+    "relatedTools": [
+      "extract-pdf-pages",
+      "merge-pdf",
+      "delete-pdf-pages",
+      "organize-pdf"
+    ],
+    "privacyLabel": "Runs in browser",
+    "seoTitle": "Split PDF into Separate Files | FileNimble",
+    "seoDescription": "Turn a PDF into individual page files or custom page groups. Download separate PDFs or a ZIP without uploading your document."
+  },
+  {
+    "id": "extract_pdf_pages",
+    "slug": "extract-pdf-pages",
+    "category": "pdf",
+    "status": "live",
+    "indexable": true,
+    "processingMode": "client",
+    "notes": "Phase 4: browser workers only. 50 MiB/200 pages total; encrypted, form, signed and active-content PDFs unsupported. Render up to 40 pages; 8 MP/page, 64 MP total. No server uploads.",
+    "title": "Extract Pages from PDF",
+    "description": "Select the pages you need and save them as one new PDF. Use page checkboxes or ranges, with all processing kept on your device.",
+    "inputFormats": [
+      "pdf"
+    ],
+    "outputFormats": [
+      "pdf"
+    ],
+    "limits": {
+      "maxFileBytes": 26214400,
+      "maxBatchCount": 1,
+      "allowedMimeTypes": [
+        "application/pdf"
+      ],
+      "allowedExtensions": [
+        "pdf"
+      ]
+    },
+    "relatedTools": [
+      "split-pdf",
+      "delete-pdf-pages",
+      "organize-pdf",
+      "merge-pdf"
+    ],
+    "privacyLabel": "Runs in browser",
+    "seoTitle": "Extract Pages from PDF | FileNimble",
+    "seoDescription": "Select the pages you need and save them as one new PDF. Use page checkboxes or ranges, with all processing kept on your device."
+  },
+  {
+    "id": "delete_pdf_pages",
+    "slug": "delete-pdf-pages",
+    "category": "pdf",
+    "status": "live",
+    "indexable": true,
+    "processingMode": "client",
+    "notes": "Phase 4: browser workers only. 50 MiB/200 pages total; encrypted, form, signed and active-content PDFs unsupported. Render up to 40 pages; 8 MP/page, 64 MP total. No server uploads.",
+    "title": "Delete Pages from PDF",
+    "description": "Remove selected pages from a PDF and save the remaining pages in their original order. Your document stays in the browser.",
+    "inputFormats": [
+      "pdf"
+    ],
+    "outputFormats": [
+      "pdf"
+    ],
+    "limits": {
+      "maxFileBytes": 26214400,
+      "maxBatchCount": 1,
+      "allowedMimeTypes": [
+        "application/pdf"
+      ],
+      "allowedExtensions": [
+        "pdf"
+      ]
+    },
+    "relatedTools": [
+      "extract-pdf-pages",
+      "organize-pdf",
+      "split-pdf",
+      "rotate-pdf"
+    ],
+    "privacyLabel": "Runs in browser",
+    "seoTitle": "Delete Pages from PDF | FileNimble",
+    "seoDescription": "Remove selected pages from a PDF and save the remaining pages in their original order. Your document stays in the browser."
+  },
+  {
+    "id": "organize_pdf",
+    "slug": "organize-pdf",
+    "category": "pdf",
+    "status": "live",
+    "indexable": true,
+    "processingMode": "client",
+    "notes": "Phase 4: browser workers only. 50 MiB/200 pages total; encrypted, form, signed and active-content PDFs unsupported. Render up to 40 pages; 8 MP/page, 64 MP total. No server uploads.",
+    "title": "Reorder PDF Pages",
+    "description": "Change the order of pages in a PDF with accessible move controls. Keep every page and download the reordered document locally.",
+    "inputFormats": [
+      "pdf"
+    ],
+    "outputFormats": [
+      "pdf"
+    ],
+    "limits": {
+      "maxFileBytes": 26214400,
+      "maxBatchCount": 1,
+      "allowedMimeTypes": [
+        "application/pdf"
+      ],
+      "allowedExtensions": [
+        "pdf"
+      ]
+    },
+    "relatedTools": [
+      "merge-pdf",
+      "rotate-pdf",
+      "delete-pdf-pages",
+      "page-numbers-pdf"
+    ],
+    "privacyLabel": "Runs in browser",
+    "seoTitle": "Reorder PDF Pages | FileNimble",
+    "seoDescription": "Change the order of pages in a PDF with accessible move controls. Keep every page and download the reordered document locally."
+  },
+  {
+    "id": "rotate_pdf",
+    "slug": "rotate-pdf",
+    "category": "pdf",
+    "status": "live",
+    "indexable": true,
+    "processingMode": "client",
+    "notes": "Phase 4: browser workers only. 50 MiB/200 pages total; encrypted, form, signed and active-content PDFs unsupported. Render up to 40 pages; 8 MP/page, 64 MP total. No server uploads.",
+    "title": "Rotate PDF Pages",
+    "description": "Rotate selected PDF pages by 90, 180 or 270 degrees clockwise. Keep other pages unchanged and download a valid PDF privately.",
+    "inputFormats": [
+      "pdf"
+    ],
+    "outputFormats": [
+      "pdf"
+    ],
+    "limits": {
+      "maxFileBytes": 26214400,
+      "maxBatchCount": 1,
+      "allowedMimeTypes": [
+        "application/pdf"
+      ],
+      "allowedExtensions": [
+        "pdf"
+      ]
+    },
+    "relatedTools": [
+      "organize-pdf",
+      "pdf-to-jpg",
+      "pdf-to-png",
+      "merge-pdf"
+    ],
+    "privacyLabel": "Runs in browser",
+    "seoTitle": "Rotate PDF Pages | FileNimble",
+    "seoDescription": "Rotate selected PDF pages by 90, 180 or 270 degrees clockwise. Keep other pages unchanged and download a valid PDF privately."
+  },
+  {
+    "id": "compress_pdf",
+    "slug": "compress-pdf",
+    "category": "pdf",
+    "status": "planned",
+    "indexable": false,
+    "processingMode": "tbd",
+    "notes": "Set limits, engine, privacy label, formats and SEO metadata before enabling."
+  },
+  {
+    "id": "watermark_pdf",
+    "slug": "watermark-pdf",
+    "category": "pdf",
+    "status": "live",
+    "indexable": true,
+    "processingMode": "client",
+    "notes": "Phase 4: browser workers only. 50 MiB/200 pages total; encrypted, form, signed and active-content PDFs unsupported. Render up to 40 pages; 8 MP/page, 64 MP total. No server uploads.",
+    "title": "Add a Text Watermark to PDF",
+    "description": "Place a centered text watermark on every PDF page. Adjust opacity and label drafts or review copies without uploading the file.",
+    "inputFormats": [
+      "pdf"
+    ],
+    "outputFormats": [
+      "pdf"
+    ],
+    "limits": {
+      "maxFileBytes": 26214400,
+      "maxBatchCount": 1,
+      "allowedMimeTypes": [
+        "application/pdf"
+      ],
+      "allowedExtensions": [
+        "pdf"
+      ]
+    },
+    "relatedTools": [
+      "page-numbers-pdf",
+      "merge-pdf",
+      "pdf-to-png",
+      "rotate-pdf"
+    ],
+    "privacyLabel": "Runs in browser",
+    "seoTitle": "Add a Text Watermark to PDF | FileNimble",
+    "seoDescription": "Place a centered text watermark on every PDF page. Adjust opacity and label drafts or review copies without uploading the file."
+  },
+  {
+    "id": "page_numbers_pdf",
+    "slug": "page-numbers-pdf",
+    "category": "pdf",
+    "status": "live",
+    "indexable": true,
+    "processingMode": "client",
+    "notes": "Phase 4: browser workers only. 50 MiB/200 pages total; encrypted, form, signed and active-content PDFs unsupported. Render up to 40 pages; 8 MP/page, 64 MP total. No server uploads.",
+    "title": "Add Page Numbers to PDF",
+    "description": "Add sequential page numbers at the top or bottom center of a PDF. Choose a starting number and generate the result in your browser.",
+    "inputFormats": [
+      "pdf"
+    ],
+    "outputFormats": [
+      "pdf"
+    ],
+    "limits": {
+      "maxFileBytes": 26214400,
+      "maxBatchCount": 1,
+      "allowedMimeTypes": [
+        "application/pdf"
+      ],
+      "allowedExtensions": [
+        "pdf"
+      ]
+    },
+    "relatedTools": [
+      "merge-pdf",
+      "organize-pdf",
+      "watermark-pdf",
+      "image-to-pdf"
+    ],
+    "privacyLabel": "Runs in browser",
+    "seoTitle": "Add Page Numbers to PDF | FileNimble",
+    "seoDescription": "Add sequential page numbers at the top or bottom center of a PDF. Choose a starting number and generate the result in your browser."
+  },
+  {
+    "id": "protect_pdf",
+    "slug": "protect-pdf",
+    "category": "pdf",
+    "status": "planned",
+    "indexable": false,
+    "processingMode": "tbd",
+    "notes": "Set limits, engine, privacy label, formats and SEO metadata before enabling."
+  },
+  {
+    "id": "unlock_pdf",
+    "slug": "unlock-pdf",
+    "category": "pdf",
+    "status": "planned",
+    "indexable": false,
+    "processingMode": "tbd",
+    "notes": "Set limits, engine, privacy label, formats and SEO metadata before enabling."
+  },
+  {
+    "id": "repair_pdf",
+    "slug": "repair-pdf",
+    "category": "pdf",
+    "status": "planned",
+    "indexable": false,
+    "processingMode": "tbd",
+    "notes": "Set limits, engine, privacy label, formats and SEO metadata before enabling."
+  },
+  {
+    "id": "pdf_to_pdfa",
+    "slug": "pdf-to-pdfa",
+    "category": "pdf",
+    "status": "planned",
+    "indexable": false,
+    "processingMode": "tbd",
+    "notes": "Set limits, engine, privacy label, formats and SEO metadata before enabling."
+  },
+  {
+    "id": "ocr_pdf",
+    "slug": "ocr-pdf",
+    "category": "pdf",
+    "status": "live",
+    "indexable": true,
+    "processingMode": "server",
+    "notes": "FN-122 qualified: rasterized searchable English PDF; server-side, 10 MiB/5 pages. Actual searchable text/page-order, security, output and license gates passed. No PDF/A claim.",
+    "title": "Make a Scanned PDF Searchable",
+    "description": "Create a PDF with scanned page images and a searchable English OCR text layer.",
+    "inputFormats": [
+      "pdf"
+    ],
+    "outputFormats": [
+      "pdf"
+    ],
+    "limits": {
+      "maxFileBytes": 10485760,
+      "maxBatchCount": 1,
+      "allowedExtensions": [
+        "pdf"
+      ]
+    },
+    "privacyLabel": "Temporary server processing",
+    "seoTitle": "Make a Scanned PDF Searchable | FileNimble",
+    "seoDescription": "Create a PDF with scanned page images and a searchable English OCR text layer.",
+    "relatedTools": [
+      "image-to-text",
+      "pdf-to-text"
+    ]
+  },
+  {
+    "id": "pdf_to_text",
+    "slug": "pdf-to-text",
+    "category": "pdf",
+    "status": "live",
+    "indexable": true,
+    "processingMode": "server",
+    "notes": "FN-121 qualified: English PDF OCR to text; server-side, 10 MiB/5 pages. Page order, quality, security, output and license gates passed. Duplicate raw entry remains planned.",
+    "title": "Extract English Text from Scanned PDF",
+    "description": "Run OCR on up to five PDF pages and download recognized English text in page order.",
+    "inputFormats": [
+      "pdf"
+    ],
+    "outputFormats": [
+      "txt"
+    ],
+    "limits": {
+      "maxFileBytes": 10485760,
+      "maxBatchCount": 1,
+      "allowedExtensions": [
+        "pdf"
+      ]
+    },
+    "privacyLabel": "Temporary server processing",
+    "seoTitle": "Extract English Text from Scanned PDF | FileNimble",
+    "seoDescription": "Run OCR on up to five PDF pages and download recognized English text in page order.",
+    "relatedTools": [
+      "image-to-text",
+      "ocr-pdf"
+    ]
+  },
+  {
+    "id": "scan_to_pdf",
+    "slug": "scan-to-pdf",
+    "category": "pdf",
+    "status": "planned",
+    "indexable": false,
+    "processingMode": "tbd",
+    "notes": "Set limits, engine, privacy label, formats and SEO metadata before enabling."
+  },
+  {
+    "id": "flatten_pdf",
+    "slug": "flatten-pdf",
+    "category": "pdf",
+    "status": "planned",
+    "indexable": false,
+    "processingMode": "tbd",
+    "notes": "Set limits, engine, privacy label, formats and SEO metadata before enabling."
+  },
+  {
+    "id": "remove_pdf_metadata",
+    "slug": "remove-pdf-metadata",
+    "category": "pdf",
+    "status": "planned",
+    "indexable": false,
+    "processingMode": "tbd",
+    "notes": "Set limits, engine, privacy label, formats and SEO metadata before enabling."
+  },
+  {
+    "id": "image_to_pdf",
+    "slug": "image-to-pdf",
+    "title": "Image to PDF",
+    "description": "Convert JPG, PNG, and WebP images into clean, printable PDF documents directly in your browser.",
+    "category": "to_pdf",
+    "status": "live",
+    "indexable": true,
+    "processingMode": "client",
+    "inputFormats": [
+      "jpg",
+      "jpeg",
+      "png",
+      "webp"
+    ],
+    "outputFormats": [
+      "pdf"
+    ],
+    "limits": {
+      "maxFileBytes": 52428800,
+      "maxBatchCount": 20,
+      "allowedExtensions": [
+        "jpg",
+        "jpeg",
+        "png",
+        "webp"
+      ],
+      "allowedMimeTypes": [
+        "image/jpeg",
+        "image/png",
+        "image/webp"
+      ]
+    },
+    "relatedTools": [
+      "jpg-to-png",
+      "png-to-jpg",
+      "image-compress",
+      "image-resize"
+    ],
+    "privacyLabel": "Runs in browser",
+    "seoTitle": "Image to PDF Converter – Convert JPG, PNG & WebP to PDF | FileNimble",
+    "seoDescription": "Convert JPG, PNG, and WebP images to PDF online. Merge multiple images into a single multi-page PDF with custom margins and page sizes directly in your browser.",
+    "notes": "Phase 3 canonical image to PDF client tool. Limit: 24 megapixels, 16,384 pixels per side; still images only."
+  },
+  {
+    "id": "jpg_to_pdf",
+    "slug": "jpg-to-pdf",
+    "category": "to_pdf",
+    "status": "planned",
+    "indexable": false,
+    "processingMode": "tbd",
+    "notes": "Set limits, engine, privacy label, formats and SEO metadata before enabling."
+  },
+  {
+    "id": "png_to_pdf",
+    "slug": "png-to-pdf",
+    "category": "to_pdf",
+    "status": "planned",
+    "indexable": false,
+    "processingMode": "tbd",
+    "notes": "Set limits, engine, privacy label, formats and SEO metadata before enabling."
+  },
+  {
+    "id": "webp_to_pdf",
+    "slug": "webp-to-pdf",
+    "category": "to_pdf",
+    "status": "planned",
+    "indexable": false,
+    "processingMode": "tbd",
+    "notes": "Set limits, engine, privacy label, formats and SEO metadata before enabling."
+  },
+  {
+    "id": "heic_to_pdf",
+    "slug": "heic-to-pdf",
+    "category": "to_pdf",
+    "status": "planned",
+    "indexable": false,
+    "processingMode": "tbd",
+    "notes": "Set limits, engine, privacy label, formats and SEO metadata before enabling."
+  },
+  {
+    "id": "tiff_to_pdf",
+    "slug": "tiff-to-pdf",
+    "category": "to_pdf",
+    "status": "planned",
+    "indexable": false,
+    "processingMode": "tbd",
+    "notes": "Set limits, engine, privacy label, formats and SEO metadata before enabling."
+  },
+  {
+    "id": "svg_to_pdf",
+    "slug": "svg-to-pdf",
+    "category": "to_pdf",
+    "status": "planned",
+    "indexable": false,
+    "processingMode": "tbd",
+    "notes": "Set limits, engine, privacy label, formats and SEO metadata before enabling."
+  },
+  {
+    "id": "word_to_pdf",
+    "slug": "word-to-pdf",
+    "category": "to_pdf",
+    "status": "planned",
+    "indexable": false,
+    "processingMode": "tbd",
+    "notes": "Set limits, engine, privacy label, formats and SEO metadata before enabling."
+  },
+  {
+    "id": "powerpoint_to_pdf",
+    "slug": "powerpoint-to-pdf",
+    "category": "to_pdf",
+    "status": "planned",
+    "indexable": false,
+    "processingMode": "tbd",
+    "notes": "Set limits, engine, privacy label, formats and SEO metadata before enabling."
+  },
+  {
+    "id": "excel_to_pdf",
+    "slug": "excel-to-pdf",
+    "category": "to_pdf",
+    "status": "planned",
+    "indexable": false,
+    "processingMode": "tbd",
+    "notes": "Set limits, engine, privacy label, formats and SEO metadata before enabling."
+  },
+  {
+    "id": "html_to_pdf",
+    "slug": "html-to-pdf",
+    "category": "to_pdf",
+    "status": "planned",
+    "indexable": false,
+    "processingMode": "tbd",
+    "notes": "Set limits, engine, privacy label, formats and SEO metadata before enabling."
+  },
+  {
+    "id": "txt_to_pdf",
+    "slug": "txt-to-pdf",
+    "category": "to_pdf",
+    "status": "live",
+    "indexable": true,
+    "processingMode": "server",
+    "notes": "Set limits, engine, privacy label, formats and SEO metadata before enabling.",
+    "privacyLabel": "Secure server processing",
+    "title": "Convert Plain Text TXT to PDF",
+    "description": "Convert plain text files into clean, paginated PDF documents.",
+    "inputFormats": [
+      "txt"
+    ],
+    "outputFormats": [
+      "pdf"
+    ],
+    "limits": {
+      "maxFileBytes": 2097152,
+      "maxBatchCount": 1,
+      "allowedMimeTypes": [
+        "text/plain"
+      ],
+      "allowedExtensions": [
+        "txt"
+      ]
+    },
+    "relatedTools": [
+      "rtf-to-pdf",
+      "markdown-to-pdf",
+      "word-to-pdf"
+    ],
+    "seoTitle": "Convert Plain Text TXT to PDF | FileNimble",
+    "seoDescription": "Convert plain text files into paginated PDF documents with temporary server processing. Review line wrapping and the generated pages before sharing."
+  },
+  {
+    "id": "rtf_to_pdf",
+    "slug": "rtf-to-pdf",
+    "category": "to_pdf",
+    "status": "live",
+    "indexable": true,
+    "processingMode": "server",
+    "notes": "Set limits, engine, privacy label, formats and SEO metadata before enabling.",
+    "privacyLabel": "Secure server processing",
+    "title": "Convert Rich Text RTF to PDF",
+    "description": "Convert Rich Text Format (RTF) documents to PDF using an isolated LibreOffice worker.",
+    "inputFormats": [
+      "rtf"
+    ],
+    "outputFormats": [
+      "pdf"
+    ],
+    "limits": {
+      "maxFileBytes": 26214400,
+      "maxBatchCount": 1,
+      "allowedMimeTypes": [
+        "application/rtf",
+        "text/rtf"
+      ],
+      "allowedExtensions": [
+        "rtf"
+      ]
+    },
+    "relatedTools": [
+      "txt-to-pdf",
+      "word-to-pdf",
+      "markdown-to-pdf"
+    ],
+    "seoTitle": "Convert Rich Text RTF to PDF | FileNimble",
+    "seoDescription": "Convert Rich Text Format (RTF) documents to PDF using an isolated LibreOffice worker."
+  },
+  {
+    "id": "markdown_to_pdf",
+    "slug": "markdown-to-pdf",
+    "category": "to_pdf",
+    "status": "live",
+    "indexable": true,
+    "processingMode": "server",
+    "notes": "Set limits, engine, privacy label, formats and SEO metadata before enabling.",
+    "privacyLabel": "Secure server processing",
+    "title": "Convert Markdown to PDF",
+    "description": "Render Markdown documents into styled, paginated PDF files.",
+    "inputFormats": [
+      "md"
+    ],
+    "outputFormats": [
+      "pdf"
+    ],
+    "limits": {
+      "maxFileBytes": 2097152,
+      "maxBatchCount": 1,
+      "allowedMimeTypes": [
+        "text/markdown",
+        "text/plain"
+      ],
+      "allowedExtensions": [
+        "md",
+        "markdown"
+      ]
+    },
+    "relatedTools": [
+      "markdown-to-docx",
+      "markdown-to-html",
+      "docx-to-markdown"
+    ],
+    "seoTitle": "Convert Markdown to PDF | FileNimble",
+    "seoDescription": "Render Markdown documents into paginated PDF files using temporary server processing. Review supported markup, layout limits and the generated output."
+  },
+  {
+    "id": "csv_to_pdf",
+    "slug": "csv-to-pdf",
+    "category": "to_pdf",
+    "status": "planned",
+    "indexable": false,
+    "processingMode": "tbd",
+    "notes": "Set limits, engine, privacy label, formats and SEO metadata before enabling."
+  },
+  {
+    "id": "epub_to_pdf",
+    "slug": "epub-to-pdf",
+    "category": "to_pdf",
+    "status": "planned",
+    "indexable": false,
+    "processingMode": "tbd",
+    "notes": "Set limits, engine, privacy label, formats and SEO metadata before enabling."
+  },
+  {
+    "id": "pdf_to_jpg",
+    "slug": "pdf-to-jpg",
+    "category": "from_pdf",
+    "status": "live",
+    "indexable": true,
+    "processingMode": "client",
+    "notes": "Phase 4: browser workers only. 50 MiB/200 pages total; encrypted, form, signed and active-content PDFs unsupported. Render up to 40 pages; 8 MP/page, 64 MP total. No server uploads.",
+    "title": "PDF to JPG Converter",
+    "description": "Render selected PDF pages as real JPEG images at 72 or 144 DPI. Set JPEG quality and download individual images or a local ZIP.",
+    "inputFormats": [
+      "pdf"
+    ],
+    "outputFormats": [
+      "jpg"
+    ],
+    "limits": {
+      "maxFileBytes": 26214400,
+      "maxBatchCount": 1,
+      "allowedMimeTypes": [
+        "application/pdf"
+      ],
+      "allowedExtensions": [
+        "pdf"
+      ]
+    },
+    "relatedTools": [
+      "pdf-to-png",
+      "image-to-pdf",
+      "image-compress",
+      "rotate-pdf"
+    ],
+    "privacyLabel": "Runs in browser",
+    "seoTitle": "PDF to JPG Converter | FileNimble",
+    "seoDescription": "Render selected PDF pages as real JPEG images at 72 or 144 DPI. Set JPEG quality and download individual images or a local ZIP."
+  },
+  {
+    "id": "pdf_to_png",
+    "slug": "pdf-to-png",
+    "category": "from_pdf",
+    "status": "live",
+    "indexable": true,
+    "processingMode": "client",
+    "notes": "Phase 4: browser workers only. 50 MiB/200 pages total; encrypted, form, signed and active-content PDFs unsupported. Render up to 40 pages; 8 MP/page, 64 MP total. No server uploads.",
+    "title": "PDF to PNG Converter",
+    "description": "Render selected PDF pages as PNG images with lossless image encoding. Choose resolution and download pages individually or together as a ZIP.",
+    "inputFormats": [
+      "pdf"
+    ],
+    "outputFormats": [
+      "png"
+    ],
+    "limits": {
+      "maxFileBytes": 26214400,
+      "maxBatchCount": 1,
+      "allowedMimeTypes": [
+        "application/pdf"
+      ],
+      "allowedExtensions": [
+        "pdf"
+      ]
+    },
+    "relatedTools": [
+      "pdf-to-jpg",
+      "image-to-pdf",
+      "image-resize",
+      "extract-pdf-pages"
+    ],
+    "privacyLabel": "Runs in browser",
+    "seoTitle": "PDF to PNG Converter | FileNimble",
+    "seoDescription": "Render selected PDF pages as PNG images with lossless image encoding. Choose resolution and download pages individually or together as a ZIP."
+  },
+  {
+    "id": "pdf_to_webp",
+    "slug": "pdf-to-webp",
+    "category": "from_pdf",
+    "status": "planned",
+    "indexable": false,
+    "processingMode": "tbd",
+    "notes": "Set limits, engine, privacy label, formats and SEO metadata before enabling."
+  },
+  {
+    "id": "pdf_to_tiff",
+    "slug": "pdf-to-tiff",
+    "category": "from_pdf",
+    "status": "planned",
+    "indexable": false,
+    "processingMode": "tbd",
+    "notes": "Set limits, engine, privacy label, formats and SEO metadata before enabling."
+  },
+  {
+    "id": "pdf_to_word",
+    "slug": "pdf-to-word",
+    "category": "from_pdf",
+    "status": "planned",
+    "indexable": false,
+    "processingMode": "tbd",
+    "notes": "Set limits, engine, privacy label, formats and SEO metadata before enabling."
+  },
+  {
+    "id": "pdf_to_powerpoint",
+    "slug": "pdf-to-powerpoint",
+    "category": "from_pdf",
+    "status": "planned",
+    "indexable": false,
+    "processingMode": "tbd",
+    "notes": "Set limits, engine, privacy label, formats and SEO metadata before enabling."
+  },
+  {
+    "id": "pdf_to_excel",
+    "slug": "pdf-to-excel",
+    "category": "from_pdf",
+    "status": "planned",
+    "indexable": false,
+    "processingMode": "tbd",
+    "notes": "Set limits, engine, privacy label, formats and SEO metadata before enabling."
+  },
+  {
+    "id": "pdf_to_text",
+    "slug": "pdf-to-text",
+    "category": "from_pdf",
+    "status": "planned",
+    "indexable": false,
+    "processingMode": "tbd",
+    "notes": "Set limits, engine, privacy label, formats and SEO metadata before enabling."
+  },
+  {
+    "id": "pdf_to_markdown",
+    "slug": "pdf-to-markdown",
+    "category": "from_pdf",
+    "status": "planned",
+    "indexable": false,
+    "processingMode": "tbd",
+    "notes": "Set limits, engine, privacy label, formats and SEO metadata before enabling."
+  },
+  {
+    "id": "pdf_to_html",
+    "slug": "pdf-to-html",
+    "category": "from_pdf",
+    "status": "planned",
+    "indexable": false,
+    "processingMode": "tbd",
+    "notes": "Set limits, engine, privacy label, formats and SEO metadata before enabling."
+  },
+  {
+    "id": "pdf_to_csv",
+    "slug": "pdf-to-csv",
+    "category": "from_pdf",
+    "status": "planned",
+    "indexable": false,
+    "processingMode": "tbd",
+    "notes": "Set limits, engine, privacy label, formats and SEO metadata before enabling."
+  },
+  {
+    "id": "pdf_to_pdfa",
+    "slug": "pdf-to-pdfa",
+    "category": "from_pdf",
+    "status": "planned",
+    "indexable": false,
+    "processingMode": "tbd",
+    "notes": "Set limits, engine, privacy label, formats and SEO metadata before enabling."
+  },
+  {
+    "id": "jpg_to_png",
+    "slug": "jpg-to-png",
+    "category": "image",
+    "status": "live",
+    "indexable": true,
+    "processingMode": "client",
+    "notes": "Phase 3 client-side image converter. Limit: 24 megapixels, 16,384 pixels per side; still images only.",
+    "title": "JPG to PNG",
+    "description": "Convert JPG/JPEG photos into lossless PNG format directly in your browser.",
+    "inputFormats": [
+      "jpg",
+      "jpeg"
+    ],
+    "outputFormats": [
+      "png"
+    ],
+    "limits": {
+      "maxFileBytes": 52428800,
+      "maxBatchCount": 20,
+      "allowedExtensions": [
+        "jpg",
+        "jpeg"
+      ],
+      "allowedMimeTypes": [
+        "image/jpeg"
+      ]
+    },
+    "relatedTools": [
+      "png-to-jpg",
+      "jpg-to-webp",
+      "image-compress",
+      "image-resize"
+    ],
+    "privacyLabel": "Runs in browser",
+    "seoTitle": "JPG to PNG Converter – Convert JPG to PNG Online | FileNimble",
+    "seoDescription": "Convert JPG images to lossless PNG format online in seconds. 100% private browser-side conversion with zero server uploads."
+  },
+  {
+    "id": "png_to_jpg",
+    "slug": "png-to-jpg",
+    "title": "PNG to JPG",
+    "description": "Convert transparent PNG images to clean, lightweight JPG format directly in your browser.",
+    "category": "image",
+    "status": "live",
+    "indexable": true,
+    "processingMode": "client",
+    "inputFormats": [
+      "png"
+    ],
+    "outputFormats": [
+      "jpg"
+    ],
+    "limits": {
+      "maxFileBytes": 52428800,
+      "maxBatchCount": 20,
+      "allowedExtensions": [
+        "png"
+      ],
+      "allowedMimeTypes": [
+        "image/png"
+      ]
+    },
+    "relatedTools": [
+      "jpg-to-png",
+      "png-to-webp",
+      "image-compress",
+      "png-to-pdf"
+    ],
+    "privacyLabel": "Runs in browser",
+    "seoTitle": "PNG to JPG Converter – Convert PNG Images Online | FileNimble",
+    "seoDescription": "Convert PNG images to JPG format online in seconds. 100% private browser-side conversion with customizable quality and background color.",
+    "notes": "Fully functional Phase 2 client-side canvas converter."
+  },
+  {
+    "id": "jpg_to_webp",
+    "slug": "jpg-to-webp",
+    "category": "image",
+    "status": "live",
+    "indexable": true,
+    "processingMode": "client",
+    "notes": "Phase 3 client-side image converter. Limit: 24 megapixels, 16,384 pixels per side; still images only.",
+    "title": "JPG to WebP",
+    "description": "Convert JPEG images to next-gen WebP format for smaller file sizes and faster page loads.",
+    "inputFormats": [
+      "jpg",
+      "jpeg"
+    ],
+    "outputFormats": [
+      "webp"
+    ],
+    "limits": {
+      "maxFileBytes": 52428800,
+      "maxBatchCount": 20,
+      "allowedExtensions": [
+        "jpg",
+        "jpeg"
+      ],
+      "allowedMimeTypes": [
+        "image/jpeg"
+      ]
+    },
+    "relatedTools": [
+      "webp-to-jpg",
+      "png-to-webp",
+      "jpg-to-png",
+      "image-compress"
+    ],
+    "privacyLabel": "Runs in browser",
+    "seoTitle": "JPG to WebP Converter – Reduce Image Size Online | FileNimble",
+    "seoDescription": "Convert JPG images to modern WebP format online in seconds. Choose quality and compare actual output sizes with 100% private browser-side conversion."
+  },
+  {
+    "id": "png_to_webp",
+    "slug": "png-to-webp",
+    "category": "image",
+    "status": "live",
+    "indexable": true,
+    "processingMode": "client",
+    "notes": "Phase 3 client-side image converter. Limit: 24 megapixels, 16,384 pixels per side; still images only.",
+    "title": "PNG to WebP",
+    "description": "Convert PNG files to WebP with full transparency preservation and adjustable lossy quality.",
+    "inputFormats": [
+      "png"
+    ],
+    "outputFormats": [
+      "webp"
+    ],
+    "limits": {
+      "maxFileBytes": 52428800,
+      "maxBatchCount": 20,
+      "allowedExtensions": [
+        "png"
+      ],
+      "allowedMimeTypes": [
+        "image/png"
+      ]
+    },
+    "relatedTools": [
+      "webp-to-png",
+      "png-to-jpg",
+      "jpg-to-webp",
+      "image-compress"
+    ],
+    "privacyLabel": "Runs in browser",
+    "seoTitle": "PNG to WebP Converter – Keep Transparency, Save Space | FileNimble",
+    "seoDescription": "Convert PNG images to WebP online with full transparency support. Choose output quality directly in your browser with zero server uploads."
+  },
+  {
+    "id": "webp_to_jpg",
+    "slug": "webp-to-jpg",
+    "category": "image",
+    "status": "live",
+    "indexable": true,
+    "processingMode": "client",
+    "notes": "Phase 3 client-side image converter. Limit: 24 megapixels, 16,384 pixels per side; still images only.",
+    "title": "WebP to JPG",
+    "description": "Convert modern WebP images to universally compatible JPG/JPEG format directly in your browser.",
+    "inputFormats": [
+      "webp"
+    ],
+    "outputFormats": [
+      "jpg"
+    ],
+    "limits": {
+      "maxFileBytes": 52428800,
+      "maxBatchCount": 20,
+      "allowedExtensions": [
+        "webp"
+      ],
+      "allowedMimeTypes": [
+        "image/webp"
+      ]
+    },
+    "relatedTools": [
+      "jpg-to-webp",
+      "webp-to-png",
+      "png-to-jpg",
+      "image-resize"
+    ],
+    "privacyLabel": "Runs in browser",
+    "seoTitle": "WebP to JPG Converter – Convert WebP to JPEG Online | FileNimble",
+    "seoDescription": "Convert WebP images to standard JPG format online in seconds. Handle transparency with customizable background colors. 100% private browser-side conversion."
+  },
+  {
+    "id": "webp_to_png",
+    "slug": "webp-to-png",
+    "category": "image",
+    "status": "live",
+    "indexable": true,
+    "processingMode": "client",
+    "notes": "Phase 3 client-side image converter. Limit: 24 megapixels, 16,384 pixels per side; still images only.",
+    "title": "WebP to PNG",
+    "description": "Convert WebP images to lossless PNG format with complete transparency preservation.",
+    "inputFormats": [
+      "webp"
+    ],
+    "outputFormats": [
+      "png"
+    ],
+    "limits": {
+      "maxFileBytes": 52428800,
+      "maxBatchCount": 20,
+      "allowedExtensions": [
+        "webp"
+      ],
+      "allowedMimeTypes": [
+        "image/webp"
+      ]
+    },
+    "relatedTools": [
+      "png-to-webp",
+      "webp-to-jpg",
+      "jpg-to-png",
+      "image-compress"
+    ],
+    "privacyLabel": "Runs in browser",
+    "seoTitle": "WebP to PNG Converter – Convert WebP with Transparency | FileNimble",
+    "seoDescription": "Convert WebP images to lossless PNG format online in seconds. Full transparency support and 100% private browser-side conversion with zero server uploads."
+  },
+  {
+    "id": "avif_to_jpg",
+    "slug": "avif-to-jpg",
+    "category": "image",
+    "status": "planned",
+    "indexable": false,
+    "processingMode": "tbd",
+    "notes": "Set limits, engine, privacy label, formats and SEO metadata before enabling."
+  },
+  {
+    "id": "avif_to_png",
+    "slug": "avif-to-png",
+    "category": "image",
+    "status": "planned",
+    "indexable": false,
+    "processingMode": "tbd",
+    "notes": "Set limits, engine, privacy label, formats and SEO metadata before enabling."
+  },
+  {
+    "id": "jpg_to_avif",
+    "slug": "jpg-to-avif",
+    "category": "image",
+    "status": "planned",
+    "indexable": false,
+    "processingMode": "tbd",
+    "notes": "Set limits, engine, privacy label, formats and SEO metadata before enabling."
+  },
+  {
+    "id": "png_to_avif",
+    "slug": "png-to-avif",
+    "category": "image",
+    "status": "planned",
+    "indexable": false,
+    "processingMode": "tbd",
+    "notes": "Set limits, engine, privacy label, formats and SEO metadata before enabling."
+  },
+  {
+    "id": "heic_to_jpg",
+    "slug": "heic-to-jpg",
+    "category": "image",
+    "status": "planned",
+    "indexable": false,
+    "processingMode": "tbd",
+    "notes": "Evaluation only; no qualified decoder has been selected.",
+    "relatedTools": [
+      "jpg-to-png",
+      "image-to-pdf"
+    ]
+  },
+  {
+    "id": "heic_to_png",
+    "slug": "heic-to-png",
+    "category": "image",
+    "status": "planned",
+    "indexable": false,
+    "processingMode": "tbd",
+    "notes": "Set limits, engine, privacy label, formats and SEO metadata before enabling."
+  },
+  {
+    "id": "bmp_to_jpg",
+    "slug": "bmp-to-jpg",
+    "category": "image",
+    "status": "planned",
+    "indexable": false,
+    "processingMode": "tbd",
+    "notes": "Set limits, engine, privacy label, formats and SEO metadata before enabling."
+  },
+  {
+    "id": "bmp_to_png",
+    "slug": "bmp-to-png",
+    "category": "image",
+    "status": "planned",
+    "indexable": false,
+    "processingMode": "tbd",
+    "notes": "Set limits, engine, privacy label, formats and SEO metadata before enabling."
+  },
+  {
+    "id": "tiff_to_jpg",
+    "slug": "tiff-to-jpg",
+    "category": "image",
+    "status": "planned",
+    "indexable": false,
+    "processingMode": "tbd",
+    "notes": "Set limits, engine, privacy label, formats and SEO metadata before enabling."
+  },
+  {
+    "id": "tiff_to_png",
+    "slug": "tiff-to-png",
+    "category": "image",
+    "status": "planned",
+    "indexable": false,
+    "processingMode": "tbd",
+    "notes": "Set limits, engine, privacy label, formats and SEO metadata before enabling."
+  },
+  {
+    "id": "gif_to_jpg",
+    "slug": "gif-to-jpg",
+    "category": "image",
+    "status": "planned",
+    "indexable": false,
+    "processingMode": "tbd",
+    "notes": "Set limits, engine, privacy label, formats and SEO metadata before enabling."
+  },
+  {
+    "id": "gif_to_png",
+    "slug": "gif-to-png",
+    "category": "image",
+    "status": "planned",
+    "indexable": false,
+    "processingMode": "tbd",
+    "notes": "Set limits, engine, privacy label, formats and SEO metadata before enabling."
+  },
+  {
+    "id": "webp_to_gif",
+    "slug": "webp-to-gif",
+    "category": "image",
+    "status": "planned",
+    "indexable": false,
+    "processingMode": "tbd",
+    "notes": "Set limits, engine, privacy label, formats and SEO metadata before enabling."
+  },
+  {
+    "id": "svg_to_png",
+    "slug": "svg-to-png",
+    "category": "image",
+    "status": "planned",
+    "indexable": false,
+    "processingMode": "tbd",
+    "notes": "Set limits, engine, privacy label, formats and SEO metadata before enabling."
+  },
+  {
+    "id": "svg_to_jpg",
+    "slug": "svg-to-jpg",
+    "category": "image",
+    "status": "planned",
+    "indexable": false,
+    "processingMode": "tbd",
+    "notes": "Set limits, engine, privacy label, formats and SEO metadata before enabling."
+  },
+  {
+    "id": "ico_to_png",
+    "slug": "ico-to-png",
+    "category": "image",
+    "status": "planned",
+    "indexable": false,
+    "processingMode": "tbd",
+    "notes": "Set limits, engine, privacy label, formats and SEO metadata before enabling."
+  },
+  {
+    "id": "png_to_ico",
+    "slug": "png-to-ico",
+    "category": "image",
+    "status": "planned",
+    "indexable": false,
+    "processingMode": "tbd",
+    "notes": "Set limits, engine, privacy label, formats and SEO metadata before enabling."
+  },
+  {
+    "id": "image_compress",
+    "slug": "image-compress",
+    "category": "image",
+    "status": "live",
+    "indexable": true,
+    "processingMode": "client",
+    "notes": "Phase 3 client-side image utility. Limit: 24 megapixels, 16,384 pixels per side; still images only.",
+    "title": "Image Compressor",
+    "description": "Shrink image file size with real-time quality control. Fast, private, and 100% browser-based.",
+    "inputFormats": [
+      "jpg",
+      "jpeg",
+      "png",
+      "webp"
+    ],
+    "outputFormats": [
+      "jpg",
+      "png",
+      "webp"
+    ],
+    "limits": {
+      "maxFileBytes": 52428800,
+      "maxBatchCount": 20,
+      "allowedExtensions": [
+        "jpg",
+        "jpeg",
+        "png",
+        "webp"
+      ],
+      "allowedMimeTypes": [
+        "image/jpeg",
+        "image/png",
+        "image/webp"
+      ]
+    },
+    "relatedTools": [
+      "image-resize",
+      "jpg-to-webp",
+      "png-to-webp",
+      "png-to-jpg"
+    ],
+    "privacyLabel": "Runs in browser",
+    "seoTitle": "Image Compressor – Compress JPG, PNG & WebP Images Online | FileNimble",
+    "seoDescription": "Compress images online with adjustable lossy quality. Reduce JPG and WebP file sizes directly in your browser with zero server uploads."
+  },
+  {
+    "id": "image_resize",
+    "slug": "image-resize",
+    "category": "image",
+    "status": "live",
+    "indexable": true,
+    "processingMode": "client",
+    "notes": "Phase 3 client-side image utility. Limit: 24 megapixels, 16,384 pixels per side; still images only.",
+    "title": "Image Resizer",
+    "description": "Change image pixel dimensions while locking aspect ratio. Fast, private, and free.",
+    "inputFormats": [
+      "jpg",
+      "jpeg",
+      "png",
+      "webp"
+    ],
+    "outputFormats": [
+      "jpg",
+      "png",
+      "webp"
+    ],
+    "limits": {
+      "maxFileBytes": 52428800,
+      "maxBatchCount": 20,
+      "allowedExtensions": [
+        "jpg",
+        "jpeg",
+        "png",
+        "webp"
+      ],
+      "allowedMimeTypes": [
+        "image/jpeg",
+        "image/png",
+        "image/webp"
+      ]
+    },
+    "relatedTools": [
+      "image-crop",
+      "image-compress",
+      "png-to-jpg",
+      "image-to-pdf"
+    ],
+    "privacyLabel": "Runs in browser",
+    "seoTitle": "Image Resizer – Resize JPG, PNG & WebP Online | FileNimble",
+    "seoDescription": "Resize images online by width, height, or aspect ratio. Fast, private browser-side image resizing with zero server uploads."
+  },
+  {
+    "id": "image_crop",
+    "slug": "image-crop",
+    "category": "image",
+    "status": "live",
+    "indexable": true,
+    "processingMode": "client",
+    "notes": "Phase 3 client-side image utility. Limit: 24 megapixels, 16,384 pixels per side; still images only.",
+    "title": "Image Cropper",
+    "description": "Crop images visually with preset aspect ratios and exact pixel dimensions. Private and free.",
+    "inputFormats": [
+      "jpg",
+      "jpeg",
+      "png",
+      "webp"
+    ],
+    "outputFormats": [
+      "png"
+    ],
+    "limits": {
+      "maxFileBytes": 52428800,
+      "maxBatchCount": 1,
+      "allowedExtensions": [
+        "jpg",
+        "jpeg",
+        "png",
+        "webp"
+      ],
+      "allowedMimeTypes": [
+        "image/jpeg",
+        "image/png",
+        "image/webp"
+      ]
+    },
+    "relatedTools": [
+      "image-resize",
+      "image-compress",
+      "png-to-jpg",
+      "jpg-to-png"
+    ],
+    "privacyLabel": "Runs in browser",
+    "seoTitle": "Image Cropper – Crop JPG, PNG & WebP Online | FileNimble",
+    "seoDescription": "Crop images online with an interactive visual cropper and preset aspect ratios (1:1, 4:3, 16:9). 100% private browser-side cropping with zero server uploads."
+  },
+  {
+    "id": "image_rotate",
+    "slug": "image-rotate",
+    "category": "image",
+    "status": "planned",
+    "indexable": false,
+    "processingMode": "tbd",
+    "notes": "Set limits, engine, privacy label, formats and SEO metadata before enabling."
+  },
+  {
+    "id": "image_watermark",
+    "slug": "image-watermark",
+    "category": "image",
+    "status": "planned",
+    "indexable": false,
+    "processingMode": "tbd",
+    "notes": "Set limits, engine, privacy label, formats and SEO metadata before enabling."
+  },
+  {
+    "id": "remove_image_metadata",
+    "slug": "remove-image-metadata",
+    "category": "image",
+    "status": "planned",
+    "indexable": false,
+    "processingMode": "tbd",
+    "notes": "Set limits, engine, privacy label, formats and SEO metadata before enabling."
+  },
+  {
+    "id": "docx_to_text",
+    "slug": "docx-to-text",
+    "category": "document_data",
+    "status": "planned",
+    "indexable": false,
+    "processingMode": "tbd",
+    "notes": "Set limits, engine, privacy label, formats and SEO metadata before enabling."
+  },
+  {
+    "id": "docx_to_html",
+    "slug": "docx-to-html",
+    "category": "document_data",
+    "status": "planned",
+    "indexable": false,
+    "processingMode": "tbd",
+    "notes": "Set limits, engine, privacy label, formats and SEO metadata before enabling."
+  },
+  {
+    "id": "docx_to_markdown",
+    "slug": "docx-to-markdown",
+    "category": "document_data",
+    "status": "live",
+    "indexable": true,
+    "processingMode": "server",
+    "notes": "Set limits, engine, privacy label, formats and SEO metadata before enabling.",
+    "privacyLabel": "Secure server processing",
+    "title": "Convert Word DOCX to Markdown",
+    "description": "Convert Microsoft Word DOCX documents into clean GitHub Flavored Markdown.",
+    "inputFormats": [
+      "docx"
+    ],
+    "outputFormats": [
+      "md"
+    ],
+    "limits": {
+      "maxFileBytes": 26214400,
+      "maxBatchCount": 1,
+      "allowedMimeTypes": [
+        "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+      ],
+      "allowedExtensions": [
+        "docx"
+      ]
+    },
+    "relatedTools": [
+      "markdown-to-docx",
+      "markdown-to-html",
+      "word-to-pdf"
+    ],
+    "seoTitle": "Convert Word DOCX to Markdown | FileNimble",
+    "seoDescription": "Convert Microsoft Word DOCX documents into clean GitHub Flavored Markdown."
+  },
+  {
+    "id": "markdown_to_docx",
+    "slug": "markdown-to-docx",
+    "category": "document_data",
+    "status": "live",
+    "indexable": true,
+    "processingMode": "server",
+    "notes": "Set limits, engine, privacy label, formats and SEO metadata before enabling.",
+    "privacyLabel": "Secure server processing",
+    "title": "Convert Markdown to Word DOCX",
+    "description": "Transform Markdown files into editable Microsoft Word DOCX documents.",
+    "inputFormats": [
+      "md"
+    ],
+    "outputFormats": [
+      "docx"
+    ],
+    "limits": {
+      "maxFileBytes": 26214400,
+      "maxBatchCount": 1,
+      "allowedMimeTypes": [
+        "text/markdown",
+        "text/plain"
+      ],
+      "allowedExtensions": [
+        "md",
+        "markdown"
+      ]
+    },
+    "relatedTools": [
+      "docx-to-markdown",
+      "markdown-to-pdf",
+      "markdown-to-html"
+    ],
+    "seoTitle": "Convert Markdown to Word DOCX | FileNimble",
+    "seoDescription": "Transform Markdown files into editable Microsoft Word DOCX documents."
+  },
+  {
+    "id": "markdown_to_html",
+    "slug": "markdown-to-html",
+    "category": "document_data",
+    "status": "live",
+    "indexable": true,
+    "processingMode": "client",
+    "notes": "Set limits, engine, privacy label, formats and SEO metadata before enabling.",
+    "privacyLabel": "Runs in browser",
+    "title": "Convert Markdown to HTML Online",
+    "description": "Convert GitHub Flavored Markdown (GFM) into clean HTML with table support and XSS sanitization.",
+    "inputFormats": [
+      "md"
+    ],
+    "outputFormats": [
+      "html"
+    ],
+    "limits": {
+      "maxFileBytes": 10485760,
+      "maxBatchCount": 1,
+      "allowedMimeTypes": [
+        "text/markdown",
+        "text/plain"
+      ],
+      "allowedExtensions": [
+        "md",
+        "markdown"
+      ]
+    },
+    "relatedTools": [
+      "html-to-markdown",
+      "markdown-to-pdf",
+      "markdown-to-docx",
+      "docx-to-markdown"
+    ],
+    "seoTitle": "Convert Markdown to HTML Online | FileNimble",
+    "seoDescription": "Convert GitHub Flavored Markdown (GFM) into clean HTML with table support and XSS sanitization."
+  },
+  {
+    "id": "html_to_markdown",
+    "slug": "html-to-markdown",
+    "category": "document_data",
+    "status": "live",
+    "indexable": true,
+    "processingMode": "client",
+    "notes": "Set limits, engine, privacy label, formats and SEO metadata before enabling.",
+    "privacyLabel": "Runs in browser",
+    "title": "Convert HTML to Markdown Online",
+    "description": "Convert HTML documents and web snippets into clean, readable GitHub Flavored Markdown in your browser.",
+    "inputFormats": [
+      "html"
+    ],
+    "outputFormats": [
+      "md"
+    ],
+    "limits": {
+      "maxFileBytes": 10485760,
+      "maxBatchCount": 1,
+      "allowedMimeTypes": [
+        "text/html",
+        "text/plain"
+      ],
+      "allowedExtensions": [
+        "html",
+        "htm"
+      ]
+    },
+    "relatedTools": [
+      "markdown-to-html",
+      "markdown-to-pdf",
+      "markdown-to-docx",
+      "docx-to-markdown"
+    ],
+    "seoTitle": "Convert HTML to Markdown Online | FileNimble",
+    "seoDescription": "Convert HTML documents and web snippets into clean, readable GitHub Flavored Markdown in your browser."
+  },
+  {
+    "id": "xlsx_to_csv",
+    "slug": "xlsx-to-csv",
+    "category": "document_data",
+    "status": "live",
+    "indexable": true,
+    "processingMode": "server",
+    "notes": "Set limits, engine, privacy label, formats and SEO metadata before enabling.",
+    "privacyLabel": "Secure server processing",
+    "title": "Convert Excel XLSX to CSV",
+    "description": "Extract Excel workbook data to standard RFC 4180 CSV format.",
+    "inputFormats": [
+      "xlsx"
+    ],
+    "outputFormats": [
+      "csv"
+    ],
+    "limits": {
+      "maxFileBytes": 26214400,
+      "maxBatchCount": 1,
+      "allowedMimeTypes": [
+        "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+      ],
+      "allowedExtensions": [
+        "xlsx"
+      ]
+    },
+    "relatedTools": [
+      "csv-to-xlsx",
+      "xlsx-to-json",
+      "json-to-csv"
+    ],
+    "seoTitle": "Convert Excel XLSX to CSV | FileNimble",
+    "seoDescription": "Extract Excel workbook cell data to CSV using temporary server processing. Check worksheet selection, formula handling and flat-table limitations."
+  },
+  {
+    "id": "csv_to_xlsx",
+    "slug": "csv-to-xlsx",
+    "category": "document_data",
+    "status": "live",
+    "indexable": true,
+    "processingMode": "server",
+    "notes": "Set limits, engine, privacy label, formats and SEO metadata before enabling.",
+    "privacyLabel": "Secure server processing",
+    "title": "Convert CSV to Excel XLSX",
+    "description": "Transform tabular CSV data into a Microsoft Excel XLSX workbook with temporary server processing.",
+    "inputFormats": [
+      "csv"
+    ],
+    "outputFormats": [
+      "xlsx"
+    ],
+    "limits": {
+      "maxFileBytes": 26214400,
+      "maxBatchCount": 1,
+      "allowedMimeTypes": [
+        "text/csv",
+        "text/plain"
+      ],
+      "allowedExtensions": [
+        "csv"
+      ]
+    },
+    "relatedTools": [
+      "xlsx-to-csv",
+      "csv-to-json",
+      "json-to-xlsx"
+    ],
+    "seoTitle": "Convert CSV to Excel XLSX | FileNimble",
+    "seoDescription": "Transform tabular CSV data into a Microsoft Excel XLSX workbook with temporary server processing."
+  },
+  {
+    "id": "xlsx_to_json",
+    "slug": "xlsx-to-json",
+    "category": "document_data",
+    "status": "live",
+    "indexable": true,
+    "processingMode": "server",
+    "notes": "Set limits, engine, privacy label, formats and SEO metadata before enabling.",
+    "privacyLabel": "Secure server processing",
+    "title": "Convert Excel XLSX to JSON",
+    "description": "Extract Excel spreadsheet data into a structured JSON array of objects.",
+    "inputFormats": [
+      "xlsx"
+    ],
+    "outputFormats": [
+      "json"
+    ],
+    "limits": {
+      "maxFileBytes": 26214400,
+      "maxBatchCount": 1,
+      "allowedMimeTypes": [
+        "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+      ],
+      "allowedExtensions": [
+        "xlsx"
+      ]
+    },
+    "relatedTools": [
+      "json-to-xlsx",
+      "xlsx-to-csv",
+      "csv-to-json"
+    ],
+    "seoTitle": "Convert Excel XLSX to JSON | FileNimble",
+    "seoDescription": "Extract Excel spreadsheet data into a structured JSON array of objects."
+  },
+  {
+    "id": "json_to_xlsx",
+    "slug": "json-to-xlsx",
+    "category": "document_data",
+    "status": "live",
+    "indexable": true,
+    "processingMode": "server",
+    "notes": "Set limits, engine, privacy label, formats and SEO metadata before enabling.",
+    "privacyLabel": "Secure server processing",
+    "title": "Convert JSON to Excel XLSX",
+    "description": "Convert JSON data arrays and objects into a structured Excel XLSX spreadsheet.",
+    "inputFormats": [
+      "json"
+    ],
+    "outputFormats": [
+      "xlsx"
+    ],
+    "limits": {
+      "maxFileBytes": 26214400,
+      "maxBatchCount": 1,
+      "allowedMimeTypes": [
+        "application/json",
+        "text/plain"
+      ],
+      "allowedExtensions": [
+        "json"
+      ]
+    },
+    "relatedTools": [
+      "xlsx-to-json",
+      "json-to-csv",
+      "csv-to-xlsx"
+    ],
+    "seoTitle": "Convert JSON to Excel XLSX | FileNimble",
+    "seoDescription": "Convert JSON data arrays and objects into a structured Excel XLSX spreadsheet."
+  },
+  {
+    "id": "csv_to_json",
+    "slug": "csv-to-json",
+    "category": "document_data",
+    "status": "live",
+    "indexable": true,
+    "processingMode": "client",
+    "notes": "Set limits, engine, privacy label, formats and SEO metadata before enabling.",
+    "privacyLabel": "Runs in browser",
+    "title": "Convert CSV to JSON Online",
+    "description": "Transform CSV and tabular data into clean, structured JSON in your browser with zero server uploads.",
+    "inputFormats": [
+      "csv"
+    ],
+    "outputFormats": [
+      "json"
+    ],
+    "limits": {
+      "maxFileBytes": 10485760,
+      "maxBatchCount": 1,
+      "allowedMimeTypes": [
+        "text/csv",
+        "text/plain"
+      ],
+      "allowedExtensions": [
+        "csv"
+      ]
+    },
+    "relatedTools": [
+      "json-to-csv",
+      "csv-to-xlsx",
+      "json-to-yaml",
+      "json-to-xml"
+    ],
+    "seoTitle": "Convert CSV to JSON Online | FileNimble",
+    "seoDescription": "Transform CSV and tabular data into clean, structured JSON in your browser with zero server uploads."
+  },
+  {
+    "id": "json_to_csv",
+    "slug": "json-to-csv",
+    "category": "document_data",
+    "status": "live",
+    "indexable": true,
+    "processingMode": "client",
+    "notes": "Set limits, engine, privacy label, formats and SEO metadata before enabling.",
+    "privacyLabel": "Runs in browser",
+    "title": "Convert JSON to CSV Online",
+    "description": "Convert JSON arrays or objects into standard RFC 4180 CSV with built-in formula injection protection.",
+    "inputFormats": [
+      "json"
+    ],
+    "outputFormats": [
+      "csv"
+    ],
+    "limits": {
+      "maxFileBytes": 10485760,
+      "maxBatchCount": 1,
+      "allowedMimeTypes": [
+        "application/json",
+        "text/plain"
+      ],
+      "allowedExtensions": [
+        "json"
+      ]
+    },
+    "relatedTools": [
+      "csv-to-json",
+      "json-to-xlsx",
+      "json-to-yaml",
+      "json-to-xml"
+    ],
+    "seoTitle": "Convert JSON to CSV Online | FileNimble",
+    "seoDescription": "Convert JSON arrays or objects into standard RFC 4180 CSV with built-in formula injection protection."
+  },
+  {
+    "id": "json_to_yaml",
+    "slug": "json-to-yaml",
+    "category": "document_data",
+    "status": "live",
+    "indexable": true,
+    "processingMode": "client",
+    "notes": "Set limits, engine, privacy label, formats and SEO metadata before enabling.",
+    "privacyLabel": "Runs in browser",
+    "title": "Convert JSON to YAML Online",
+    "description": "Convert JSON configuration files into clean, readable YAML with syntax validation and browser-side privacy.",
+    "inputFormats": [
+      "json"
+    ],
+    "outputFormats": [
+      "yaml"
+    ],
+    "limits": {
+      "maxFileBytes": 10485760,
+      "maxBatchCount": 1,
+      "allowedMimeTypes": [
+        "application/json",
+        "text/plain"
+      ],
+      "allowedExtensions": [
+        "json"
+      ]
+    },
+    "relatedTools": [
+      "yaml-to-json",
+      "json-to-xml",
+      "json-to-csv",
+      "csv-to-json"
+    ],
+    "seoTitle": "Convert JSON to YAML Online | FileNimble",
+    "seoDescription": "Convert JSON configuration files into clean, readable YAML with syntax validation and browser-side privacy."
+  },
+  {
+    "id": "yaml_to_json",
+    "slug": "yaml-to-json",
+    "category": "document_data",
+    "status": "live",
+    "indexable": true,
+    "processingMode": "client",
+    "notes": "Set limits, engine, privacy label, formats and SEO metadata before enabling.",
+    "privacyLabel": "Runs in browser",
+    "title": "Convert YAML to JSON Online",
+    "description": "Convert YAML configurations, Kubernetes manifests, and Docker Compose files to JSON safely in your browser.",
+    "inputFormats": [
+      "yaml"
+    ],
+    "outputFormats": [
+      "json"
+    ],
+    "limits": {
+      "maxFileBytes": 10485760,
+      "maxBatchCount": 1,
+      "allowedMimeTypes": [
+        "text/yaml",
+        "text/plain"
+      ],
+      "allowedExtensions": [
+        "yaml",
+        "yml"
+      ]
+    },
+    "relatedTools": [
+      "json-to-yaml",
+      "json-to-xml",
+      "json-to-csv",
+      "xml-to-json"
+    ],
+    "seoTitle": "Convert YAML to JSON Online | FileNimble",
+    "seoDescription": "Convert YAML configurations, Kubernetes manifests, and Docker Compose files to JSON safely in your browser."
+  },
+  {
+    "id": "json_to_xml",
+    "slug": "json-to-xml",
+    "category": "document_data",
+    "status": "live",
+    "indexable": true,
+    "processingMode": "client",
+    "notes": "Set limits, engine, privacy label, formats and SEO metadata before enabling.",
+    "privacyLabel": "Runs in browser",
+    "title": "Convert JSON to XML Online",
+    "description": "Transform JSON data into well-formed XML documents with customizable root tags and browser privacy.",
+    "inputFormats": [
+      "json"
+    ],
+    "outputFormats": [
+      "xml"
+    ],
+    "limits": {
+      "maxFileBytes": 10485760,
+      "maxBatchCount": 1,
+      "allowedMimeTypes": [
+        "application/json",
+        "text/plain"
+      ],
+      "allowedExtensions": [
+        "json"
+      ]
+    },
+    "relatedTools": [
+      "xml-to-json",
+      "json-to-yaml",
+      "json-to-csv",
+      "yaml-to-json"
+    ],
+    "seoTitle": "Convert JSON to XML Online | FileNimble",
+    "seoDescription": "Transform JSON data into well-formed XML documents with customizable root tags and browser privacy."
+  },
+  {
+    "id": "xml_to_json",
+    "slug": "xml-to-json",
+    "category": "document_data",
+    "status": "live",
+    "indexable": true,
+    "processingMode": "client",
+    "notes": "Set limits, engine, privacy label, formats and SEO metadata before enabling.",
+    "privacyLabel": "Runs in browser",
+    "title": "Convert XML to JSON Online",
+    "description": "Convert XML documents to JSON with strict XXE protection and Billion Laughs defense in your browser.",
+    "inputFormats": [
+      "xml"
+    ],
+    "outputFormats": [
+      "json"
+    ],
+    "limits": {
+      "maxFileBytes": 10485760,
+      "maxBatchCount": 1,
+      "allowedMimeTypes": [
+        "application/xml",
+        "text/xml",
+        "text/plain"
+      ],
+      "allowedExtensions": [
+        "xml"
+      ]
+    },
+    "relatedTools": [
+      "json-to-xml",
+      "json-to-yaml",
+      "xml-to-csv",
+      "json-to-csv"
+    ],
+    "seoTitle": "Convert XML to JSON Online | FileNimble",
+    "seoDescription": "Convert XML documents to JSON with strict XXE protection and Billion Laughs defense in your browser."
+  },
+  {
+    "id": "xml_to_csv",
+    "slug": "xml-to-csv",
+    "category": "document_data",
+    "status": "planned",
+    "indexable": false,
+    "processingMode": "tbd",
+    "notes": "Set limits, engine, privacy label, formats and SEO metadata before enabling."
+  },
+  {
+    "id": "csv_to_tsv",
+    "slug": "csv-to-tsv",
+    "category": "document_data",
+    "status": "planned",
+    "indexable": false,
+    "processingMode": "tbd",
+    "notes": "Set limits, engine, privacy label, formats and SEO metadata before enabling."
+  },
+  {
+    "id": "tsv_to_csv",
+    "slug": "tsv-to-csv",
+    "category": "document_data",
+    "status": "planned",
+    "indexable": false,
+    "processingMode": "tbd",
+    "notes": "Set limits, engine, privacy label, formats and SEO metadata before enabling."
+  },
+  {
+    "id": "html_table_to_csv",
+    "slug": "html-table-to-csv",
+    "category": "document_data",
+    "status": "planned",
+    "indexable": false,
+    "processingMode": "tbd",
+    "notes": "Set limits, engine, privacy label, formats and SEO metadata before enabling."
+  },
+  {
+    "id": "epub_to_mobi",
+    "slug": "epub-to-mobi",
+    "category": "ebook",
+    "status": "planned",
+    "indexable": false,
+    "processingMode": "tbd",
+    "notes": "Set limits, engine, privacy label, formats and SEO metadata before enabling."
+  },
+  {
+    "id": "mobi_to_epub",
+    "slug": "mobi-to-epub",
+    "category": "ebook",
+    "status": "planned",
+    "indexable": false,
+    "processingMode": "tbd",
+    "notes": "Set limits, engine, privacy label, formats and SEO metadata before enabling."
+  },
+  {
+    "id": "azw3_to_epub",
+    "slug": "azw3-to-epub",
+    "category": "ebook",
+    "status": "planned",
+    "indexable": false,
+    "processingMode": "tbd",
+    "notes": "Set limits, engine, privacy label, formats and SEO metadata before enabling."
+  },
+  {
+    "id": "azw3_to_pdf",
+    "slug": "azw3-to-pdf",
+    "category": "ebook",
+    "status": "planned",
+    "indexable": false,
+    "processingMode": "tbd",
+    "notes": "Set limits, engine, privacy label, formats and SEO metadata before enabling."
+  },
+  {
+    "id": "epub_to_text",
+    "slug": "epub-to-text",
+    "category": "ebook",
+    "status": "planned",
+    "indexable": false,
+    "processingMode": "tbd",
+    "notes": "Set limits, engine, privacy label, formats and SEO metadata before enabling."
+  },
+  {
+    "id": "mp3_to_wav",
+    "slug": "mp3-to-wav",
+    "category": "audio",
+    "status": "planned",
+    "indexable": false,
+    "processingMode": "tbd",
+    "notes": "Set limits, engine, privacy label, formats and SEO metadata before enabling."
+  },
+  {
+    "id": "wav_to_mp3",
+    "slug": "wav-to-mp3",
+    "category": "audio",
+    "status": "planned",
+    "indexable": false,
+    "processingMode": "tbd",
+    "notes": "Set limits, engine, privacy label, formats and SEO metadata before enabling."
+  },
+  {
+    "id": "mp3_to_m4a",
+    "slug": "mp3-to-m4a",
+    "category": "audio",
+    "status": "planned",
+    "indexable": false,
+    "processingMode": "tbd",
+    "notes": "Set limits, engine, privacy label, formats and SEO metadata before enabling."
+  },
+  {
+    "id": "m4a_to_mp3",
+    "slug": "m4a-to-mp3",
+    "category": "audio",
+    "status": "planned",
+    "indexable": false,
+    "processingMode": "tbd",
+    "notes": "Set limits, engine, privacy label, formats and SEO metadata before enabling."
+  },
+  {
+    "id": "mp3_to_ogg",
+    "slug": "mp3-to-ogg",
+    "category": "audio",
+    "status": "planned",
+    "indexable": false,
+    "processingMode": "tbd",
+    "notes": "Set limits, engine, privacy label, formats and SEO metadata before enabling."
+  },
+  {
+    "id": "ogg_to_mp3",
+    "slug": "ogg-to-mp3",
+    "category": "audio",
+    "status": "planned",
+    "indexable": false,
+    "processingMode": "tbd",
+    "notes": "Set limits, engine, privacy label, formats and SEO metadata before enabling."
+  },
+  {
+    "id": "flac_to_mp3",
+    "slug": "flac-to-mp3",
+    "category": "audio",
+    "status": "planned",
+    "indexable": false,
+    "processingMode": "tbd",
+    "notes": "Set limits, engine, privacy label, formats and SEO metadata before enabling."
+  },
+  {
+    "id": "mp3_to_flac",
+    "slug": "mp3-to-flac",
+    "category": "audio",
+    "status": "planned",
+    "indexable": false,
+    "processingMode": "tbd",
+    "notes": "Set limits, engine, privacy label, formats and SEO metadata before enabling."
+  },
+  {
+    "id": "wav_to_flac",
+    "slug": "wav-to-flac",
+    "category": "audio",
+    "status": "live",
+    "indexable": true,
+    "processingMode": "server",
+    "notes": "Planned; not enabled for public conversion.",
+    "title": "Convert WAV to FLAC",
+    "description": "Encode supported 16-bit PCM WAV audio as FLAC without changing the decoded samples, sample rate or channel count.",
+    "seoTitle": "Convert WAV to FLAC | FileNimble",
+    "seoDescription": "Encode supported 16-bit PCM WAV audio as FLAC without changing the decoded samples, sample rate or channel count.",
+    "privacyLabel": "Secure server processing",
+    "inputFormats": [
+      "wav"
+    ],
+    "outputFormats": [
+      "flac"
+    ],
+    "limits": {
+      "maxFileBytes": 26214400,
+      "maxBatchCount": 1,
+      "allowedExtensions": [
+        "wav"
+      ]
+    },
+    "relatedTools": [
+      "flac-to-wav"
+    ]
+  },
+  {
+    "id": "flac_to_wav",
+    "slug": "flac-to-wav",
+    "category": "audio",
+    "status": "live",
+    "indexable": true,
+    "processingMode": "server",
+    "notes": "Planned; not enabled for public conversion.",
+    "title": "Convert FLAC to WAV",
+    "description": "Decode supported 16-bit FLAC audio into PCM WAV for audio workflows that need an uncompressed file.",
+    "seoTitle": "Convert FLAC to WAV | FileNimble",
+    "seoDescription": "Decode supported 16-bit FLAC audio into PCM WAV for audio workflows that need an uncompressed file.",
+    "privacyLabel": "Secure server processing",
+    "inputFormats": [
+      "flac"
+    ],
+    "outputFormats": [
+      "wav"
+    ],
+    "limits": {
+      "maxFileBytes": 26214400,
+      "maxBatchCount": 1,
+      "allowedExtensions": [
+        "flac"
+      ]
+    },
+    "relatedTools": [
+      "wav-to-flac"
+    ]
+  },
+  {
+    "id": "audio_trim",
+    "slug": "audio-trim",
+    "category": "audio",
+    "status": "planned",
+    "indexable": false,
+    "processingMode": "tbd",
+    "notes": "Set limits, engine, privacy label, formats and SEO metadata before enabling."
+  },
+  {
+    "id": "audio_bitrate",
+    "slug": "audio-bitrate",
+    "category": "audio",
+    "status": "planned",
+    "indexable": false,
+    "processingMode": "tbd",
+    "notes": "Set limits, engine, privacy label, formats and SEO metadata before enabling."
+  },
+  {
+    "id": "mov_to_mp4",
+    "slug": "mov-to-mp4",
+    "category": "video",
+    "status": "planned",
+    "indexable": false,
+    "processingMode": "tbd",
+    "notes": "Set limits, engine, privacy label, formats and SEO metadata before enabling."
+  },
+  {
+    "id": "webm_to_mp4",
+    "slug": "webm-to-mp4",
+    "category": "video",
+    "status": "planned",
+    "indexable": false,
+    "processingMode": "tbd",
+    "notes": "Set limits, engine, privacy label, formats and SEO metadata before enabling."
+  },
+  {
+    "id": "mp4_to_webm",
+    "slug": "mp4-to-webm",
+    "category": "video",
+    "status": "planned",
+    "indexable": false,
+    "processingMode": "tbd",
+    "notes": "Set limits, engine, privacy label, formats and SEO metadata before enabling."
+  },
+  {
+    "id": "avi_to_mp4",
+    "slug": "avi-to-mp4",
+    "category": "video",
+    "status": "planned",
+    "indexable": false,
+    "processingMode": "tbd",
+    "notes": "Set limits, engine, privacy label, formats and SEO metadata before enabling."
+  },
+  {
+    "id": "mkv_to_mp4",
+    "slug": "mkv-to-mp4",
+    "category": "video",
+    "status": "planned",
+    "indexable": false,
+    "processingMode": "tbd",
+    "notes": "Set limits, engine, privacy label, formats and SEO metadata before enabling."
+  },
+  {
+    "id": "m4v_to_mp4",
+    "slug": "m4v-to-mp4",
+    "category": "video",
+    "status": "planned",
+    "indexable": false,
+    "processingMode": "tbd",
+    "notes": "Set limits, engine, privacy label, formats and SEO metadata before enabling."
+  },
+  {
+    "id": "mp4_to_gif",
+    "slug": "mp4-to-gif",
+    "category": "video",
+    "status": "planned",
+    "indexable": false,
+    "processingMode": "tbd",
+    "notes": "Set limits, engine, privacy label, formats and SEO metadata before enabling."
+  },
+  {
+    "id": "video_to_mp3",
+    "slug": "video-to-mp3",
+    "category": "video",
+    "status": "planned",
+    "indexable": false,
+    "processingMode": "tbd",
+    "notes": "Set limits, engine, privacy label, formats and SEO metadata before enabling."
+  },
+  {
+    "id": "video_to_wav",
+    "slug": "video-to-wav",
+    "category": "video",
+    "status": "planned",
+    "indexable": false,
+    "processingMode": "server",
+    "notes": "Planned; not enabled for public conversion.",
+    "title": "Extract WAV Audio from WebM",
+    "description": "Decode the Vorbis soundtrack from a supported VP8 WebM clip into 16-bit PCM WAV using temporary server processing.",
+    "seoTitle": "Extract WAV Audio from WebM | FileNimble",
+    "seoDescription": "Decode the Vorbis soundtrack from a supported VP8 WebM clip into 16-bit PCM WAV using temporary server processing.",
+    "privacyLabel": "Secure server processing",
+    "inputFormats": [
+      "webm"
+    ],
+    "outputFormats": [
+      "wav"
+    ],
+    "limits": {
+      "maxFileBytes": 26214400,
+      "maxBatchCount": 1,
+      "allowedExtensions": [
+        "webm"
+      ]
+    },
+    "relatedTools": [
+      "wav-to-flac",
+      "flac-to-wav"
+    ]
+  },
+  {
+    "id": "video_to_frames",
+    "slug": "video-to-frames",
+    "category": "video",
+    "status": "planned",
+    "indexable": false,
+    "processingMode": "server",
+    "notes": "Planned; not enabled for public conversion.",
+    "title": "Extract PNG Frames from WebM",
+    "description": "Sample a supported VP8 WebM video at whole-second timestamps and download up to ten PNG frames in an ordered ZIP.",
+    "seoTitle": "Extract PNG Frames from WebM | FileNimble",
+    "seoDescription": "Sample a supported VP8 WebM video at whole-second timestamps and download up to ten PNG frames in an ordered ZIP.",
+    "privacyLabel": "Secure server processing",
+    "inputFormats": [
+      "webm"
+    ],
+    "outputFormats": [
+      "zip"
+    ],
+    "limits": {
+      "maxFileBytes": 26214400,
+      "maxBatchCount": 1,
+      "allowedExtensions": [
+        "webm"
+      ]
+    },
+    "relatedTools": [
+      "tar-to-zip",
+      "zip-to-tar"
+    ]
+  },
+  {
+    "id": "video_compress",
+    "slug": "video-compress",
+    "category": "video",
+    "status": "planned",
+    "indexable": false,
+    "processingMode": "tbd",
+    "notes": "Set limits, engine, privacy label, formats and SEO metadata before enabling."
+  },
+  {
+    "id": "video_resize",
+    "slug": "video-resize",
+    "category": "video",
+    "status": "planned",
+    "indexable": false,
+    "processingMode": "tbd",
+    "notes": "Set limits, engine, privacy label, formats and SEO metadata before enabling."
+  },
+  {
+    "id": "video_trim",
+    "slug": "video-trim",
+    "category": "video",
+    "status": "planned",
+    "indexable": false,
+    "processingMode": "tbd",
+    "notes": "Set limits, engine, privacy label, formats and SEO metadata before enabling."
+  },
+  {
+    "id": "video_rotate",
+    "slug": "video-rotate",
+    "category": "video",
+    "status": "planned",
+    "indexable": false,
+    "processingMode": "tbd",
+    "notes": "Set limits, engine, privacy label, formats and SEO metadata before enabling."
+  },
+  {
+    "id": "video_mute",
+    "slug": "video-mute",
+    "category": "video",
+    "status": "planned",
+    "indexable": false,
+    "processingMode": "server",
+    "notes": "Planned; not enabled for public conversion.",
+    "title": "Mute a WebM Video",
+    "description": "Remove the Vorbis audio track from a supported VP8 WebM video while copying the video stream without re-encoding.",
+    "seoTitle": "Mute a WebM Video | FileNimble",
+    "seoDescription": "Remove the Vorbis audio track from a supported VP8 WebM video while copying the video stream without re-encoding.",
+    "privacyLabel": "Secure server processing",
+    "inputFormats": [
+      "webm"
+    ],
+    "outputFormats": [
+      "webm"
+    ],
+    "limits": {
+      "maxFileBytes": 26214400,
+      "maxBatchCount": 1,
+      "allowedExtensions": [
+        "webm"
+      ]
+    },
+    "relatedTools": []
+  },
+  {
+    "id": "rar_to_zip",
+    "slug": "rar-to-zip",
+    "category": "archive",
+    "status": "planned",
+    "indexable": false,
+    "processingMode": "tbd",
+    "notes": "Set limits, engine, privacy label, formats and SEO metadata before enabling."
+  },
+  {
+    "id": "7z_to_zip",
+    "slug": "7z-to-zip",
+    "category": "archive",
+    "status": "planned",
+    "indexable": false,
+    "processingMode": "tbd",
+    "notes": "Set limits, engine, privacy label, formats and SEO metadata before enabling."
+  },
+  {
+    "id": "tar_to_zip",
+    "slug": "tar-to-zip",
+    "category": "archive",
+    "status": "live",
+    "indexable": true,
+    "processingMode": "server",
+    "notes": "Planned; not enabled for public conversion.",
+    "title": "Convert TAR to ZIP",
+    "description": "Convert an ordinary uncompressed TAR archive to a validated ZIP, preserving accepted file contents and relative paths.",
+    "seoTitle": "Convert TAR to ZIP | FileNimble",
+    "seoDescription": "Convert an ordinary uncompressed TAR archive to a validated ZIP, preserving accepted file contents and relative paths.",
+    "privacyLabel": "Secure server processing",
+    "inputFormats": [
+      "tar"
+    ],
+    "outputFormats": [
+      "zip"
+    ],
+    "limits": {
+      "maxFileBytes": 10485760,
+      "maxBatchCount": 1,
+      "allowedExtensions": [
+        "tar"
+      ]
+    },
+    "relatedTools": [
+      "zip-to-tar"
+    ]
+  },
+  {
+    "id": "zip_to_tar",
+    "slug": "zip-to-tar",
+    "category": "archive",
+    "status": "live",
+    "indexable": true,
+    "processingMode": "server",
+    "notes": "Planned; not enabled for public conversion.",
+    "title": "Convert ZIP to TAR",
+    "description": "Convert a supported ZIP archive into an uncompressed TAR while validating member paths and expanded file sizes.",
+    "seoTitle": "Convert ZIP to TAR | FileNimble",
+    "seoDescription": "Convert a supported ZIP archive into an uncompressed TAR while validating member paths and expanded file sizes.",
+    "privacyLabel": "Secure server processing",
+    "inputFormats": [
+      "zip"
+    ],
+    "outputFormats": [
+      "tar"
+    ],
+    "limits": {
+      "maxFileBytes": 10485760,
+      "maxBatchCount": 1,
+      "allowedExtensions": [
+        "zip"
+      ]
+    },
+    "relatedTools": [
+      "tar-to-zip"
+    ]
+  },
+  {
+    "id": "create_zip",
+    "slug": "create-zip",
+    "category": "archive",
+    "status": "planned",
+    "indexable": false,
+    "processingMode": "tbd",
+    "notes": "Set limits, engine, privacy label, formats and SEO metadata before enabling."
+  },
+  {
+    "id": "extract_archive",
+    "slug": "extract-archive",
+    "category": "archive",
+    "status": "planned",
+    "indexable": false,
+    "processingMode": "tbd",
+    "notes": "Set limits, engine, privacy label, formats and SEO metadata before enabling."
+  },
+  {
+    "id": "ai_document_summarizer",
+    "slug": "ai-document-summarizer",
+    "title": "AI Document Summarizer",
+    "description": "Summarize pasted text or selectable PDF text with an optional external AI provider.",
+    "category": "ai",
+    "status": "planned",
+    "indexable": false,
+    "processingMode": "hybrid",
+    "inputFormats": ["txt", "pdf"],
+    "outputFormats": ["txt"],
+    "limits": { "maxFileBytes": 10485760, "maxBatchCount": 1, "allowedMimeTypes": ["application/pdf"], "allowedExtensions": ["pdf"] },
+    "privacyLabel": "PDF text is extracted locally; submitted text is sent to FileNimble and the configured external AI provider only after consent.",
+    "notes": "AI is disabled until provider credentials/configuration and quality, privacy, security and cost gates pass."
+  },
+  {
+    "id": "translate_document",
+    "slug": "translate-document",
+    "title": "Translate Document Text",
+    "description": "Translate pasted text or selectable PDF text with an optional external AI provider.",
+    "category": "ai",
+    "status": "planned",
+    "indexable": false,
+    "processingMode": "hybrid",
+    "inputFormats": ["txt", "pdf"],
+    "outputFormats": ["txt"],
+    "limits": { "maxFileBytes": 10485760, "maxBatchCount": 1, "allowedMimeTypes": ["application/pdf"], "allowedExtensions": ["pdf"] },
+    "privacyLabel": "PDF text is extracted locally; submitted text is sent to FileNimble and the configured external AI provider only after consent.",
+    "notes": "AI is disabled until provider credentials/configuration and translation-quality, privacy, security and cost gates pass."
+  },
+  {
+    "id": "pdf_to_structured_markdown",
+    "slug": "pdf-to-structured-markdown",
+    "title": "Convert PDF Text to Structured Markdown",
+    "description": "Organize selectable PDF text as structured Markdown with an optional external AI provider.",
+    "category": "ai",
+    "status": "planned",
+    "indexable": false,
+    "processingMode": "hybrid",
+    "inputFormats": ["pdf"],
+    "outputFormats": ["md"],
+    "limits": { "maxFileBytes": 10485760, "maxBatchCount": 1, "allowedMimeTypes": ["application/pdf"], "allowedExtensions": ["pdf"] },
+    "privacyLabel": "PDF text is extracted locally; submitted text is sent to FileNimble and the configured external AI provider only after consent.",
+    "notes": "AI is disabled until provider credentials/configuration and structure-quality, privacy, security and cost gates pass."
+  },
+  {
+    "id": "image_to_text",
+    "slug": "image-to-text",
+    "category": "ocr",
+    "status": "live",
+    "indexable": true,
+    "processingMode": "server",
+    "title": "Extract English Text from an Image",
+    "description": "Recognize printed English text in a PNG or JPEG with temporary server-side Tesseract OCR.",
+    "inputFormats": [
+      "png",
+      "jpg",
+      "jpeg"
+    ],
+    "outputFormats": [
+      "txt"
+    ],
+    "limits": {
+      "maxFileBytes": 10485760,
+      "maxBatchCount": 1,
+      "allowedExtensions": [
+        "png",
+        "jpg",
+        "jpeg"
+      ]
+    },
+    "privacyLabel": "Temporary server processing",
+    "seoTitle": "Extract English Text from an Image | FileNimble",
+    "seoDescription": "Recognize printed English text in a PNG or JPEG with temporary server-side Tesseract OCR.",
+    "notes": "FN-120 qualified: English PNG/JPEG OCR; server-side, 10 MiB/4 MP. Quality, security, output and license gates passed.",
+    "relatedTools": [
+      "pdf-to-text",
+      "ocr-pdf"
+    ]
+  }
+]

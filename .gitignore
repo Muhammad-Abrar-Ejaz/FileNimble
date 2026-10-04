@@ -1,0 +1,62 @@
+.env
+.env.*
+!.env.example
+
+# Local credentials and cryptographic material
+*.pem
+*.key
+*.p12
+*.pfx
+
+node_modules/
+.next/
+dist/
+coverage/
+playwright-report/
+test-results/
+*.log
+.DS_Store
+
+# Local uploads, downloads, generated results, and temporary engine sources
+/tmp/
+/temp/
+/uploads/
+/downloads/
+/outputs/
+/converter-outputs/
+/ocr-outputs/
+/generated-outputs/
+
+# Optional bind-mounted local service data. Compose currently uses named volumes.
+/postgres-data/
+/redis-data/
+/storage-data/
+/garage-data/
+/object-storage/
+/docker-data/
+
+# Browser/test artifacts and Archify visual-review sidecars
+/test-artifacts/
+/screenshots/
+/videos/
+/traces/
+docs/*.visual-check.*.png
+docs/*.visual-check.html
+docs/*.visual-check.json
+
+# Private project notes and local-only editor/agent guidance
+/private_docs/
+/.cursor/
+/AGENTS.md
+/CLAUDE.md
+/MANIFEST.json
+
+*.tsbuildinfo
+next-env.d.ts
+FileNimble_Project_Pack/
+public/pdfjs/
+__pycache__/
+.pytest_cache/
+.ruff_cache/
+.venv/
+*.pyc

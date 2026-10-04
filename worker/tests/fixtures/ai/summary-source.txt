@@ -1,0 +1,4 @@
+Synthetic release note for a quality check.
+The Northstar team completed the accessibility review on 2025-04-12.
+Two keyboard issues remain, and the planned follow-up is 2025-04-19.
+No customer files or real people are described in this fixture.
