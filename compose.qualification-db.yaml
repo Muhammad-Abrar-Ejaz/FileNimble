@@ -1,0 +1,57 @@
+# Disposable database-only qualification. Never combine with production Compose.
+name: filenimble-qualification-db
+x-test: &test
+  image: filenimble-backend:oracle
+  platform: linux/arm64
+  user: "10001:10001"
+  init: true
+  read_only: true
+  cap_drop: [ALL]
+  security_opt: [no-new-privileges:true]
+  tmpfs: ["/tmp:size=32m,noexec,nosuid,nodev"]
+  mem_limit: 256m
+  cpus: 0.5
+  pids_limit: 64
+  restart: "no"
+  networks: [database]
+  environment:
+    APP_ENV: test
+    DATABASE_URL: postgresql://filenimble:${POSTGRES_PASSWORD:?Use ignored development credentials}@postgres/filenimble
+    AI_ENABLED: "false"
+services:
+  postgres:
+    image: postgres:17-alpine@sha256:b0f9560a2de083e2cc7382e75f808c7381a32852a7ec49117deedb300e552b24
+    platform: linux/arm64
+    user: postgres
+    read_only: true
+    cap_drop: [ALL]
+    security_opt: [no-new-privileges:true]
+    environment:
+      POSTGRES_USER: filenimble
+      POSTGRES_DB: filenimble
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?Use ignored development credentials}
+    volumes: [qualification-db-data:/var/lib/postgresql/data]
+    tmpfs: ["/tmp:size=16m,noexec,nosuid,nodev", "/var/run/postgresql:size=4m,uid=70,gid=70"]
+    networks: [database]
+    mem_limit: 256m
+    cpus: 0.5
+    pids_limit: 64
+    restart: "no"
+    healthcheck:
+      test: [CMD, pg_isready, -U, filenimble]
+      interval: 2s
+      retries: 30
+  migrate:
+    <<: *test
+    command: [python, -m, app.db]
+    depends_on:
+      postgres: {condition: service_healthy}
+  tests:
+    <<: *test
+    command: [pytest, -q, tests/test_ai.py::test_ai_cost_rate_limit_supports_minute_and_daily_windows]
+    depends_on:
+      migrate: {condition: service_completed_successfully}
+networks:
+  database: {internal: true}
+volumes:
+  qualification-db-data:
