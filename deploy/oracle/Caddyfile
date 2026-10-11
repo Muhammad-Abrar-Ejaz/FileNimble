@@ -1,0 +1,58 @@
+{
+	email {$TLS_EMAIL}
+	admin off
+	# No access log: request paths include short-lived bearer transfer grants.
+	log default {
+		format filter {
+			wrap json
+			fields {
+				request>uri delete
+				request>headers delete
+			}
+		}
+	}
+	servers {
+		timeouts {
+			read_header 10s
+			read_body 65s
+			write 120s
+			idle 60s
+		}
+		max_header_size 32KiB
+	}
+}
+
+{$ORACLE_API_HOST} {
+	header {
+		Strict-Transport-Security "max-age=31536000"
+		X-Content-Type-Options nosniff
+		Referrer-Policy no-referrer
+		-Server
+	}
+	handle /transfers/* {
+		request_body {
+			max_size 25MiB
+		}
+		reverse_proxy transfers:8002 {
+			transport http {
+				dial_timeout 5s
+				response_header_timeout 65s
+			}
+		}
+	}
+	@metadata path /api/v1/* /health
+	handle @metadata {
+		request_body {
+			max_size 64KiB
+		}
+		reverse_proxy api:8000 {
+			transport http {
+				dial_timeout 5s
+				response_header_timeout 30s
+			}
+		}
+	}
+	handle {
+		respond 404
+	}
+}

@@ -4,6 +4,7 @@ Only fixed images and adapters are accepted. No host files enter a sandbox.
 """
 
 import json
+import os
 import socket
 import struct
 import tempfile
@@ -17,11 +18,13 @@ from fastapi import APIRouter, HTTPException, Request
 from fastapi.responses import FileResponse
 
 from phase11_policy import TOOLS as PHASE11_TOOLS, OUTPUT_LIMIT, ARCHIVE_INPUT_LIMIT
+from app.capabilities import get_capability
 
 router = APIRouter()
 runs = {}
 lock = threading.Lock()
 slots = threading.BoundedSemaphore(1)
+NAMESPACE = os.getenv("RUNNER_NAMESPACE", "local-phase6")
 MAX_INPUT = 25 * 1024 * 1024
 MAX_OUTPUT = 100 * 1024 * 1024
 TOOLS = {"word-to-pdf", "powerpoint-to-pdf", "excel-to-pdf"}
@@ -123,7 +126,7 @@ def execute(record):
                 else "rw,noexec,nosuid,nodev,size=256m,uid=10001,gid=10001,mode=700",
                 "/tmp": "rw,noexec,nosuid,nodev,size=32m,uid=10001,gid=10001,mode=700",  # noqa: S108 -- private per-job tmpfs.
             },
-            labels={"filenimble.sandbox": "local-phase6", "filenimble.started": str(time.time())},
+            labels={"filenimble.sandbox": NAMESPACE, "filenimble.started": str(time.time())},
             log_config=docker.types.LogConfig(type="none"),
         )
         container.start()
@@ -225,6 +228,13 @@ def sweep():
 
 @router.post("/native/{run_id}/{tool}", status_code=202)
 async def start(run_id: UUID, tool: str, request: Request):
+    if os.getenv("APP_ENV") == "production":
+        try:
+            get_capability(tool)
+        except ValueError:
+            raise HTTPException(404, "Unsupported capability") from None
+        if os.getenv("PRODUCTION_CONVERSIONS_ENABLED", "false") != "true":
+            raise HTTPException(503, "Deployment verification is pending")
     if tool not in TOOLS:
         raise HTTPException(404, "Unsupported capability")
     options = {}

@@ -2,6 +2,7 @@
 
 import json
 import os
+import re
 from dataclasses import dataclass
 from typing import Literal, Protocol
 
@@ -70,19 +71,24 @@ def provider_from_environment() -> Provider | None:
     """Return only the fixed-endpoint provider when explicitly configured."""
     if os.getenv("AI_ENABLED", "false").lower() != "true":
         return None
-    if os.getenv("AI_PROVIDER", "").lower() != "openai":
+    provider_name = os.getenv("AI_PROVIDER", "").lower()
+    if provider_name not in {"openai", "gemini"}:
         return None
-    key = os.getenv("AI_API_KEY", "")
+    key = os.getenv("GEMINI_API_KEY" if provider_name == "gemini" else "AI_API_KEY", "")
     model = os.getenv("AI_MODEL", "")
     if (
         not key
         or len(key) > 512
-        or any(character in key for character in "\r\n")
+        or any(not 32 <= ord(character) <= 126 for character in key)
         or not model
         or len(model) > 128
         or not all(character.isalnum() or character in "._:-" for character in model)
     ):
         return None
+    if provider_name == "gemini":
+        if not re.fullmatch(r"[A-Za-z0-9][A-Za-z0-9._-]{0,127}", model):
+            return None
+        return GeminiProvider(key=key, model=model)
     return OpenAIProvider(key=key, model=model)
 
 
@@ -99,7 +105,7 @@ class OpenAIProvider:
     async def generate(self, system: str, user: str) -> AIResult:
         try:
             async with httpx.AsyncClient(
-                timeout=httpx.Timeout(TIMEOUT_SECONDS), transport=self._transport
+                timeout=httpx.Timeout(TIMEOUT_SECONDS), transport=self._transport, trust_env=False
             ) as client:
                 async with client.stream(
                     "POST",
@@ -152,8 +158,81 @@ class OpenAIProvider:
             fail("AI_INVALID_RESPONSE", "The AI service returned an unsupported response.", 502)
 
 
+class GeminiProvider:
+    """Fixed Google REST endpoint, header-only key and bounded text-only response."""
+
+    name = "gemini"
+
+    def __init__(self, key: str, model: str, transport: httpx.AsyncBaseTransport | None = None):
+        if not re.fullmatch(r"[A-Za-z0-9][A-Za-z0-9._-]{0,127}", model):
+            raise ValueError("Invalid Gemini model identifier")
+        if not key or len(key) > 512 or any(not 32 <= ord(char) <= 126 for char in key):
+            raise ValueError("Invalid Gemini credential")
+        self._key = key
+        self._model = model
+        self._transport = transport
+
+    async def generate(self, system: str, user: str) -> AIResult:
+        try:
+            async with httpx.AsyncClient(
+                timeout=httpx.Timeout(TIMEOUT_SECONDS), transport=self._transport, trust_env=False
+            ) as client:
+                async with client.stream(
+                    "POST",
+                    "https://generativelanguage.googleapis.com/v1beta/models/"
+                    + self._model
+                    + ":generateContent",
+                    headers={"x-goog-api-key": self._key},
+                    json={
+                        "systemInstruction": {"parts": [{"text": system}]},
+                        "contents": [{"role": "user", "parts": [{"text": user}]}],
+                        "generationConfig": {
+                            "maxOutputTokens": MAX_OUTPUT_TOKENS,
+                            "candidateCount": 1,
+                            "temperature": 0,
+                        },
+                    },
+                    follow_redirects=False,
+                ) as response:
+                    if response.status_code == 429:
+                        fail("RATE_LIMITED", "The AI service is busy. Please try again later.", 429)
+                    response.raise_for_status()
+                    body = bytearray()
+                    async for chunk in response.aiter_bytes():
+                        body.extend(chunk)
+                        if len(body) > MAX_PROVIDER_RESPONSE_BYTES:
+                            fail(
+                                "AI_INVALID_RESPONSE",
+                                "The AI service returned an oversized response.",
+                                502,
+                            )
+            payload = json.loads(body)
+            candidates = payload["candidates"]
+            if len(candidates) != 1 or candidates[0]["finishReason"] != "STOP":
+                raise ValueError("Incomplete or blocked response")
+            parts = candidates[0]["content"]["parts"]
+            if not parts or any(not isinstance(part.get("text"), str) for part in parts):
+                raise ValueError("Non-text response")
+            value = "\n".join(part["text"] for part in parts if not part.get("thought")).strip()
+            if not value or len(value) > MAX_OUTPUT_CHARS or "\x00" in value:
+                raise ValueError("Invalid provider output")
+            usage = payload.get("usageMetadata") or {}
+            return AIResult(
+                value,
+                self.name,
+                _safe_token_count(usage.get("promptTokenCount")),
+                _safe_token_count(usage.get("candidatesTokenCount")),
+            )
+        except httpx.TimeoutException:
+            fail("AI_TIMEOUT", "AI processing took too long. Try less text.", 504)
+        except httpx.HTTPError:
+            fail("AI_UNAVAILABLE", "The AI service could not process this request.", 502)
+        except (KeyError, IndexError, TypeError, ValueError, AttributeError):
+            fail("AI_INVALID_RESPONSE", "The AI service returned an unsupported response.", 502)
+
+
 def _safe_token_count(value) -> int | None:
-    return value if isinstance(value, int) and 0 <= value <= 1_000_000 else None
+    return value if type(value) is int and 0 <= value <= 1_000_000 else None
 
 
 def is_configured() -> bool:

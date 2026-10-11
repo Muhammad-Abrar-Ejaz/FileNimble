@@ -25,6 +25,10 @@ from app.security import digest, fail, issue_session, read_session, require_inte
 @asynccontextmanager
 async def lifespan(app):
     settings.validate()
+    if settings.environment == "production":
+        from app.transfer_tokens import signing_secret
+
+        signing_secret()
     yield
 
 
@@ -192,6 +196,8 @@ async def ai_process(body: AIRequest, request: Request):
 
 @app.post("/api/v1/jobs", response_model=Created, status_code=201)
 def create(body: CreateJob, request: Request):
+    if settings.environment == "production" and not settings.production_conversions:
+        fail("SERVICE_UNAVAILABLE", "Server conversions are awaiting deployment verification.", 503)
     key = request.headers.get("idempotency-key", "")
     if not re.fullmatch(r"[a-zA-Z0-9_-]{8,100}", key):
         fail("INVALID_REQUEST", "Provide a valid Idempotency-Key header.", 422)

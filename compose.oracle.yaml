@@ -1,0 +1,247 @@
+# Standalone production configuration. Never combine with development/test overrides.
+name: filenimble-oracle
+x-runtime: &runtime
+  platform: linux/arm64
+  init: true
+  restart: unless-stopped
+  read_only: true
+  cap_drop: [ALL]
+  security_opt: [no-new-privileges:true]
+  tmpfs: ["/tmp:size=32m,noexec,nosuid,nodev"]
+  mem_limit: 256m
+  cpus: 0.5
+  pids_limit: 64
+  logging: &logging
+    driver: json-file
+    options: {max-size: "10m", max-file: "3"}
+x-storage-env: &storage-env
+  APP_ENV: production
+  S3_ENDPOINT: http://storage:3900
+  S3_PUBLIC_ENDPOINT: http://storage:3900
+  S3_REGION: garage
+  S3_BUCKET: filenimble
+  S3_ACCESS_KEY_ID: ${S3_ACCESS_KEY_ID:?Generate Oracle configuration}
+  S3_SECRET_ACCESS_KEY: ${S3_SECRET_ACCESS_KEY:?Generate Oracle configuration}
+  SITE_ORIGIN: https://file-nimble.vercel.app
+  TRANSFER_PUBLIC_URL: https://${ORACLE_API_HOST:?Configure public DNS}
+x-app-env: &app-env
+  <<: *storage-env
+  DATABASE_URL: postgresql://filenimble:${POSTGRES_PASSWORD:?Generate Oracle configuration}@postgres/filenimble
+  REDIS_URL: redis://:${REDIS_PASSWORD:?Generate Oracle configuration}@redis:6379/0
+  JOB_TOKEN_SECRET: ${JOB_TOKEN_SECRET:?Generate Oracle configuration}
+  CONVERSION_API_SECRET: ${CONVERSION_API_SECRET:?Generate Oracle configuration}
+  RUNNER_SECRET: ${RUNNER_SECRET:?Generate Oracle configuration}
+  RUNNER_URL: http://supervisor:8001
+  FILE_RETENTION_SECONDS: "3600"
+  SIGNED_URL_TTL_SECONDS: "300"
+  ENABLE_TEST_CAPABILITY: "0"
+  ENABLE_NATIVE_QUALIFICATION: "0"
+  PRODUCTION_CONVERSIONS_ENABLED: ${PRODUCTION_CONVERSIONS_ENABLED:-false}
+x-backend: &backend
+  <<: *runtime
+  image: filenimble-backend:oracle
+  environment: *app-env
+  networks: [database, queue, objects]
+  depends_on:
+    migrate: {condition: service_completed_successfully}
+    storage-init: {condition: service_completed_successfully}
+    redis: {condition: service_healthy}
+x-engine: &engine
+  platform: linux/arm64
+  profiles: [build]
+  # These services are build targets, never long-running/public converters.
+  network_mode: none
+  restart: "no"
+services:
+  edge:
+    <<: *runtime
+    image: caddy:2.10.2-alpine@sha256:4c6e91c6ed0e2fa03efd5b44747b625fec79bc9cd06ac5235a779726618e530d
+    # Binding privileged HTTP/TLS ports is the only capability on this service.
+    cap_add: [NET_BIND_SERVICE]
+    environment:
+      ORACLE_API_HOST: ${ORACLE_API_HOST:?Configure public DNS}
+      TLS_EMAIL: ${TLS_EMAIL:?Configure ACME contact}
+    ports: ["80:80", "443:443"]
+    volumes:
+      - ./deploy/oracle/Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy-data:/data
+      - caddy-config:/config
+    networks: [edge]
+    depends_on:
+      api: {condition: service_healthy}
+      transfers: {condition: service_healthy}
+    mem_limit: 128m
+  postgres:
+    <<: *runtime
+    image: postgres:17-alpine@sha256:b0f9560a2de083e2cc7382e75f808c7381a32852a7ec49117deedb300e552b24
+    read_only: false
+    user: postgres
+    environment:
+      POSTGRES_USER: filenimble
+      POSTGRES_DB: filenimble
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?Generate Oracle configuration}
+    command: [postgres, -c, max_connections=20, -c, shared_buffers=128MB, -c, work_mem=4MB]
+    volumes: [postgres-data:/var/lib/postgresql/data]
+    tmpfs: ["/tmp:size=16m,noexec,nosuid,nodev", "/var/run/postgresql:size=4m,uid=70,gid=70"]
+    networks: [database]
+    healthcheck:
+      test: [CMD, pg_isready, -U, filenimble]
+      interval: 5s
+      retries: 30
+    mem_limit: 512m
+  redis:
+    <<: *runtime
+    image: redis:7.4-alpine@sha256:858f009f9709ce576febc734aa78b8f6d624b82571f9ddb6bda4377c833b3499
+    user: redis
+    environment:
+      REDIS_PASSWORD: ${REDIS_PASSWORD:?Generate Oracle configuration}
+    command: [sh, -c, 'exec redis-server --appendonly yes --maxmemory 64mb --maxmemory-policy noeviction --requirepass "$${REDIS_PASSWORD}"']
+    volumes: [redis-data:/data]
+    networks: [queue]
+    healthcheck:
+      test: [CMD-SHELL, 'REDISCLI_AUTH="$${REDIS_PASSWORD}" redis-cli ping']
+      interval: 5s
+      retries: 30
+    mem_limit: 128m
+  storage:
+    <<: *runtime
+    image: dxflrs/garage:v2.3.0@sha256:866bd13ed2038ba7e7190e840482bc27234c4afaf77be8cfa439ae088c1e4690
+    command: [/garage, server, --single-node, --default-bucket]
+    environment:
+      RUST_LOG: warn
+      GARAGE_DEFAULT_ACCESS_KEY: ${S3_ACCESS_KEY_ID:?Generate Oracle configuration}
+      GARAGE_DEFAULT_SECRET_KEY: ${S3_SECRET_ACCESS_KEY:?Generate Oracle configuration}
+      GARAGE_DEFAULT_BUCKET: filenimble
+    volumes:
+      - ./tmp/oracle/garage.toml:/etc/garage.toml:ro
+      - storage-data:/var/lib/garage
+    networks: [objects]
+    mem_limit: 512m
+  migrate:
+    <<: *backend
+    restart: "no"
+    command: [python, -m, app.db]
+    depends_on:
+      postgres: {condition: service_healthy}
+    networks: [database]
+  storage-init:
+    <<: *backend
+    restart: "no"
+    command: [python, -m, app.bootstrap]
+    depends_on:
+      storage: {condition: service_started}
+    networks: [objects]
+  api:
+    <<: *backend
+    environment:
+      <<: *app-env
+      TRANSFER_TOKEN_SECRET: ${TRANSFER_TOKEN_SECRET:?Generate Oracle configuration}
+      # Deliberately disabled, irrespective of operator .env values.
+      AI_ENABLED: "false"
+      AI_PROVIDER: gemini
+      AI_MODEL: ""
+      GEMINI_API_KEY: ""
+    networks: [edge, database, queue, objects]
+    mem_limit: 384m
+    healthcheck:
+      test: [CMD, python, -c, "import urllib.request; urllib.request.urlopen('http://localhost:8000/health')"]
+      interval: 5s
+      retries: 30
+  transfers:
+    <<: *runtime
+    image: filenimble-backend:oracle
+    environment:
+      <<: *storage-env
+      TRANSFER_TOKEN_SECRET: ${TRANSFER_TOKEN_SECRET:?Generate Oracle configuration}
+    command: [uvicorn, app.transfers:app, --host, 0.0.0.0, --port, "8002", --no-access-log]
+    networks: [edge, objects]
+    depends_on:
+      storage-init: {condition: service_completed_successfully}
+    healthcheck:
+      test: [CMD, python, -c, "import urllib.request; urllib.request.urlopen('http://localhost:8002/health')"]
+      interval: 5s
+      retries: 30
+  worker:
+    <<: *backend
+    command: [celery, -A, app.tasks, worker, --loglevel=WARNING, --concurrency=1, --hostname=oracle@%h]
+    networks: [database, queue, objects, control]
+    depends_on:
+      migrate: {condition: service_completed_successfully}
+      storage-init: {condition: service_completed_successfully}
+      redis: {condition: service_healthy}
+      supervisor: {condition: service_started}
+    mem_limit: 384m
+  lifecycle:
+    <<: *backend
+    command: [python, -m, app.lifecycle]
+  supervisor:
+    <<: *runtime
+    image: filenimble-backend:oracle
+    user: "0:0"
+    volumes: [/var/run/docker.sock:/var/run/docker.sock]
+    environment:
+      APP_ENV: production
+      RUNNER_SECRET: ${RUNNER_SECRET:?Generate Oracle configuration}
+      RUNNER_NAMESPACE: oracle-native
+      PRODUCTION_CONVERSIONS_ENABLED: ${PRODUCTION_CONVERSIONS_ENABLED:-false}
+    command: [uvicorn, app.supervisor:app, --host, 0.0.0.0, --port, "8001", --no-access-log]
+    networks: [control]
+    tmpfs: ["/tmp:size=160m,noexec,nosuid,nodev"]
+  backend-image:
+    <<: *engine
+    image: filenimble-backend:oracle
+    build: {context: ., dockerfile: worker/Dockerfile}
+  sandbox-image:
+    <<: *engine
+    image: filenimble-sandbox:phase5
+    build: {context: ., dockerfile: worker/sandbox/Dockerfile}
+  office-image:
+    <<: *engine
+    image: filenimble-office:phase6
+    build: {context: ., dockerfile: worker/engines/Dockerfile, target: office}
+  utility-image:
+    <<: *engine
+    image: filenimble-utility:phase6
+    build: {context: ., dockerfile: worker/engines/Dockerfile, target: utility}
+  html-image:
+    <<: *engine
+    image: filenimble-html:phase6
+    build: {context: ., dockerfile: worker/engines/Dockerfile, target: html}
+  extraction-image:
+    <<: *engine
+    image: filenimble-extraction:phase6
+    build: {context: ., dockerfile: worker/engines/Dockerfile, target: extraction}
+  ocr-image:
+    <<: *engine
+    image: filenimble-ocr:phase7
+    build: {context: ., dockerfile: worker/engines/Ocr.Dockerfile}
+  archive-image:
+    <<: *engine
+    image: filenimble-archive:phase11
+    build: {context: ., dockerfile: worker/engines/Archive.Dockerfile}
+  qualification-image:
+    <<: *engine
+    image: filenimble-qualification:oracle
+    build:
+      context: .
+      dockerfile: worker/engines/Qualification.Dockerfile
+      args: {BACKEND_IMAGE: filenimble-backend:oracle}
+  media-image:
+    <<: *engine
+    image: filenimble-media:phase11
+    build:
+      context: .
+      dockerfile: worker/engines/Media.Dockerfile
+      additional_contexts: {ffmpeg-source: ./tmp/ffmpeg-source}
+volumes:
+  postgres-data:
+  redis-data:
+  storage-data:
+  caddy-data:
+  caddy-config:
+networks:
+  edge:
+  database: {internal: true}
+  queue: {internal: true}
+  objects: {internal: true}
+  control: {internal: true}
