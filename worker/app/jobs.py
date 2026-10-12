@@ -12,6 +12,7 @@ from app.capabilities import CAPABILITIES, get_capability
 from app.config import settings
 from app.db import connect
 from app.security import fail
+from app.production_policy import conversion_error
 
 ACTIVE = ("CREATED", "UPLOADING", "VALIDATING", "QUEUED", "PROCESSING")
 TERMINAL = ("FAILED", "CANCELLED", "EXPIRED")
@@ -51,6 +52,7 @@ def rate_limit(subject, limit, window_seconds=60):
 def created_response(db, job):
     uploads = []
     if job["state"] == "UPLOADING":
+        require_conversion(job["capability"])
         ttl = min(settings.signed_ttl, int((job["upload_expires_at"] - now()).total_seconds()))
         if ttl <= 0:
             fail("JOB_EXPIRED", "The upload window has expired.", 410)
@@ -61,7 +63,9 @@ def created_response(db, job):
             {
                 "fileId": str(file["id"]),
                 "method": "PUT",
-                "url": storage.sign_upload(file["object_key"], ttl, job["source_bytes"]),
+                "url": storage.sign_upload(
+                    file["object_key"], ttl, job["source_bytes"], tool=job["capability"]
+                ),
                 "headers": {"Content-Type": "application/octet-stream"},
             }
         ]
@@ -73,7 +77,15 @@ def created_response(db, job):
     }
 
 
+def require_conversion(tool):
+    error = conversion_error(tool, settings)
+    if error:
+        fail(error, "This server converter is unavailable in this deployment.",
+             503 if error == "SERVICE_UNAVAILABLE" else 400)
+
+
 def create(request, owner, ip, key):
+    require_conversion(request.tool)
     if request.tool == "__fixture__":
         if not settings.fixture or settings.environment != "test":
             fail("UNSUPPORTED_FORMAT", "No server capability is enabled for this tool.")
@@ -178,6 +190,7 @@ def finalize(job_id, owner):
     with connect() as db:
         job = owned(db, job_id, owner)
         usable(job)
+        require_conversion(job["capability"])
         if job["state"] in ("QUEUED", "PROCESSING", "COMPLETED"):
             return {"state": job["state"]}
         if job["upload_expires_at"] <= now():

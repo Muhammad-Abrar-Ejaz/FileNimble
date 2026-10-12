@@ -20,6 +20,7 @@ test('generator creates fresh private configuration and refuses to overwrite cre
     assert.ok(!output.includes(env[name]));
   }
   assert.equal(env.PRODUCTION_CONVERSIONS_ENABLED, 'false');
+  assert.equal(env.PRODUCTION_TOOL_ALLOWLIST, '');
   assert.match(await readFile(path.join(root, 'tmp/oracle/garage.toml'), 'utf8'), /rpc_bind_addr = "127.0.0.1:3901"/);
   if (process.platform !== 'win32') assert.equal((await stat(path.join(root, '.env.oracle.local'))).mode & 0o077, 0);
   assert.throws(() => execFileSync(process.execPath, args, { stdio: 'pipe' }));

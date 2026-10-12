@@ -6,6 +6,7 @@ from app.config import settings
 from app.db import connect, counter, heartbeat
 from app.jobs import now
 from app.tasks import process
+from app.production_policy import conversion_error
 
 logger = logging.getLogger("lifecycle")
 
@@ -13,9 +14,16 @@ logger = logging.getLogger("lifecycle")
 def dispatch():
     with connect() as db:
         rows = db.execute(
-            "SELECT id FROM conversion_jobs WHERE state='QUEUED' AND dispatch_at<=now() AND expires_at>now() AND deleted_at IS NULL AND (dispatched_at IS NULL OR dispatched_at<now()-interval '10 seconds') FOR UPDATE SKIP LOCKED LIMIT 10"
+            "SELECT id,capability FROM conversion_jobs WHERE state='QUEUED' AND dispatch_at<=now() AND expires_at>now() AND deleted_at IS NULL AND (dispatched_at IS NULL OR dispatched_at<now()-interval '10 seconds') FOR UPDATE SKIP LOCKED LIMIT 10"
         ).fetchall()
         for row in rows:
+            error = conversion_error(row["capability"], settings)
+            if error:
+                db.execute(
+                    "UPDATE conversion_jobs SET state='FAILED',error_code=%s,cleanup_after=now(),completed_at=now() WHERE id=%s",
+                    (error, row["id"]),
+                )
+                continue
             try:
                 process.apply_async(args=[str(row["id"])], retry=False)
             except Exception:

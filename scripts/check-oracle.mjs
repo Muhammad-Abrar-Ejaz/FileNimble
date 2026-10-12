@@ -43,6 +43,18 @@ for (const [name, service] of Object.entries(config.services)) {
   requireSafe(service.mem_limit && service.pids_limit && service.cpus, 'Runtime resource bounds are required.');
 }
 const services = config.services;
+const releaseScope = JSON.parse(await readFile('worker/production_tools.json', 'utf8'));
+const allowlist = services.api.environment.PRODUCTION_TOOL_ALLOWLIST || '';
+const allowedTools = allowlist ? allowlist.split(',') : [];
+requireSafe(allowlist.length <= 256 && new Set(allowedTools).size === allowedTools.length &&
+  allowedTools.every(tool => releaseScope.includes(tool)), 'Invalid production converter allowlist.');
+for (const name of ['api', 'worker', 'lifecycle', 'transfers', 'supervisor']) {
+  requireSafe(services[name].environment.APP_ENV === 'production',
+    'Production execution boundaries must explicitly use production mode.');
+  requireSafe((services[name].environment.PRODUCTION_TOOL_ALLOWLIST || '') === allowlist &&
+    services[name].environment.PRODUCTION_CONVERSIONS_ENABLED === services.api.environment.PRODUCTION_CONVERSIONS_ENABLED,
+  'Production execution boundaries must share the same converter release policy.');
+}
 requireSafe(services.edge.ports?.length === 2 && services.edge.ports.every(p => [80, 443].includes(Number(p.published))), 'Edge must publish only TCP 80 and 443.');
 for (const name of ['database', 'queue', 'objects', 'control']) requireSafe(config.networks[name]?.internal === true, 'Private networks must remain internal.');
 for (const name of ['postgres', 'redis', 'storage', 'supervisor', 'worker', 'lifecycle']) {

@@ -49,6 +49,16 @@ describe('standalone Oracle deployment boundaries', () => {
     expect(media).not.toContain('x86_64-linux-gnu');
     expect(media).toContain('--disable-gpl --disable-nonfree');
   });
+  it('requires the same empty-by-default release scope at every execution boundary', () => {
+    const scope = JSON.parse(readFileSync('worker/production_tools.json', 'utf8'));
+    expect(scope).toEqual(['tar-to-zip', 'zip-to-tar']);
+    for (const name of ['api', 'worker', 'lifecycle', 'transfers', 'supervisor']) {
+      const env = compose.services[name].environment;
+      expect(env.APP_ENV).toBe('production');
+      expect(env.PRODUCTION_TOOL_ALLOWLIST).toBe('${PRODUCTION_TOOL_ALLOWLIST:-}');
+      expect(env.PRODUCTION_CONVERSIONS_ENABLED).toBe('${PRODUCTION_CONVERSIONS_ENABLED:-false}');
+    }
+  });
   it('bounds edge bodies and redacts bearer grants from error logs', () => {
     const caddy = readFileSync('deploy/oracle/Caddyfile', 'utf8');
     expect(caddy).toContain('admin off');

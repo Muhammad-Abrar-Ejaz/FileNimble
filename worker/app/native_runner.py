@@ -19,6 +19,7 @@ from fastapi.responses import FileResponse
 
 from phase11_policy import TOOLS as PHASE11_TOOLS, OUTPUT_LIMIT, ARCHIVE_INPUT_LIMIT
 from app.capabilities import get_capability
+from app.production_policy import conversion_error, runner_context
 
 router = APIRouter()
 runs = {}
@@ -100,9 +101,15 @@ def policy(tool):
 
 
 def execute(record):
-    engine = docker.from_env(timeout=5)
+    engine = None
     container = connection = None
     try:
+        context = runner_context()
+        if context.environment == "production":
+            error = conversion_error(record["tool"], context)
+            if error:
+                raise ValueError(error)
+        engine = docker.from_env(timeout=5)
         family, memory, media_type, signature = policy(record["tool"])
         container = engine.containers.create(
             f"filenimble-{family}:phase11"
@@ -200,7 +207,8 @@ def execute(record):
                 raise ValueError("INVALID_OUTPUT")
         record["metadata"] = metadata
     except Exception as error:
-        allowed = {"CANCELLED", "INVALID_OUTPUT", "RESOURCE_LIMIT", "CONVERSION_TIMEOUT"}
+        allowed = {"CANCELLED", "INVALID_OUTPUT", "RESOURCE_LIMIT", "CONVERSION_TIMEOUT",
+                   "UNSUPPORTED_FORMAT", "SERVICE_UNAVAILABLE"}
         record["error"] = str(error) if str(error) in allowed else "CONVERSION_FAILED"
         record["output"].unlink(missing_ok=True)
     finally:
@@ -211,7 +219,8 @@ def execute(record):
                 container.remove(force=True)
             except Exception:
                 record["error"] = "SERVICE_UNAVAILABLE"
-        engine.close()
+        if engine:
+            engine.close()
         record["input"].unlink(missing_ok=True)
         record["done"] = True
         record["finished"] = time.monotonic()
@@ -233,8 +242,11 @@ async def start(run_id: UUID, tool: str, request: Request):
             get_capability(tool)
         except ValueError:
             raise HTTPException(404, "Unsupported capability") from None
-        if os.getenv("PRODUCTION_CONVERSIONS_ENABLED", "false") != "true":
+        error = conversion_error(tool, runner_context())
+        if error == "SERVICE_UNAVAILABLE":
             raise HTTPException(503, "Deployment verification is pending")
+        if error:
+            raise HTTPException(404, "Unsupported capability")
     if tool not in TOOLS:
         raise HTTPException(404, "Unsupported capability")
     options = {}

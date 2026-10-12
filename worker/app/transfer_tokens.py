@@ -22,13 +22,22 @@ def signing_secret():
 
 
 def _validate(payload, now):
-    if set(payload) != {"v", "method", "key", "expires", "size", "filename", "media_type"}:
+    if not isinstance(payload, dict):
+        raise ValueError("INVALID_GRANT")
+    fields = {"v", "method", "key", "expires", "size", "filename", "media_type"}
+    if payload.get("v") == 2:
+        fields.add("tool")
+        if (payload.get("method") != "PUT" or not isinstance(payload.get("tool"), str)
+                or not re.fullmatch(r"[a-z0-9]+(?:-[a-z0-9]+)*", payload["tool"])
+                or len(payload["tool"]) > 64):
+            raise ValueError("INVALID_GRANT")
+    if set(payload) != fields:
         raise ValueError("INVALID_GRANT")
     method = payload["method"]
     role = "upload" if method == "PUT" else "output"
     if (
         type(payload["v"]) is not int
-        or payload["v"] != 1
+        or payload["v"] not in {1, 2}
         or method not in {"PUT", "GET"}
         or not isinstance(payload["key"], str)
         or not re.fullmatch(role + r"/[a-f0-9]{32}", payload["key"])
@@ -53,19 +62,20 @@ def _validate(payload, now):
     return payload
 
 
-def issue(method, key, ttl, *, size=0, filename="", media_type="", now=None):
+def issue(method, key, ttl, *, size=0, filename="", media_type="", now=None, tool=None):
     now = int(time.time()) if now is None else now
     if type(ttl) is not int or not 1 <= ttl <= 900:
         raise ValueError("INVALID_GRANT")
     payload = _validate(
         {
-            "v": 1,
+            "v": 2 if tool is not None else 1,
             "method": method,
             "key": key,
             "expires": now + ttl,
             "size": size,
             "filename": filename,
             "media_type": media_type,
+            **({"tool": tool} if tool is not None else {}),
         },
         now,
     )

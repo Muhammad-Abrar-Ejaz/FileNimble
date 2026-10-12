@@ -28,6 +28,7 @@ const values = {
   CONVERSION_API_SECRET: secret(), RUNNER_SECRET: secret(), TRANSFER_TOKEN_SECRET: secret(),
   S3_ACCESS_KEY_ID: 'GK' + randomBytes(16).toString('hex'), S3_SECRET_ACCESS_KEY: secret(),
   PRODUCTION_CONVERSIONS_ENABLED: 'false',
+  PRODUCTION_TOOL_ALLOWLIST: '',
 };
 const directory = path.join(root, 'tmp/oracle');
 await mkdir(directory, { recursive: true, mode: 0o700 });

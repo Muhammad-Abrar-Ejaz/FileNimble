@@ -16,6 +16,8 @@ x-runtime: &runtime
     options: {max-size: "10m", max-file: "3"}
 x-storage-env: &storage-env
   APP_ENV: production
+  PRODUCTION_CONVERSIONS_ENABLED: ${PRODUCTION_CONVERSIONS_ENABLED:-false}
+  PRODUCTION_TOOL_ALLOWLIST: ${PRODUCTION_TOOL_ALLOWLIST:-}
   S3_ENDPOINT: http://storage:3900
   S3_PUBLIC_ENDPOINT: http://storage:3900
   S3_REGION: garage
@@ -36,7 +38,6 @@ x-app-env: &app-env
   SIGNED_URL_TTL_SECONDS: "300"
   ENABLE_TEST_CAPABILITY: "0"
   ENABLE_NATIVE_QUALIFICATION: "0"
-  PRODUCTION_CONVERSIONS_ENABLED: ${PRODUCTION_CONVERSIONS_ENABLED:-false}
 x-backend: &backend
   <<: *runtime
   image: filenimble-backend:oracle
@@ -184,6 +185,7 @@ services:
       RUNNER_SECRET: ${RUNNER_SECRET:?Generate Oracle configuration}
       RUNNER_NAMESPACE: oracle-native
       PRODUCTION_CONVERSIONS_ENABLED: ${PRODUCTION_CONVERSIONS_ENABLED:-false}
+      PRODUCTION_TOOL_ALLOWLIST: ${PRODUCTION_TOOL_ALLOWLIST:-}
     command: [uvicorn, app.supervisor:app, --host, 0.0.0.0, --port, "8001", --no-access-log]
     networks: [control]
     tmpfs: ["/tmp:size=160m,noexec,nosuid,nodev"]

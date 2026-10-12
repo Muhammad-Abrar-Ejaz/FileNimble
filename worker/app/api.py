@@ -20,6 +20,7 @@ from app.db import connect
 from app.schemas import Created, CreateJob, Download, DownloadRequest, Status, Transition
 from app.ai import AIRequest
 from app.security import digest, fail, issue_session, read_session, require_internal
+from app.production_policy import conversion_error
 
 
 @asynccontextmanager
@@ -134,6 +135,9 @@ def public_tools():
     result = []
     for tool in json.loads(Path("registry.json").read_text()):
         if tool["slug"] not in seen:
+            if tool.get("processingMode") == "server":
+                error = conversion_error(tool["slug"], settings)
+                tool["runtimeAvailability"] = {"available": error is None, "error": error}
             result.append(tool)
             seen.add(tool["slug"])
     return result

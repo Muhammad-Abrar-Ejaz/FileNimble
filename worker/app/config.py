@@ -50,6 +50,7 @@ class Settings:
     transfer_public: str = os.getenv("TRANSFER_PUBLIC_URL", "")
     site_origin: str = os.getenv("SITE_ORIGIN", "http://localhost:3000")
     production_conversions: bool = os.getenv("PRODUCTION_CONVERSIONS_ENABLED", "false") == "true"
+    production_tool_allowlist: str = os.getenv("PRODUCTION_TOOL_ALLOWLIST", "")
     session_ttl: int = 86400
     max_bytes: int = 1024 * 1024
     max_jobs: int = 3
@@ -72,6 +73,12 @@ class Settings:
         if not 1 <= self.signed_ttl <= 900 or not 60 <= self.retention <= 3600:
             raise RuntimeError("Unsafe expiry configuration")
         if self.environment == "production":
+            from app.production_policy import parse_allowlist
+
+            try:
+                parse_allowlist(self.production_tool_allowlist)
+            except ValueError:
+                raise RuntimeError("Invalid production converter allowlist") from None
             for value in (self.transfer_public, self.site_origin):
                 require_public_origin(value)
             if self.s3_endpoint != "http://storage:3900":

@@ -12,6 +12,7 @@ from fastapi.responses import JSONResponse, Response, StreamingResponse
 from app import storage
 from app.config import require_public_origin, settings
 from app.transfer_tokens import MAX_DOWNLOAD, signing_secret, verify
+from app.production_policy import conversion_error, parse_allowlist
 
 slots = asyncio.Semaphore(2)
 
@@ -23,6 +24,7 @@ async def lifespan(app):
     require_public_origin(settings.site_origin)
     require_public_origin(settings.transfer_public)
     signing_secret()
+    parse_allowlist(settings.production_tool_allowlist)
     yield
 
 
@@ -67,6 +69,13 @@ async def transfer(token: str, request: Request):
         grant = verify(token)
     except ValueError:
         raise HTTPException(403, "Invalid or expired transfer grant") from None
+    if grant["method"] == "PUT":
+        if grant["v"] == 2:
+            if conversion_error(grant["tool"], settings):
+                raise HTTPException(403, "Converter is unavailable in this deployment")
+        elif settings.production_conversions:
+            # v1 PUT is operator foundation smoke only; never a live conversion grant.
+            raise HTTPException(403, "Upload requires a converter-scoped grant")
     if request.method == "OPTIONS":
         if (
             request.headers.get("origin") != settings.site_origin
