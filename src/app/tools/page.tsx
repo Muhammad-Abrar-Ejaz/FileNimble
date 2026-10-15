@@ -5,7 +5,7 @@ import { ToolCard } from '@/components/tools/ToolCard';
 import { Breadcrumbs } from '@/components/seo/PageSeo';
 import { AdSlot } from '@/components/ads';
 
-export const metadata = pageMetadata('/tools', 'Available File Conversion Tools | FileNimble', 'Browse available image, PDF, OCR and document/data tools by category. Check local or temporary server processing before choosing a converter.');
+export const metadata = pageMetadata('/tools', 'Available File Conversion Tools | FileNimble', 'Browse currently available image, PDF, archive and document/data tools. Check local or temporary server processing before choosing a converter.');
 export default function ToolsPage() {
   const tools = publicTools();
   const categories = Object.values(CATEGORIES).filter(category => tools.some(tool => tool.category === category.id));

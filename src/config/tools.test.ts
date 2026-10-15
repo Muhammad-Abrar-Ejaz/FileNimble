@@ -123,4 +123,17 @@ describe("Tool Registry", () => {
       expect(tool?.privacyLabel).toContain("external AI provider");
     }
   });
+
+  it("advertises only the two approved server converters as live", () => {
+    const liveServerTools = TOOLS_REGISTRY
+      .filter((tool) => tool.processingMode === "server" && tool.status === "live")
+      .map((tool) => tool.slug)
+      .sort();
+    expect(liveServerTools).toEqual(["tar-to-zip", "zip-to-tar"]);
+
+    for (const slug of ["image-to-text", "pdf-to-text", "ocr-pdf"]) {
+      expect(getToolBySlug(slug)?.status).toBe("planned");
+      expect(getToolBySlug(slug)?.indexable).toBe(false);
+    }
+  });
 });

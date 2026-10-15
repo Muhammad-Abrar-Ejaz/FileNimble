@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { isIP } from 'node:net';
 
 const endpoint = /^jobs(?:\/[0-9a-f-]{36}(?:\/(?:complete-upload|cancel|download-token))?)?$|^tools(?:\/[a-z0-9-]+)?$|^ai\/(?:status|process)$/;
 
@@ -10,15 +11,28 @@ export async function backendProxy(request: NextRequest, segments: string[]) {
   const base = process.env.CONVERSION_API_URL;
   const key = process.env.CONVERSION_API_SECRET;
   if (!base || !key) return error(503,'SERVICE_UNAVAILABLE','Server processing is not configured.');
+  const production = process.env.APP_ENV === 'production' || process.env.VERCEL_ENV === 'production';
+  let expected: string;
+  try {
+    const target = new URL(base);
+    const site = new URL(process.env.SITE_ORIGIN || process.env.NEXT_PUBLIC_SITE_URL || request.url);
+    expected = site.origin;
+    if (target.username || target.password || target.search || target.hash || target.pathname !== '/' ||
+        !['http:', 'https:'].includes(target.protocol) ||
+        (production && (target.protocol !== 'https:' || !process.env.SITE_ORIGIN ||
+          site.protocol !== 'https:' || site.username || site.password || site.search || site.hash || site.pathname !== '/'))) {
+      return error(503,'SERVICE_UNAVAILABLE','Server processing is not configured securely.');
+    }
+  } catch { return error(503,'SERVICE_UNAVAILABLE','Server processing is not configured securely.'); }
   if (!['GET','POST','DELETE'].includes(request.method)) return error(405,'INVALID_REQUEST','Method not supported.');
   if (request.method !== 'GET') {
-    const expected = new URL(process.env.SITE_ORIGIN || process.env.NEXT_PUBLIC_SITE_URL || request.url).origin;
     if (request.headers.get('origin') !== expected) return error(403,'NOT_AUTHORIZED','Request origin is not allowed.');
   }
   const upstream = new Headers({'x-internal-key':key,'Content-Type':'application/json'});
   // Set this only behind a reverse proxy that replaces the specified header.
-  const ipHeader = process.env.TRUSTED_CLIENT_IP_HEADER;
-  upstream.set('x-client-ip',ipHeader ? request.headers.get(ipHeader) || 'unknown' : 'local');
+  const ipHeader = process.env.VERCEL_ENV === 'production' ? 'x-vercel-forwarded-for' : process.env.TRUSTED_CLIENT_IP_HEADER;
+  const clientIP = ipHeader ? request.headers.get(ipHeader)?.split(',')[0].trim() : undefined;
+  upstream.set('x-client-ip',clientIP && isIP(clientIP) ? clientIP : ipHeader ? 'unknown' : 'local');
   const session = request.cookies.get('fn_session');
   if (session) upstream.set('cookie','fn_session='+encodeURIComponent(session.value));
   const idempotency = request.headers.get('idempotency-key');

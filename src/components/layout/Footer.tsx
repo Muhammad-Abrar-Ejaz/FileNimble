@@ -33,7 +33,7 @@ export function Footer({ className }: FooterProps) {
             </Link>
 
             <p className="text-sm text-text-muted max-w-sm leading-relaxed">
-              <strong>{siteConfig.tagline}</strong> Convert images, PDFs and data with browser tools, or use temporary server processing for supported document and OCR tasks.
+              <strong>{siteConfig.tagline}</strong> Convert images, PDFs and data with browser tools, or use temporary server processing for the converters available in this release.
             </p>
 
             <div className="flex items-center gap-2 text-xs text-emerald-700 bg-emerald-50 px-3 py-2 rounded-xl border border-emerald-200 w-fit">
