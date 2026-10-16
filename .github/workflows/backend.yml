@@ -117,6 +117,7 @@ jobs:
           )
           found_output = False
           failure_count = 0
+          safe_parameters = {"image-to-text", "pdf-to-text", "ocr-pdf", "tar-to-zip", "zip-to-tar"}
 
           def safe_count(value):
               return str(value) if str(value).isdigit() else "unknown"
@@ -125,11 +126,14 @@ jobs:
               # Keep only static pytest identifiers. Parameter values may contain
               # user data, URLs, or credentials, so omit bracketed parameters.
               classname = str(classname or "").split("[", 1)[0]
-              name = str(name or "").split("[", 1)[0]
+              raw_name = str(name or "")
+              parameter = re.fullmatch(r"([A-Za-z0-9_.-]+)\[([A-Za-z0-9_.-]+)\]", raw_name)
+              name = parameter.group(1) if parameter else raw_name.split("[", 1)[0]
               safe_class = re.fullmatch(r"[A-Za-z0-9_.]+", classname)
               safe_name = re.fullmatch(r"[A-Za-z0-9_.-]+", name)
               if safe_class and safe_name:
-                  return f"{classname}::{name}"[:180]
+                  suffix = f"[{parameter.group(2)}]" if parameter and parameter.group(2) in safe_parameters else ""
+                  return f"{classname}::{name}{suffix}"[:180]
               return "unrecognized-test-identifier"
 
           def safe_failure_category(failure):
@@ -145,6 +149,22 @@ jobs:
               else:
                   category = "test-error"
               trace = failure.text or ""
+              if "unpurged role counts" in trace:
+                  counts = {
+                      role: (
+                          re.search(rf"['\"]{role}['\"]\s*:\s*(\d+)", trace).group(1)
+                          if re.search(rf"['\"]{role}['\"]\s*:\s*(\d+)", trace)
+                          else "0"
+                      )
+                      for role in ("upload", "input", "output")
+                  }
+                  return (
+                      "cleanup-unpurged-objects "
+                      f"(upload={counts['upload']}, input={counts['input']}, output={counts['output']})"
+                  )
+              mismatch = re.search(r"\bassert\s+(\d+)\s*==\s*(\d+)", trace)
+              if mismatch:
+                  return f"assertion mismatch actual={mismatch.group(1)} expected={mismatch.group(2)}"
               line = re.search(r"(?:^|[/\\])test_[A-Za-z0-9_]+\.py:(\d+)(?::|\b)", trace, re.MULTILINE)
               return f"{category} at test line {line.group(1)}" if line else category
 
