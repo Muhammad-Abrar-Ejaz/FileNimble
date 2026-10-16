@@ -353,10 +353,13 @@ def test_per_ip_active_job_limit_is_atomic_across_concurrent_sessions():
     assert len(rejected) == 8 - settings.max_ip_jobs
     assert all(body["error"] == "RATE_LIMITED" for body in rejected)
     with connect() as db:
-        assert db.execute(
-            "SELECT count(*) AS n FROM conversion_jobs WHERE ip_hash=%s AND state=ANY(%s) AND expires_at>now() AND deleted_at IS NULL",
-            (digest(raw_ip), list(ACTIVE)),
-        ).fetchone()["n"] == settings.max_ip_jobs
+        assert (
+            db.execute(
+                "SELECT count(*) AS n FROM conversion_jobs WHERE ip_hash=%s AND state=ANY(%s) AND expires_at>now() AND deleted_at IS NULL",
+                (digest(raw_ip), list(ACTIVE)),
+            ).fetchone()["n"]
+            == settings.max_ip_jobs
+        )
 
 
 def test_creation_rate_limit_is_shared_by_anonymous_sessions_from_one_ip():
@@ -417,10 +420,13 @@ def test_global_hourly_admission_limit_is_transactional():
             assert response.status_code == 429
             assert response.json()["error"] == "RATE_LIMITED"
         with connect() as db:
-            assert db.execute(
-                "SELECT requests FROM quota_windows WHERE subject='create-global' AND window_id=%s",
-                (window_id,),
-            ).fetchone()["requests"] == settings.create_rate_global
+            assert (
+                db.execute(
+                    "SELECT requests FROM quota_windows WHERE subject='create-global' AND window_id=%s",
+                    (window_id,),
+                ).fetchone()["requests"]
+                == settings.create_rate_global
+            )
     finally:
         with connect() as db:
             db.execute(
@@ -463,10 +469,13 @@ def test_global_hourly_admission_limit_is_atomic_under_race():
         assert len(rejected) == 7
         assert all(body["error"] == "RATE_LIMITED" for body in rejected)
         with connect() as db:
-            assert db.execute(
-                "SELECT requests FROM quota_windows WHERE subject='create-global' AND window_id=%s",
-                (window_id,),
-            ).fetchone()["requests"] == settings.create_rate_global
+            assert (
+                db.execute(
+                    "SELECT requests FROM quota_windows WHERE subject='create-global' AND window_id=%s",
+                    (window_id,),
+                ).fetchone()["requests"]
+                == settings.create_rate_global
+            )
     finally:
         with connect() as db:
             db.execute(

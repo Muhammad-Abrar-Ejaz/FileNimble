@@ -37,11 +37,22 @@ print(json.dumps({'limits_verified':True}))
 """
     with closing(docker.from_env()) as engine:
         output = engine.containers.run(
-            "filenimble-archive:phase11", ["-c", script], entrypoint="python",
-            user="10001:10001", remove=True, network_mode="none", read_only=True,
-            cap_drop=["ALL"], security_opt=["no-new-privileges:true"], mem_limit="128m",
-            memswap_limit="128m", nano_cpus=1_000_000_000, pids_limit=64,
-            tmpfs={"/work": "rw,noexec,nosuid,nodev,size=128m,uid=10001,gid=10001,mode=700",
-                   "/tmp": "rw,noexec,nosuid,nodev,size=32m,uid=10001,gid=10001,mode=700"},  # noqa: S108 -- private per-container tmpfs.
+            "filenimble-archive:phase11",
+            ["-c", script],
+            entrypoint="python",
+            user="10001:10001",
+            remove=True,
+            network_mode="none",
+            read_only=True,
+            cap_drop=["ALL"],
+            security_opt=["no-new-privileges:true"],
+            mem_limit="128m",
+            memswap_limit="128m",
+            nano_cpus=1_000_000_000,
+            pids_limit=64,
+            tmpfs={
+                "/work": "rw,noexec,nosuid,nodev,size=128m,uid=10001,gid=10001,mode=700",
+                "/tmp": "rw,noexec,nosuid,nodev,size=32m,uid=10001,gid=10001,mode=700",  # noqa: S108 -- private per-container tmpfs.
+            },
         )
     assert json.loads(output) == {"limits_verified": True}

@@ -21,6 +21,8 @@ jobs:
         run: |
           node scripts/setup-oracle.mjs --host api.filenimble.app --email ci@example.net
           node scripts/check-oracle.mjs
+      - name: Test local-only operator watchdog logic
+        run: node --test scripts/oracle.setup.test.mjs scripts/oracle-watchdog.test.mjs
       - name: Validate and build backend test images
         run: |
           node scripts/prepare-media.mjs

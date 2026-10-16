@@ -79,9 +79,7 @@ async def boundary(request: Request, call_next):
                 jobs.rate_limit("request-owner:" + request.state.owner, 120)
                 jobs.rate_limit("request-ip:" + request.state.ip, 600)
                 if request.method == "POST" and request.url.path == "/api/v1/jobs":
-                    jobs.rate_limit(
-                        "create-ip:" + request.state.ip, settings.create_rate_per_ip
-                    )
+                    jobs.rate_limit("create-ip:" + request.state.ip, settings.create_rate_per_ip)
                 if is_ai_process:
                     jobs.rate_limit("ai-minute-owner:" + request.state.owner, 3)
                     jobs.rate_limit("ai-minute-ip:" + request.state.ip, 10)

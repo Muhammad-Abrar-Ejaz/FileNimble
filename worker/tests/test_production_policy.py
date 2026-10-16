@@ -19,17 +19,39 @@ from app.production_policy import RELEASE_SCOPE, conversion_error, parse_allowli
 
 
 def configured(allowlist="tar-to-zip,zip-to-tar", enabled=True):
-    return replace(settings, environment="production", production_conversions=enabled,
-                   production_tool_allowlist=allowlist, fixture=False, native_test=False,
-                   secret="s" * 64, internal_secret="i" * 64, runner_secret="r" * 64,
-                   transfer_public="https://backend.example.org",
-                   site_origin="https://www.filenimble.app", s3_endpoint="http://storage:3900")
+    return replace(
+        settings,
+        environment="production",
+        production_conversions=enabled,
+        production_tool_allowlist=allowlist,
+        fixture=False,
+        native_test=False,
+        secret="s" * 64,
+        internal_secret="i" * 64,
+        runner_secret="r" * 64,
+        transfer_public="https://backend.example.org",
+        site_origin="https://www.filenimble.app",
+        s3_endpoint="http://storage:3900",
+    )
 
 
-@pytest.mark.parametrize("value", ["*", "ocr-pdf", "image-to-text", "wav-to-flac",
-                                   "word-to-pdf", "tar-to-zip,tar-to-zip",
-                                   "tar-to-zip,", " tar-to-zip", "tar-to-zip, zip-to-tar",
-                                   "TAR-to-ZIP", "x" * 257, None])
+@pytest.mark.parametrize(
+    "value",
+    [
+        "*",
+        "ocr-pdf",
+        "image-to-text",
+        "wav-to-flac",
+        "word-to-pdf",
+        "tar-to-zip,tar-to-zip",
+        "tar-to-zip,",
+        " tar-to-zip",
+        "tar-to-zip, zip-to-tar",
+        "TAR-to-ZIP",
+        "x" * 257,
+        None,
+    ],
+)
 def test_invalid_scope_rejected(value):
     with pytest.raises(ValueError):
         parse_allowlist(value)
@@ -43,11 +65,21 @@ def test_empty_scope_and_global_switch_are_independent():
     assert conversion_error("tar-to-zip", configured(enabled=False)) == "SERVICE_UNAVAILABLE"
     assert conversion_error("tar-to-zip", configured("tar-to-zip")) is None
     assert conversion_error("zip-to-tar", configured("tar-to-zip")) == "UNSUPPORTED_FORMAT"
-    for tool in ["ocr-pdf", "image-to-text", "pdf-to-text", "wav-to-flac", "word-to-pdf",
-                 "video-mute", "__fixture__", "unknown"]:
+    for tool in [
+        "ocr-pdf",
+        "image-to-text",
+        "pdf-to-text",
+        "wav-to-flac",
+        "word-to-pdf",
+        "video-mute",
+        "__fixture__",
+        "unknown",
+    ]:
         assert conversion_error(tool, configured()) == "UNSUPPORTED_FORMAT"
     assert conversion_error("tar-to-zip", replace(configured(), environment="invalid"))
-    assert conversion_error("__fixture__", replace(settings, environment="test", fixture=True)) is None
+    assert (
+        conversion_error("__fixture__", replace(settings, environment="test", fixture=True)) is None
+    )
     assert conversion_error("wav-to-flac", replace(settings, environment="development")) is None
 
 
@@ -100,15 +132,22 @@ class Database:
 
 
 def queued():
-    return {"id": uuid4(), "capability": "ocr-pdf", "state": "QUEUED",
-            "deleted_at": None, "expires_at": jobs.now() + timedelta(minutes=5),
-            "attempts": 0, "dispatch_at": jobs.now() - timedelta(seconds=1)}
+    return {
+        "id": uuid4(),
+        "capability": "ocr-pdf",
+        "state": "QUEUED",
+        "deleted_at": None,
+        "expires_at": jobs.now() + timedelta(minutes=5),
+        "attempts": 0,
+        "dispatch_at": jobs.now() - timedelta(seconds=1),
+    }
 
 
 def install_db(monkeypatch, module, db):
     @contextmanager
     def connection():
         yield db
+
     monkeypatch.setattr(module, "connect", connection)
 
 
@@ -123,8 +162,10 @@ def test_upload_completion_blocks_existing_job_before_reading_bytes(monkeypatch)
     assert len(db.calls) == 1  # ownership query only; no freeze/queue mutation
 
 
-@pytest.mark.parametrize("enabled,tool,code", [(True, "ocr-pdf", "UNSUPPORTED_FORMAT"),
-                                              (False, "tar-to-zip", "SERVICE_UNAVAILABLE")])
+@pytest.mark.parametrize(
+    "enabled,tool,code",
+    [(True, "ocr-pdf", "UNSUPPORTED_FORMAT"), (False, "tar-to-zip", "SERVICE_UNAVAILABLE")],
+)
 def test_worker_rechecks_persisted_job_before_attempt_or_storage(monkeypatch, enabled, tool, code):
     db = Database(queued() | {"capability": tool})
     install_db(monkeypatch, tasks, db)
@@ -172,17 +213,22 @@ def test_tool_scoped_grant_revocation_before_storage_and_legacy_rejection(monkey
     monkeypatch.setattr(transfer_tokens, "settings", context)
     monkeypatch.setenv("TRANSFER_TOKEN_SECRET", "test-transfer-secret-" * 4)
     monkeypatch.setattr(storage, "client", unexpected)
-    token = transfer_tokens.issue("PUT", "upload/" + "a" * 32, 60, size=3,
-                                 tool="zip-to-tar").split("/transfers/")[1]
+    token = transfer_tokens.issue("PUT", "upload/" + "a" * 32, 60, size=3, tool="zip-to-tar").split(
+        "/transfers/"
+    )[1]
     assert transfer_tokens.verify(token)["tool"] == "zip-to-tar"
     legacy = transfer_tokens.issue("PUT", "upload/" + "a" * 32, 60, size=3).split("/transfers/")[1]
     with TestClient(transfers.app) as client:
         headers = {"origin": context.site_origin, "content-type": "application/octet-stream"}
         for rejected in [token, legacy]:
-            assert client.put("/transfers/" + rejected, content=b"abc", headers=headers).status_code == 403
+            assert (
+                client.put("/transfers/" + rejected, content=b"abc", headers=headers).status_code
+                == 403
+            )
         monkeypatch.setattr(transfers, "settings", replace(context, production_conversions=False))
-        token = transfer_tokens.issue("PUT", "upload/" + "a" * 32, 60, size=3,
-                                     tool="tar-to-zip").split("/transfers/")[1]
+        token = transfer_tokens.issue(
+            "PUT", "upload/" + "a" * 32, 60, size=3, tool="tar-to-zip"
+        ).split("/transfers/")[1]
         assert client.put("/transfers/" + token, content=b"abc", headers=headers).status_code == 403
     for payload in [[], None, "not an object"]:
         with pytest.raises(ValueError, match="INVALID_GRANT"):

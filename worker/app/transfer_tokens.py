@@ -27,9 +27,12 @@ def _validate(payload, now):
     fields = {"v", "method", "key", "expires", "size", "filename", "media_type"}
     if payload.get("v") == 2:
         fields.add("tool")
-        if (payload.get("method") != "PUT" or not isinstance(payload.get("tool"), str)
-                or not re.fullmatch(r"[a-z0-9]+(?:-[a-z0-9]+)*", payload["tool"])
-                or len(payload["tool"]) > 64):
+        if (
+            payload.get("method") != "PUT"
+            or not isinstance(payload.get("tool"), str)
+            or not re.fullmatch(r"[a-z0-9]+(?:-[a-z0-9]+)*", payload["tool"])
+            or len(payload["tool"]) > 64
+        ):
             raise ValueError("INVALID_GRANT")
     if set(payload) != fields:
         raise ValueError("INVALID_GRANT")

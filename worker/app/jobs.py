@@ -81,8 +81,11 @@ def created_response(db, job):
 def require_conversion(tool):
     error = conversion_error(tool, settings)
     if error:
-        fail(error, "This server converter is unavailable in this deployment.",
-             503 if error == "SERVICE_UNAVAILABLE" else 400)
+        fail(
+            error,
+            "This server converter is unavailable in this deployment.",
+            503 if error == "SERVICE_UNAVAILABLE" else 400,
+        )
 
 
 def create(request, owner, ip, key):
@@ -110,9 +113,7 @@ def create(request, owner, ip, key):
         for subject in sorted(["ip:" + ip, "owner:" + owner]):
             db.execute("SELECT pg_advisory_xact_lock(hashtextextended(%s,0))", (subject,))
         # Serialize global capacity checks across identities and API replicas.
-        db.execute(
-            "SELECT pg_advisory_xact_lock(hashtextextended(%s,0))", (GLOBAL_QUEUE_LOCK,)
-        )
+        db.execute("SELECT pg_advisory_xact_lock(hashtextextended(%s,0))", (GLOBAL_QUEUE_LOCK,))
         existing = db.execute(
             "SELECT * FROM conversion_jobs WHERE owner_hash=%s AND idempotency_key=%s FOR UPDATE",
             (owner, key),

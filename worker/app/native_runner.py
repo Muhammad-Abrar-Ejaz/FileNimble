@@ -207,8 +207,14 @@ def execute(record):
                 raise ValueError("INVALID_OUTPUT")
         record["metadata"] = metadata
     except Exception as error:
-        allowed = {"CANCELLED", "INVALID_OUTPUT", "RESOURCE_LIMIT", "CONVERSION_TIMEOUT",
-                   "UNSUPPORTED_FORMAT", "SERVICE_UNAVAILABLE"}
+        allowed = {
+            "CANCELLED",
+            "INVALID_OUTPUT",
+            "RESOURCE_LIMIT",
+            "CONVERSION_TIMEOUT",
+            "UNSUPPORTED_FORMAT",
+            "SERVICE_UNAVAILABLE",
+        }
         record["error"] = str(error) if str(error) in allowed else "CONVERSION_FAILED"
         record["output"].unlink(missing_ok=True)
     finally:

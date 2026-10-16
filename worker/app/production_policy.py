@@ -8,7 +8,9 @@ from pathlib import Path
 from app.capabilities import CAPABILITIES
 from app.config import settings
 
-RELEASE_SCOPE = frozenset(json.loads((Path(__file__).parents[1] / "production_tools.json").read_text()))
+RELEASE_SCOPE = frozenset(
+    json.loads((Path(__file__).parents[1] / "production_tools.json").read_text())
+)
 
 
 def parse_allowlist(value):
