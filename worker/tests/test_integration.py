@@ -762,20 +762,22 @@ def test_cleanup_failure_is_recorded_and_retried():
             ).fetchone()["purged_at"]
 
 
-def test_atomic_concurrency_quota_and_request_rate():
-    with client() as c:
-        def attempt(_):
-            return c.post(
-                "/api/v1/jobs",
-                headers={"Idempotency-Key": str(uuid4())},
-                json={
-                    "tool": "__fixture__",
-                    "files": [{"name": "x", "size": len(DATA), "type": "application/octet-stream"}],
-                },
-            ).status_code
+def _attempt_job_creation(c, _):
+    return c.post(
+        "/api/v1/jobs",
+        headers={"Idempotency-Key": str(uuid4())},
+        json={
+            "tool": "__fixture__",
+            "files": [{"name": "x", "size": len(DATA), "type": "application/octet-stream"}],
+        },
+    ).status_code
 
+
+def test_atomic_concurrency_quota_and_request_rate():
+    # Start without an existing per-IP job so the race measures the full cap of two.
+    with client() as c:
         with ThreadPoolExecutor(max_workers=6) as pool:
-            outcomes = list(pool.map(attempt, range(6)))
+            outcomes = list(pool.map(lambda index: _attempt_job_creation(c, index), range(6)))
         assert outcomes.count(201) == 2
         assert outcomes.count(429) == 4
         with connect() as db:
