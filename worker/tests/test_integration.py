@@ -3,6 +3,7 @@
 import json
 import os
 import time
+from contextlib import ExitStack
 from concurrent.futures import ThreadPoolExecutor
 from uuid import uuid4
 
@@ -559,6 +560,59 @@ def test_duplicate_finalize_and_queue_delivery():
             )
 
 
+def test_multiple_queued_jobs_complete_with_single_worker_and_resource_bounds():
+    job_count = 3
+    worker = service("worker")
+    worker.reload()
+    host_config = worker.attrs["HostConfig"]
+    assert host_config["Memory"] == 256 * 1024 * 1024
+    assert host_config["PidsLimit"] == 64
+    assert "--concurrency=1" in worker.attrs["Config"]["Cmd"]
+
+    with ExitStack() as stack:
+        clients = [stack.enter_context(client()) for _ in range(job_count)]
+
+        def submit(c):
+            job = create(c, behavior="delay")
+            upload(job)
+            finalize(c, job)
+            return job
+
+        with ThreadPoolExecutor(max_workers=job_count) as pool:
+            jobs = list(pool.map(submit, clients))
+
+        deadline = time.monotonic() + 60
+        queue_observed = False
+        peak_worker_memory = 0
+        statuses = [None] * job_count
+        while time.monotonic() < deadline:
+            for index, (c, job) in enumerate(zip(clients, jobs, strict=True)):
+                response = c.get(f"/api/v1/jobs/{job['jobId']}")
+                assert response.status_code == 200, response.text
+                statuses[index] = response.json()
+            states = [status["state"] for status in statuses]
+            queue_observed |= "PROCESSING" in states and "QUEUED" in states
+            worker.reload()
+            stats = worker.stats(stream=False)
+            memory_stats = stats.get("memory_stats", {})
+            peak_worker_memory = max(peak_worker_memory, memory_stats.get("usage", 0))
+            assert not worker.attrs["State"].get("OOMKilled", False)
+            if all(state == "COMPLETED" for state in states):
+                break
+            assert not any(state in {"FAILED", "CANCELLED", "EXPIRED"} for state in states), states
+            time.sleep(0.2)
+        else:
+            pytest.fail(f"Queued jobs did not drain: {[s['state'] for s in statuses]}")
+
+        assert queue_observed, (
+            f"No queued work observed with a single worker: {[s['state'] for s in statuses]}"
+        )
+        assert peak_worker_memory > 0
+        assert peak_worker_memory < host_config["Memory"]
+        for c, job, status in zip(clients, jobs, statuses, strict=True):
+            assert download(c, job, status) == b"%FN-RESULT\nPROJECT OWNED EXAMPLE"
+
+
 def test_upload_replay_cannot_modify_validated_input():
     with client() as c:
         job = create(c, behavior="delay")
@@ -756,7 +810,6 @@ def test_cleanup_failure_is_recorded_and_retried():
         else:
             pytest.fail("Object storage did not become ready after restart")
         deadline = time.monotonic() + 30
-        purged_at = None
         while time.monotonic() < deadline:
             cleanup()
             with connect() as db:
@@ -765,8 +818,9 @@ def test_cleanup_failure_is_recorded_and_retried():
                 ).fetchone()["purged_at"]
             if purged_at:
                 break
-            time.sleep(0.1)
-        assert purged_at, "cleanup retry did not purge the job within its bounded deadline"
+            time.sleep(0.25)
+        else:
+            pytest.fail("Cleanup did not purge the job after storage became ready")
 
 
 def _attempt_job_creation(c, _):

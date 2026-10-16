@@ -5,6 +5,9 @@ const testUrl = new URL(baseURL);
 if (testUrl.protocol !== 'http:' || !['localhost', '127.0.0.1'].includes(testUrl.hostname)) {
   throw new Error('Playwright must target a local HTTP server.');
 }
+const serverCommand = process.env.PLAYWRIGHT_SERVER_MODE === 'production'
+  ? `npm run start -- --hostname 127.0.0.1 --port ${testUrl.port || '80'}`
+  : `npm run dev -- --hostname 127.0.0.1 --port ${testUrl.port || '80'}`;
 
 export default defineConfig({
   testDir: "./e2e",
@@ -15,6 +18,8 @@ export default defineConfig({
   reporter: "html",
   use: {
     baseURL,
+    acceptDownloads: true,
+    navigationTimeout: 30_000,
     trace: "on-first-retry",
   },
   projects: [
@@ -40,7 +45,7 @@ export default defineConfig({
     },
   ],
   webServer: {
-    command: `npm run dev -- --port ${testUrl.port || '80'}`,
+    command: serverCommand,
     url: baseURL,
     reuseExistingServer: !process.env.CI,
     timeout: 120 * 1000,
