@@ -21,7 +21,7 @@ services:
     environment: *production-env
   supervisor:
     environment:
-      APP_ENV: production
+      <<: *production-env
       RUNNER_NAMESPACE: phase15-qualification-ci
   tests:
     environment:
