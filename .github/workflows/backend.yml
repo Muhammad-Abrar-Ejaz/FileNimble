@@ -131,6 +131,22 @@ jobs:
                   return f"{classname}::{name}"[:180]
               return "unrecognized-test-identifier"
 
+          def safe_failure_category(failure):
+              error_type = str(failure.get("type", ""))
+              if error_type in {"AssertionError", "builtins.AssertionError"}:
+                  category = "assertion"
+              elif error_type in {"TimeoutError", "builtins.TimeoutError"}:
+                  category = "timeout"
+              elif error_type in {"PermissionError", "builtins.PermissionError"}:
+                  category = "permission"
+              elif error_type in {"ConnectionError", "builtins.ConnectionError"}:
+                  category = "service-connection"
+              else:
+                  category = "test-error"
+              trace = failure.text or ""
+              line = re.search(r"(?:^|[/\\])test_[A-Za-z0-9_]+\.py:(\d+)(?::|\b)", trace, re.MULTILINE)
+              return f"{category} at test line {line.group(1)}" if line else category
+
           for report, output in test_runs:
               found_output = found_output or report.exists() or output.exists()
               valid_report = False
@@ -154,7 +170,8 @@ jobs:
                               failure_count += 1
                               print(
                                   "::error::Failed backend test: "
-                                  f"{safe_test_name(case.get('classname'), case.get('name'))}"
+                                  f"{safe_test_name(case.get('classname'), case.get('name'))} "
+                                  f"({safe_failure_category(failure)})"
                               )
               if output.exists() and not valid_report:
                   contents = output.read_text(errors="replace")

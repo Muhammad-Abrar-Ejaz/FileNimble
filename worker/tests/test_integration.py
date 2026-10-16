@@ -764,8 +764,6 @@ def test_cleanup_failure_is_recorded_and_retried():
 
 def test_atomic_concurrency_quota_and_request_rate():
     with client() as c:
-        create(c)
-
         def attempt(_):
             return c.post(
                 "/api/v1/jobs",
