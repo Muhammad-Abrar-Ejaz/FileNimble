@@ -444,7 +444,18 @@ def test_cleanup_failure_is_recorded_and_retried():
                 assert row["cleanup_failures"] > 0 and row["purged_at"] is None
         finally:
             store.start()
-        time.sleep(2)
+        deadline = time.monotonic() + 30
+        while time.monotonic() < deadline:
+            store.reload()
+            state = store.attrs.get("State", {})
+            health = state.get("Health", {}).get("Status")
+            if health == "healthy":
+                break
+            if state.get("Status") == "exited":
+                pytest.fail("Storage service exited while restarting")
+            time.sleep(0.25)
+        else:
+            pytest.fail("Storage service did not become healthy after restart")
         cleanup()
         with connect() as db:
             assert db.execute(
