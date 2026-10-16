@@ -57,8 +57,12 @@ print('sandbox verified')""")
 
 
 def test_ocr_image_memory_enforced():
-    code, _, killed = restricted("data=bytearray(128*1024*1024)", memory="32m")
-    assert code != 0 and killed
+    code, output, killed = restricted("data=bytearray(128*1024*1024)", memory="32m")
+    assert code != 0, "oversized allocation unexpectedly completed"
+    assert killed or (code != 137 and b"MemoryError" in output), (
+        "memory limit must be enforced by the container OOM guard or Python MemoryError; "
+        "SIGKILL requires the daemon's OOMKilled confirmation"
+    )
 
 
 def test_real_tesseract_subprocess_timeout():
