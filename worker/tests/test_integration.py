@@ -14,6 +14,7 @@ from botocore.exceptions import ClientError
 from app import storage
 from app.config import settings
 from app.db import connect, migrate
+from app.jobs import ACTIVE
 from app.lifecycle import cleanup, recover
 from app.security import digest, issue_session
 from app.tasks import process
