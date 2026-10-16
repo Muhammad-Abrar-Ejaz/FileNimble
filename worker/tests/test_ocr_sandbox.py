@@ -57,12 +57,18 @@ print('sandbox verified')""")
 
 
 def test_ocr_image_memory_enforced():
-    code, output, killed = restricted("data=bytearray(128*1024*1024)", memory="32m")
-    assert code != 0, "oversized allocation unexpectedly completed"
-    assert killed or (code != 137 and b"MemoryError" in output), (
-        "memory limit must be enforced by the container OOM guard or Python MemoryError; "
-        "SIGKILL requires the daemon's OOMKilled confirmation"
-    )
+    command = """import pathlib,re,subprocess,sys
+events=pathlib.Path('/sys/fs/cgroup/memory.events')
+maximum=pathlib.Path('/sys/fs/cgroup/memory.max').read_text().strip()
+assert maximum==str(32*1024*1024), 'unexpected cgroup memory ceiling'
+before=int(re.search(r'^oom_kill (\\d+)$',events.read_text(),re.M).group(1))
+child=subprocess.run([sys.executable,'-c','data=bytearray(128*1024*1024); data[-1]=1'],capture_output=True)
+after=int(re.search(r'^oom_kill (\\d+)$',events.read_text(),re.M).group(1))
+assert child.returncode!=0, 'oversized allocation unexpectedly completed'
+assert after>before or b'MemoryError' in child.stderr, 'memory ceiling did not reject allocation'
+print('cgroup memory ceiling enforced')"""
+    code, output, _ = restricted(command, memory="32m")
+    assert code == 0 and b"cgroup memory ceiling enforced" in output
 
 
 def test_real_tesseract_subprocess_timeout():
