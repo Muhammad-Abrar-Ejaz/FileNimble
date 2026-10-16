@@ -18,6 +18,7 @@ export default defineConfig({
   reporter: "html",
   use: {
     baseURL,
+    acceptDownloads: true,
     navigationTimeout: 30_000,
     trace: "on-first-retry",
   },

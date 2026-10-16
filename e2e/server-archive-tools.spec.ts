@@ -5,6 +5,7 @@ import { readFile } from 'node:fs/promises';
 const JOB_ID = '12345678-1234-4234-8234-123456789012';
 const OUTPUT_ID = '22345678-1234-4234-8234-123456789012';
 const CONTENT = Buffer.from('FileNimble synthetic archive integration fixture\n');
+const TRANSFER_ORIGIN = 'https://transfer.example.test';
 
 function makeTar() {
   const header = Buffer.alloc(512, 0);
@@ -51,7 +52,7 @@ async function prepareMockBackend(page: import('@playwright/test').Page, slug: '
       await route.fulfill({ status: 200, json: { jobId: JOB_ID, state: 'COMPLETED', expiresAt: new Date(Date.now() + 60_000).toISOString(), files: [{ fileId: OUTPUT_ID, bytes: output.length, mediaType: slug === 'tar-to-zip' ? 'application/zip' : 'application/x-tar' }] } });
     } else if (path.endsWith('/download-token')) {
       expect(request.method()).toBe('POST');
-      await route.fulfill({ status: 200, json: { url: `${origin}/__transfer/download/${slug}`, expiresIn: 60 } });
+      await route.fulfill({ status: 200, json: { url: `${TRANSFER_ORIGIN}/__transfer/download/${slug}`, expiresIn: 60 } });
     } else if (request.method() === 'DELETE' || path.endsWith('/cancel')) {
       await route.fulfill({ status: 200, json: { state: 'CANCELLED' } });
     } else {

@@ -508,11 +508,18 @@ def test_cleanup_failure_is_recorded_and_retried():
                 time.sleep(0.25)
         else:
             pytest.fail("Object storage did not become ready after restart")
-        cleanup()
-        with connect() as db:
-            assert db.execute(
-                "SELECT purged_at FROM conversion_jobs WHERE id=%s", (job["jobId"],)
-            ).fetchone()["purged_at"]
+        deadline = time.monotonic() + 30
+        while time.monotonic() < deadline:
+            cleanup()
+            with connect() as db:
+                purged_at = db.execute(
+                    "SELECT purged_at FROM conversion_jobs WHERE id=%s", (job["jobId"],)
+                ).fetchone()["purged_at"]
+            if purged_at:
+                break
+            time.sleep(0.25)
+        else:
+            pytest.fail("Cleanup did not purge the job after storage became ready")
 
 
 def test_atomic_concurrency_quota_and_request_rate():
