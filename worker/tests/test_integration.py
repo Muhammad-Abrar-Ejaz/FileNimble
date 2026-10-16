@@ -303,7 +303,9 @@ def test_multiple_queued_jobs_complete_with_single_worker_and_resource_bounds():
         else:
             pytest.fail(f"Queued jobs did not drain: {[s['state'] for s in statuses]}")
 
-        assert queue_observed, f"No queued work observed with a single worker: {[s['state'] for s in statuses]}"
+        assert queue_observed, (
+            f"No queued work observed with a single worker: {[s['state'] for s in statuses]}"
+        )
         assert peak_worker_memory > 0
         assert peak_worker_memory < host_config["Memory"]
         for c, job, status in zip(clients, jobs, statuses, strict=True):
