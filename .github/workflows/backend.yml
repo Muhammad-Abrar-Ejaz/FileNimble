@@ -43,15 +43,47 @@ jobs:
           docker run --rm filenimble-backend:phase5 pip check
       - name: Start real services
         run: docker compose --env-file .env.backend.local -f compose.yaml -f compose.test.yaml up -d postgres redis storage migrate api worker lifecycle supervisor
+      - name: Prepare backend test reports
+        run: mkdir -p .ci-test-results
       - name: Real pipeline and failure-injection tests
-        run: docker compose --env-file .env.backend.local -f compose.yaml -f compose.test.yaml run --rm tests pytest -q -m "not production_integration"
+        run: docker compose --env-file .env.backend.local -f compose.yaml -f compose.test.yaml run --rm tests pytest -q -m "not production_integration" --junitxml=/ci-test-results/backend-standard.xml
       - name: Stop disposable test stack
         if: always()
         run: docker compose --env-file .env.backend.local -f compose.yaml -f compose.test.yaml down -v --remove-orphans
       - name: Start isolated production-mode test services
         run: docker compose --env-file .env.backend.local -f compose.yaml -f compose.test.yaml -f compose.production-test.yaml up -d postgres redis storage migrate api transfers worker lifecycle supervisor
       - name: Production transfer, archive, and sandbox tests
-        run: docker compose --env-file .env.backend.local -f compose.yaml -f compose.test.yaml -f compose.production-test.yaml run --rm tests pytest -q -m production_integration
+        run: docker compose --env-file .env.backend.local -f compose.yaml -f compose.test.yaml -f compose.production-test.yaml run --rm tests pytest -q -m production_integration --junitxml=/ci-test-results/backend-production.xml
       - name: Stop isolated production-mode test stack
         if: always()
         run: docker compose --env-file .env.backend.local -f compose.yaml -f compose.test.yaml -f compose.production-test.yaml down -v --remove-orphans
+      - name: Summarize backend test failures
+        if: always()
+        run: |
+          python - <<'PY'
+          import xml.etree.ElementTree as ET
+          from pathlib import Path
+
+          reports = (
+              Path(".ci-test-results/backend-standard.xml"),
+              Path(".ci-test-results/backend-production.xml"),
+          )
+          found_report = False
+          failure_count = 0
+          for report in reports:
+              if not report.exists():
+                  continue
+              found_report = True
+              for case in ET.parse(report).iter("testcase"):
+                  failure = next((child for child in case if child.tag in {"failure", "error"}), None)
+                  if failure is not None:
+                      failure_count += 1
+                      print(f"::error::Failed backend test: {case.get('classname', '')}::{case.get('name', '')}")
+          if not found_report:
+              print("::notice::Backend pytest did not produce a JUnit report.")
+          elif not failure_count:
+              print("::notice::Backend pytest reports contain no failures.")
+          PY
+      - name: Remove transient backend test reports
+        if: always()
+        run: rm -rf .ci-test-results

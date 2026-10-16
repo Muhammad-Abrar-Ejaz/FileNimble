@@ -17,4 +17,6 @@ services:
     mem_limit: 1g
     # Trusted fault-injection harness; never present in a conversion container.
     user: "0:0"
-    volumes: [/var/run/docker.sock:/var/run/docker.sock]
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - ./.ci-test-results:/ci-test-results

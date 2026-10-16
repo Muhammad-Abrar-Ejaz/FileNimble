@@ -37,6 +37,7 @@ test-results/
 
 # Browser/test artifacts and Archify visual-review sidecars
 /test-artifacts/
+/.ci-test-results/
 /screenshots/
 /videos/
 /traces/
