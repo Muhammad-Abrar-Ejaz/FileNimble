@@ -36,11 +36,12 @@ jobs:
               exit 1
             fi
           done
-      - name: Python checks
-        run: |
-          docker run --rm filenimble-backend:phase5 ruff check --no-cache /app
-          docker run --rm filenimble-backend:phase5 ruff format --check --no-cache /app
-          docker run --rm filenimble-backend:phase5 pip check
+      - name: Ruff lint
+        run: docker run --rm filenimble-backend:phase5 ruff check --no-cache /app
+      - name: Ruff format check
+        run: docker run --rm filenimble-backend:phase5 ruff format --check --no-cache /app
+      - name: Python dependency integrity
+        run: docker run --rm filenimble-backend:phase5 pip check
       - name: Start real services
         run: docker compose --env-file .env.backend.local -f compose.yaml -f compose.test.yaml up -d postgres redis storage migrate api worker lifecycle supervisor
       - name: Prepare backend test reports
