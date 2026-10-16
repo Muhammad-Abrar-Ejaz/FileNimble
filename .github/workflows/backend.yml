@@ -90,11 +90,25 @@ jobs:
                           failure_count += 1
                           print(f"::error::Failed backend test: {case.get('classname', '')}::{case.get('name', '')}")
               elif output.exists():
-                  for line in output.read_text(errors="replace").splitlines():
+                  contents = output.read_text(errors="replace")
+                  for line in contents.splitlines():
                       match = re.match(r"^(FAILED|ERROR)\s+(\S+)", line)
                       if match:
                           failure_count += 1
                           print(f"::error::Pytest {match.group(1).lower()}: {match.group(2)}")
+                  if not any(re.match(r"^(FAILED|ERROR)\s+\S+", line) for line in contents.splitlines()):
+                      lowered = contents.lower()
+                      if any(term in lowered for term in ("oomkilled", "out of memory", "process was killed")):
+                          category = "runner-or-container-memory-termination"
+                      elif any(term in lowered for term in ("pytest: not found", "command not found", "executable file not found")):
+                          category = "pytest-command-startup-failure"
+                      elif any(term in lowered for term in ("error collecting", "error during collection", "no tests ran")):
+                          category = "pytest-collection-failure"
+                      elif any(term in lowered for term in ("error response from daemon", "cannot connect to the docker daemon", "container exited")):
+                          category = "docker-test-container-failure"
+                      else:
+                          category = "test-command-failed-without-pytest-summary"
+                      print(f"::error::Backend test diagnostic category: {category}")
           if not found_output:
               print("::notice::Backend pytest did not produce a test report or console output file.")
           elif not failure_count:
