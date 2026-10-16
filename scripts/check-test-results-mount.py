@@ -6,7 +6,12 @@ import sys
 from pathlib import Path
 
 
-config = json.load(sys.stdin)
+try:
+    config = json.load(sys.stdin)
+except json.JSONDecodeError:
+    print("::error::Compose did not emit valid JSON configuration.")
+    raise SystemExit(1)
+
 expected_source = Path(".ci-test-results").resolve()
 matches = [
     volume
@@ -15,13 +20,21 @@ matches = [
 ]
 
 if len(matches) != 1:
-    print("::error::Expected exactly one test-results bind mount at /ci-test-results.")
+    print(f"::error::Resolved test-results mount count at /ci-test-results: {len(matches)} (expected 1).")
     raise SystemExit(1)
 
 volume = matches[0]
 source = Path(os.path.expandvars(volume.get("source", ""))).resolve()
-if volume.get("type") != "bind" or source != expected_source or volume.get("read_only", False):
-    print("::error::Resolved test-results mount must be the writable workspace bind.")
+is_bind = volume.get("type") == "bind"
+source_matches = source == expected_source
+writable = not volume.get("read_only", False)
+print(
+    "Resolved mount flags: "
+    f"bind={str(is_bind).lower()}, workspace_source={str(source_matches).lower()}, "
+    f"writable={str(writable).lower()}."
+)
+if not is_bind or not source_matches or not writable:
+    print("::error::Resolved test-results mount does not match the writable workspace bind.")
     raise SystemExit(1)
 
-print("Resolved test-results bind: present, writable, and points at the job workspace.")
+print("Resolved test-results bind is valid.")

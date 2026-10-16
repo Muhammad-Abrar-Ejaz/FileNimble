@@ -45,9 +45,10 @@ jobs:
         run: docker compose --env-file .env.backend.local -f compose.yaml -f compose.test.yaml up -d postgres redis storage migrate api worker lifecycle supervisor
       - name: Prepare backend test reports
         run: mkdir -p .ci-test-results
-      - name: Verify resolved writable test-results bind
+      - name: Validate resolved test-results bind configuration
+        run: docker compose --env-file .env.backend.local -f compose.yaml -f compose.test.yaml config --format json | python scripts/check-test-results-mount.py
+      - name: Verify tests container can write through bind
         run: |
-          docker compose --env-file .env.backend.local -f compose.yaml -f compose.test.yaml config --format json | python scripts/check-test-results-mount.py
           docker compose --env-file .env.backend.local -f compose.yaml -f compose.test.yaml run --rm --no-deps tests python -c "from pathlib import Path; Path('/ci-test-results/.write-probe').write_text('ok', encoding='ascii')"
           test "$(cat .ci-test-results/.write-probe)" = "ok"
           rm .ci-test-results/.write-probe
@@ -88,6 +89,21 @@ jobs:
           )
           found_output = False
           failure_count = 0
+
+          def safe_count(value):
+              return str(value) if str(value).isdigit() else "unknown"
+
+          def safe_test_name(classname, name):
+              # Keep only static pytest identifiers. Parameter values may contain
+              # user data, URLs, or credentials, so omit bracketed parameters.
+              classname = str(classname or "").split("[", 1)[0]
+              name = str(name or "").split("[", 1)[0]
+              safe_class = re.fullmatch(r"[A-Za-z0-9_.]+", classname)
+              safe_name = re.fullmatch(r"[A-Za-z0-9_.-]+", name)
+              if safe_class and safe_name:
+                  return f"{classname}::{name}"[:180]
+              return "unrecognized-test-identifier"
+
           for report, output in test_runs:
               found_output = found_output or report.exists() or output.exists()
               valid_report = False
@@ -100,16 +116,19 @@ jobs:
                       valid_report = True
                       print(
                           "::notice::Backend pytest report: "
-                          f"{root.get('tests', 'unknown')} tests; "
-                          f"{root.get('failures', '0')} failures; "
-                          f"{root.get('errors', '0')} errors; "
-                          f"{root.get('skipped', '0')} skipped."
+                          f"{safe_count(root.get('tests', 'unknown'))} tests; "
+                          f"{safe_count(root.get('failures', '0'))} failures; "
+                          f"{safe_count(root.get('errors', '0'))} errors; "
+                          f"{safe_count(root.get('skipped', '0'))} skipped."
                       )
                       for case in root.iter("testcase"):
                           failure = next((child for child in case if child.tag in {"failure", "error"}), None)
                           if failure is not None:
                               failure_count += 1
-                              print(f"::error::Failed backend test: {case.get('classname', '')}::{case.get('name', '')}")
+                              print(
+                                  "::error::Failed backend test: "
+                                  f"{safe_test_name(case.get('classname'), case.get('name'))}"
+                              )
               if output.exists() and not valid_report:
                   contents = output.read_text(errors="replace")
                   output_failures = 0
@@ -117,7 +136,10 @@ jobs:
                       match = re.search(r"\b(FAILED|ERROR)\s+([A-Za-z0-9_./:-]+::[^\s]+)", line)
                       if match:
                           output_failures += 1
-                          print(f"::error::Pytest {match.group(1).lower()}: {match.group(2)}")
+                          print(
+                              f"::error::Pytest {match.group(1).lower()}: "
+                              f"{safe_test_name(*match.group(2).split('::', 1))}"
+                          )
                   failure_count += output_failures
                   summary_line = next(
                       (
