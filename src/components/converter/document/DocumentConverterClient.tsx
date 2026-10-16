@@ -210,7 +210,10 @@ export function DocumentConverterClient({ tool }: { tool: DocumentTool }) {
       if (!href || typeof grant.expiresIn !== 'number' || grant.expiresIn <= 0) throw new Error('The download is unavailable or expired. Convert the document again.');
       const anchor = document.createElement('a');
       anchor.href = href; anchor.rel = 'noopener noreferrer'; anchor.referrerPolicy = 'no-referrer';
-      anchor.download = tool.slug + '-result.' + tool.output; anchor.click();
+      anchor.download = tool.slug + '-result.' + tool.output;
+      document.body.append(anchor);
+      anchor.click();
+      anchor.remove();
     } catch (error) {
       if (version === generation.current) {
         if (isExpired(error)) { job.current = null; resultId.current = null; setExpired(); }

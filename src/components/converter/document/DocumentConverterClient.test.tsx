@@ -87,10 +87,15 @@ describe('DocumentConverterClient server workflow', () => {
     expect(calls.some(call => call.url.endsWith('/complete-upload'))).toBe(true);
     expect(calls.filter(call => /\/api\/v1\/jobs\/[0-9a-f-]+$/.test(call.url))).toHaveLength(1);
 
-    const click = vi.spyOn(HTMLAnchorElement.prototype, 'click').mockImplementation(() => {});
+    let attachedDuringClick = false;
+    const click = vi.spyOn(HTMLAnchorElement.prototype, 'click').mockImplementation(function (this: HTMLAnchorElement) {
+      attachedDuringClick = this.isConnected;
+    });
     fireEvent.click(screen.getByRole('button', { name: 'Download' }));
     await waitFor(() => expect(click).toHaveBeenCalledOnce());
-    const anchor = click.mock.instances[0] as HTMLAnchorElement;
+    const anchor = click.mock.contexts[0] as HTMLAnchorElement;
+    expect(attachedDuringClick).toBe(true);
+    expect(anchor.isConnected).toBe(false);
     expect(anchor.href).toBe('https://transfer.example.test/transfers/download-token');
     expect(anchor.rel).toContain('noreferrer');
     expect(anchor.referrerPolicy).toBe('no-referrer');
