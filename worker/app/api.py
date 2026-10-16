@@ -20,11 +20,16 @@ from app.db import connect
 from app.schemas import Created, CreateJob, Download, DownloadRequest, Status, Transition
 from app.ai import AIRequest
 from app.security import digest, fail, issue_session, read_session, require_internal
+from app.production_policy import conversion_error
 
 
 @asynccontextmanager
 async def lifespan(app):
     settings.validate()
+    if settings.environment == "production":
+        from app.transfer_tokens import signing_secret
+
+        signing_secret()
     yield
 
 
@@ -73,6 +78,10 @@ async def boundary(request: Request, call_next):
                 request.state.ip = digest(request.headers.get("x-client-ip", "local"))
                 jobs.rate_limit("request-owner:" + request.state.owner, 120)
                 jobs.rate_limit("request-ip:" + request.state.ip, 600)
+                if request.method == "POST" and request.url.path == "/api/v1/jobs":
+                    jobs.rate_limit(
+                        "create-ip:" + request.state.ip, settings.create_rate_per_ip
+                    )
                 if is_ai_process:
                     jobs.rate_limit("ai-minute-owner:" + request.state.owner, 3)
                     jobs.rate_limit("ai-minute-ip:" + request.state.ip, 10)
@@ -130,6 +139,9 @@ def public_tools():
     result = []
     for tool in json.loads(Path("registry.json").read_text()):
         if tool["slug"] not in seen:
+            if tool.get("processingMode") == "server":
+                error = conversion_error(tool["slug"], settings)
+                tool["runtimeAvailability"] = {"available": error is None, "error": error}
             result.append(tool)
             seen.add(tool["slug"])
     return result
@@ -192,6 +204,8 @@ async def ai_process(body: AIRequest, request: Request):
 
 @app.post("/api/v1/jobs", response_model=Created, status_code=201)
 def create(body: CreateJob, request: Request):
+    if settings.environment == "production" and not settings.production_conversions:
+        fail("SERVICE_UNAVAILABLE", "Server conversions are awaiting deployment verification.", 503)
     key = request.headers.get("idempotency-key", "")
     if not re.fullmatch(r"[a-zA-Z0-9_-]{8,100}", key):
         fail("INVALID_REQUEST", "Provide a valid Idempotency-Key header.", 422)

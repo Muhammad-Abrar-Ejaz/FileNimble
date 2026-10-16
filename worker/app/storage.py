@@ -54,7 +54,11 @@ def remove(key):
     client().delete_object(Bucket=settings.bucket, Key=key)
 
 
-def sign_upload(key, ttl, size):
+def sign_upload(key, ttl, size, *, tool=None):
+    if settings.environment == "production":
+        from app.transfer_tokens import issue
+
+        return issue("PUT", key, ttl, size=size, tool=tool)
     # Signed Content-Length binds the grant to the declared size. Finalization still verifies bytes.
     return client(True).generate_presigned_url(
         "put_object",
@@ -69,6 +73,10 @@ def sign_upload(key, ttl, size):
 
 
 def sign_download(key, ttl, filename="fixture-result.bin", media_type="application/octet-stream"):
+    if settings.environment == "production":
+        from app.transfer_tokens import issue
+
+        return issue("GET", key, ttl, filename=filename, media_type=media_type)
     return client(True).generate_presigned_url(
         "get_object",
         Params={

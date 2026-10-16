@@ -21,10 +21,12 @@ def restricted(command, memory="512m"):
     try:
         container.start()
         result = container.wait(timeout=15)
+        output = container.logs()
+        # attrs is cached: refresh after log collection, matching the CLI/SDK diagnostic.
         container.reload()
         return (
             result["StatusCode"],
-            container.logs(),
+            output,
             container.attrs["State"].get("OOMKilled", False),
         )
     finally:

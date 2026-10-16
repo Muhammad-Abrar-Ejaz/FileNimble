@@ -6,16 +6,25 @@ from app.config import settings
 from app.db import connect, counter, heartbeat
 from app.jobs import now
 from app.tasks import process
+from app.production_policy import conversion_error
 
 logger = logging.getLogger("lifecycle")
+UPLOAD_CLEANUP_GRACE_SECONDS = 90
 
 
 def dispatch():
     with connect() as db:
         rows = db.execute(
-            "SELECT id FROM conversion_jobs WHERE state='QUEUED' AND dispatch_at<=now() AND expires_at>now() AND deleted_at IS NULL AND (dispatched_at IS NULL OR dispatched_at<now()-interval '10 seconds') FOR UPDATE SKIP LOCKED LIMIT 10"
+            "SELECT id,capability FROM conversion_jobs WHERE state='QUEUED' AND dispatch_at<=now() AND expires_at>now() AND deleted_at IS NULL AND (dispatched_at IS NULL OR dispatched_at<now()-interval '10 seconds') FOR UPDATE SKIP LOCKED LIMIT 10"
         ).fetchall()
         for row in rows:
+            error = conversion_error(row["capability"], settings)
+            if error:
+                db.execute(
+                    "UPDATE conversion_jobs SET state='FAILED',error_code=%s,cleanup_after=now(),completed_at=now() WHERE id=%s",
+                    (error, row["id"]),
+                )
+                continue
             try:
                 process.apply_async(args=[str(row["id"])], retry=False)
             except Exception:
@@ -54,6 +63,10 @@ def recover():
 def cleanup():
     with connect() as db:
         db.execute(
+            "UPDATE conversion_jobs SET state='EXPIRED',cleanup_after=now() WHERE state='UPLOADING' AND upload_expires_at<=now()-(%s * interval '1 second') AND deleted_at IS NULL",
+            (UPLOAD_CLEANUP_GRACE_SECONDS,),
+        )
+        db.execute(
             "UPDATE conversion_jobs SET state='EXPIRED',cleanup_after=now() WHERE expires_at<=now() AND state NOT IN ('EXPIRED','CANCELLED','FAILED')"
         )
         rows = db.execute(
@@ -87,6 +100,14 @@ def cleanup():
         db.execute(
             "DELETE FROM quota_windows WHERE window_id<%s AND subject LIKE 'request-%%'",
             (int(time.time()) // 60 - 60,),
+        )
+        db.execute(
+            "DELETE FROM quota_windows WHERE window_id<%s AND subject LIKE 'create-ip:%%'",
+            (int(time.time()) // 60 - 60,),
+        )
+        db.execute(
+            "DELETE FROM quota_windows WHERE window_id<%s AND subject='create-global'",
+            (int(time.time()) // settings.create_rate_global_window_seconds - 2,),
         )
         db.execute(
             "DELETE FROM quota_windows WHERE window_id<%s AND subject LIKE 'bytes-%%'",

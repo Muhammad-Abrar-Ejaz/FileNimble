@@ -15,7 +15,7 @@ from app import storage
 from app.config import settings
 from app.db import connect, migrate
 from app.lifecycle import cleanup, recover
-from app.security import issue_session
+from app.security import digest, issue_session
 from app.tasks import process
 
 pytestmark = pytest.mark.integration
@@ -231,6 +231,297 @@ def test_idempotency_concurrent_reservation_and_conflict():
                 ).fetchone()["n"]
                 == 1
             )
+
+
+def test_global_queue_admission_is_atomic_across_anonymous_sessions():
+    active_states = ["CREATED", "UPLOADING", "VALIDATING", "QUEUED", "PROCESSING"]
+    with connect() as db:
+        baseline = db.execute(
+            "SELECT count(*) AS n FROM conversion_jobs WHERE state=ANY(%s) AND expires_at>now() AND deleted_at IS NULL",
+            (active_states,),
+        ).fetchone()["n"]
+        total_before = db.execute("SELECT count(*) AS n FROM conversion_jobs").fetchone()["n"]
+    assert baseline == 0, "isolated stack must start with no active jobs"
+
+    def submit(_index):
+        with client() as c:
+            response = c.post(
+                "/api/v1/jobs",
+                headers={"Idempotency-Key": str(uuid4())},
+                json={
+                    "tool": "__fixture__",
+                    "files": [
+                        {
+                            "name": "test.fixture",
+                            "size": len(DATA),
+                            "type": "application/octet-stream",
+                        }
+                    ],
+                    "options": {"behavior": "normal"},
+                },
+            )
+            return response.status_code, response.json()
+
+    with ThreadPoolExecutor(max_workers=8) as pool:
+        results = list(pool.map(submit, range(8)))
+
+    accepted = [body for status, body in results if status == 201]
+    rejected = [body for status, body in results if status == 429]
+    assert len(accepted) == settings.max_global_jobs
+    assert len(rejected) == 8 - settings.max_global_jobs
+    assert all(body["error"] == "QUEUE_FULL" for body in rejected)
+    assert all("Try again" in body["message"] for body in rejected)
+    with connect() as db:
+        active = db.execute(
+            "SELECT count(*) AS n FROM conversion_jobs WHERE state=ANY(%s) AND expires_at>now() AND deleted_at IS NULL",
+            (active_states,),
+        ).fetchone()["n"]
+        total_after = db.execute("SELECT count(*) AS n FROM conversion_jobs").fetchone()["n"]
+    assert active == settings.max_global_jobs
+    assert total_after == total_before + settings.max_global_jobs
+
+
+def test_active_job_limit_is_shared_by_anonymous_sessions_from_one_ip():
+    raw_ip = "198.51.100.42"
+    clients = []
+    try:
+        for _ in range(settings.max_ip_jobs):
+            c = httpx.Client(
+                base_url=API,
+                headers={"x-internal-key": settings.internal_secret, "x-client-ip": raw_ip},
+                timeout=10,
+            )
+            clients.append(c)
+            assert create(c)
+        c = httpx.Client(
+            base_url=API,
+            headers={"x-internal-key": settings.internal_secret, "x-client-ip": raw_ip},
+            timeout=10,
+        )
+        clients.append(c)
+        response = c.post(
+            "/api/v1/jobs",
+            headers={"Idempotency-Key": str(uuid4())},
+            json={
+                "tool": "__fixture__",
+                "files": [
+                    {
+                        "name": "test.fixture",
+                        "size": len(DATA),
+                        "type": "application/octet-stream",
+                    }
+                ],
+            },
+        )
+        assert response.status_code == 429
+        assert response.json()["error"] == "RATE_LIMITED"
+    finally:
+        for c in clients:
+            c.close()
+
+
+def test_per_ip_active_job_limit_is_atomic_across_concurrent_sessions():
+    raw_ip = "198.51.100.45"
+
+    def submit(_index):
+        with httpx.Client(
+            base_url=API,
+            headers={"x-internal-key": settings.internal_secret, "x-client-ip": raw_ip},
+            timeout=10,
+        ) as c:
+            response = c.post(
+                "/api/v1/jobs",
+                headers={"Idempotency-Key": str(uuid4())},
+                json={
+                    "tool": "__fixture__",
+                    "files": [
+                        {
+                            "name": "test.fixture",
+                            "size": len(DATA),
+                            "type": "application/octet-stream",
+                        }
+                    ],
+                },
+            )
+            return response.status_code, response.json()
+
+    with ThreadPoolExecutor(max_workers=8) as pool:
+        results = list(pool.map(submit, range(8)))
+    assert sum(status == 201 for status, _ in results) == settings.max_ip_jobs
+    rejected = [body for status, body in results if status == 429]
+    assert len(rejected) == 8 - settings.max_ip_jobs
+    assert all(body["error"] == "RATE_LIMITED" for body in rejected)
+    with connect() as db:
+        assert db.execute(
+            "SELECT count(*) AS n FROM conversion_jobs WHERE ip_hash=%s AND state=ANY(%s) AND expires_at>now() AND deleted_at IS NULL",
+            (digest(raw_ip), list(ACTIVE)),
+        ).fetchone()["n"] == settings.max_ip_jobs
+
+
+def test_creation_rate_limit_is_shared_by_anonymous_sessions_from_one_ip():
+    raw_ip = "198.51.100.43"
+    responses = []
+    for _ in range(settings.create_rate_per_ip + 1):
+        with httpx.Client(
+            base_url=API,
+            headers={"x-internal-key": settings.internal_secret, "x-client-ip": raw_ip},
+            timeout=10,
+        ) as c:
+            responses.append(
+                c.post(
+                    "/api/v1/jobs",
+                    headers={"Idempotency-Key": str(uuid4())},
+                    json={
+                        "tool": "__fixture__",
+                        "files": [
+                            {
+                                "name": "test.fixture",
+                                "size": len(DATA),
+                                "type": "application/octet-stream",
+                            }
+                        ],
+                    },
+                )
+            )
+    assert responses[-1].status_code == 429
+    assert responses[-1].json() == {
+        "error": "RATE_LIMITED",
+        "message": "Please wait before trying again.",
+    }
+
+
+def test_global_hourly_admission_limit_is_transactional():
+    window_id = int(time.time()) // 3600
+    try:
+        with connect() as db:
+            db.execute(
+                "INSERT INTO quota_windows(subject,window_id,requests) VALUES ('create-global',%s,%s) ON CONFLICT(subject,window_id) DO UPDATE SET requests=EXCLUDED.requests",
+                (window_id, settings.create_rate_global),
+            )
+        with client() as c:
+            response = c.post(
+                "/api/v1/jobs",
+                headers={"Idempotency-Key": str(uuid4())},
+                json={
+                    "tool": "__fixture__",
+                    "files": [
+                        {
+                            "name": "test.fixture",
+                            "size": len(DATA),
+                            "type": "application/octet-stream",
+                        }
+                    ],
+                },
+            )
+            assert response.status_code == 429
+            assert response.json()["error"] == "RATE_LIMITED"
+        with connect() as db:
+            assert db.execute(
+                "SELECT requests FROM quota_windows WHERE subject='create-global' AND window_id=%s",
+                (window_id,),
+            ).fetchone()["requests"] == settings.create_rate_global
+    finally:
+        with connect() as db:
+            db.execute(
+                "DELETE FROM quota_windows WHERE subject='create-global' AND window_id=%s",
+                (window_id,),
+            )
+
+
+def test_global_hourly_admission_limit_is_atomic_under_race():
+    window_id = int(time.time()) // 3600
+    with connect() as db:
+        db.execute(
+            "INSERT INTO quota_windows(subject,window_id,requests) VALUES ('create-global',%s,%s) ON CONFLICT(subject,window_id) DO UPDATE SET requests=EXCLUDED.requests",
+            (window_id, settings.create_rate_global - 1),
+        )
+
+    def submit(_index):
+        with client() as c:
+            response = c.post(
+                "/api/v1/jobs",
+                headers={"Idempotency-Key": str(uuid4())},
+                json={
+                    "tool": "__fixture__",
+                    "files": [
+                        {
+                            "name": "test.fixture",
+                            "size": len(DATA),
+                            "type": "application/octet-stream",
+                        }
+                    ],
+                },
+            )
+            return response.status_code, response.json()
+
+    try:
+        with ThreadPoolExecutor(max_workers=8) as pool:
+            results = list(pool.map(submit, range(8)))
+        assert sum(status == 201 for status, _ in results) == 1
+        rejected = [body for status, body in results if status == 429]
+        assert len(rejected) == 7
+        assert all(body["error"] == "RATE_LIMITED" for body in rejected)
+        with connect() as db:
+            assert db.execute(
+                "SELECT requests FROM quota_windows WHERE subject='create-global' AND window_id=%s",
+                (window_id,),
+            ).fetchone()["requests"] == settings.create_rate_global
+    finally:
+        with connect() as db:
+            db.execute(
+                "DELETE FROM quota_windows WHERE subject='create-global' AND window_id=%s",
+                (window_id,),
+            )
+
+
+def test_expired_upload_releases_capacity_and_cleans_the_temporary_object():
+    raw_ip = "198.51.100.44"
+    with httpx.Client(
+        base_url=API,
+        headers={"x-internal-key": settings.internal_secret, "x-client-ip": raw_ip},
+        timeout=10,
+    ) as c:
+        abandoned = create(c)
+        upload(abandoned)
+        with connect() as db:
+            uploaded = db.execute(
+                "SELECT object_key FROM job_files WHERE job_id=%s AND role='upload'",
+                (abandoned["jobId"],),
+            ).fetchone()
+            db.execute(
+                "UPDATE conversion_jobs SET upload_expires_at=now()-interval '30 seconds' WHERE id=%s",
+                (abandoned["jobId"],),
+            )
+        # Expired signed grants no longer occupy per-IP/global admission slots.
+        replacement = create(c)
+        assert replacement["jobId"] != abandoned["jobId"]
+        cleanup()
+        with connect() as db:
+            still_pending = db.execute(
+                "SELECT state,purged_at FROM conversion_jobs WHERE id=%s",
+                (abandoned["jobId"],),
+            ).fetchone()
+        assert still_pending["state"] == "UPLOADING" and still_pending["purged_at"] is None
+        assert storage.client().head_object(Bucket=settings.bucket, Key=uploaded["object_key"])
+        with connect() as db:
+            db.execute(
+                "UPDATE conversion_jobs SET upload_expires_at=now()-interval '91 seconds' WHERE id=%s",
+                (abandoned["jobId"],),
+            )
+        cleanup()
+        with connect() as db:
+            row = db.execute(
+                "SELECT state,purged_at FROM conversion_jobs WHERE id=%s",
+                (abandoned["jobId"],),
+            ).fetchone()
+            file = db.execute(
+                "SELECT purged_at FROM job_files WHERE job_id=%s AND role='upload'",
+                (abandoned["jobId"],),
+            ).fetchone()
+        assert row["state"] == "EXPIRED" and row["purged_at"]
+        assert file["purged_at"]
+        with pytest.raises(ClientError):
+            storage.client().head_object(Bucket=settings.bucket, Key=uploaded["object_key"])
 
 
 def test_duplicate_finalize_and_queue_delivery():

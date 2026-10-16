@@ -17,6 +17,10 @@ jobs:
           node-version: 22
       - name: Generate local-only test configuration
         run: node scripts/setup-backend.mjs
+      - name: Validate fail-closed Oracle deployment configuration
+        run: |
+          node scripts/setup-oracle.mjs --host api.filenimble.app --email ci@example.net
+          node scripts/check-oracle.mjs
       - name: Validate and build backend test images
         run: |
           node scripts/prepare-media.mjs
@@ -38,7 +42,14 @@ jobs:
       - name: Start real services
         run: docker compose --env-file .env.backend.local -f compose.yaml -f compose.test.yaml up -d postgres redis storage migrate api worker lifecycle supervisor
       - name: Real pipeline and failure-injection tests
-        run: docker compose --env-file .env.backend.local -f compose.yaml -f compose.test.yaml run --rm tests pytest -q
+        run: docker compose --env-file .env.backend.local -f compose.yaml -f compose.test.yaml run --rm tests pytest -q -m "not production_integration"
       - name: Stop disposable test stack
         if: always()
         run: docker compose --env-file .env.backend.local -f compose.yaml -f compose.test.yaml down -v --remove-orphans
+      - name: Start isolated production-mode test services
+        run: docker compose --env-file .env.backend.local -f compose.yaml -f compose.test.yaml -f compose.production-test.yaml up -d postgres redis storage migrate api transfers worker lifecycle supervisor
+      - name: Production transfer, archive, and sandbox tests
+        run: docker compose --env-file .env.backend.local -f compose.yaml -f compose.test.yaml -f compose.production-test.yaml run --rm tests pytest -q -m production_integration
+      - name: Stop isolated production-mode test stack
+        if: always()
+        run: docker compose --env-file .env.backend.local -f compose.yaml -f compose.test.yaml -f compose.production-test.yaml down -v --remove-orphans
