@@ -444,7 +444,16 @@ def test_cleanup_failure_is_recorded_and_retried():
                 assert row["cleanup_failures"] > 0 and row["purged_at"] is None
         finally:
             store.start()
-        time.sleep(2)
+        storage_client = storage.client()
+        deadline = time.monotonic() + 30
+        while time.monotonic() < deadline:
+            try:
+                storage_client.head_bucket(Bucket=settings.bucket)
+                break
+            except Exception:
+                time.sleep(0.25)
+        else:
+            pytest.fail("Object storage did not become ready after restart")
         cleanup()
         with connect() as db:
             assert db.execute(

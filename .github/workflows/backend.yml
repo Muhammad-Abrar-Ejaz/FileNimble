@@ -17,10 +17,19 @@ jobs:
           node-version: 22
       - name: Generate local-only test configuration
         run: node scripts/setup-backend.mjs
-      - name: Validate and build
+      - name: Validate and build backend test images
         run: |
+          node scripts/prepare-media.mjs
           docker compose --env-file .env.backend.local -f compose.yaml -f compose.test.yaml config --quiet
-          docker compose --env-file .env.backend.local --profile build build api sandbox-image
+          docker compose --env-file .env.backend.local --profile build build api sandbox-image ocr-image media-image archive-image
+      - name: Verify required backend test images
+        run: |
+          for image in filenimble-backend:phase5 filenimble-sandbox:phase5 filenimble-ocr:phase7 filenimble-media:phase11 filenimble-archive:phase11; do
+            if ! docker image inspect "$image" >/dev/null 2>&1; then
+              echo "::error::Required backend test image is missing: $image"
+              exit 1
+            fi
+          done
       - name: Python checks
         run: |
           docker run --rm filenimble-backend:phase5 ruff check --no-cache /app

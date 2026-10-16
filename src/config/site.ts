@@ -2,7 +2,7 @@ export const siteConfig = {
   name: "FileNimble",
   tagline: "Any file. Right format.",
   description:
-    "Convert images, PDFs and structured data, or recognize scanned text. Choose browser processing or temporary server processing with clear limits for each tool.",
+    "Convert images, PDFs and structured data with browser tools or the currently supported temporary server converters, with clear limits for each tool.",
   url: new URL(process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000").origin,
   ogImage: "/brand/filenimble-logo.png",
   links: {

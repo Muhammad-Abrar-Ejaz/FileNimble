@@ -47,7 +47,7 @@ export default function HomePage() {
             </h1>
 
             <p className="mt-5 text-base sm:text-lg text-text-muted leading-relaxed max-w-2xl mx-auto">
-              Convert images, organize PDF pages, recognize scanned English text, and transform documents or data. Check the processing label and supported formats on each tool; unavailable tools remain marked planned.
+              Convert images, organize PDF pages, and transform supported documents or data. Check each tool’s processing label and limits; converters outside the current release remain marked planned.
             </p>
 
             {/* Quick feature pill row */}

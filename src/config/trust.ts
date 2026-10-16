@@ -3,8 +3,8 @@ export const trustPages = {
     title: 'About FileNimble', description: 'Learn how FileNimble approaches file conversion, browser privacy, temporary server processing and realistic format limits.',
     sections: [
       ['Useful conversions, clear limits', 'FileNimble brings image, PDF, document and data tools into one interface. The tool directory lists currently available tools. Planned tools are not promises of a release date. Every format has tradeoffs: changing a filename is not conversion, and converting a document cannot guarantee that its original layout or features survive.'],
-      ['Choose where your files are processed', 'Image tools, PDF page tools and supported text/data tools run in your browser. OCR and supported document conversions need isolated server workers. The processing label on each tool explains the difference before conversion.'],
-      ['Review the result', 'Check page order, layout, extracted text and data types before relying on output. OCR recognizes printed English within the limits shown on the tool; it can misread characters. FileNimble does not certify legal validity, accessibility, archival compliance or malware safety of ordinary conversion results.'],
+      ['Choose where your files are processed', 'Image tools, PDF page tools and supported text/data tools run in your browser. Server converters, when available, use isolated workers. The processing label on each available tool explains the difference before conversion.'],
+      ['Review the result', 'Check page order, layout, extracted text and data types before relying on output. When OCR tools are available, they can misread characters and require review. FileNimble does not certify legal validity, accessibility, archival compliance or malware safety of ordinary conversion results.'],
     ],
   },
   privacy: {
