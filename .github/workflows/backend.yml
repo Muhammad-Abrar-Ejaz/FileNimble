@@ -45,6 +45,13 @@ jobs:
         run: docker compose --env-file .env.backend.local -f compose.yaml -f compose.test.yaml up -d postgres redis storage migrate api worker lifecycle supervisor
       - name: Prepare backend test reports
         run: mkdir -p .ci-test-results
+      - name: Verify resolved writable test-results bind
+        run: |
+          docker compose --env-file .env.backend.local -f compose.yaml -f compose.test.yaml config --format json | python scripts/check-test-results-mount.py
+          docker compose --env-file .env.backend.local -f compose.yaml -f compose.test.yaml run --rm --no-deps tests python -c "from pathlib import Path; Path('/ci-test-results/.write-probe').write_text('ok', encoding='ascii')"
+          test "$(cat .ci-test-results/.write-probe)" = "ok"
+          rm .ci-test-results/.write-probe
+          echo "Tests container can write through the configured results bind."
       - name: Real pipeline and failure-injection tests
         run: |
           set +e
@@ -83,20 +90,57 @@ jobs:
           failure_count = 0
           for report, output in test_runs:
               found_output = found_output or report.exists() or output.exists()
+              valid_report = False
               if report.exists():
-                  for case in ET.parse(report).iter("testcase"):
-                      failure = next((child for child in case if child.tag in {"failure", "error"}), None)
-                      if failure is not None:
-                          failure_count += 1
-                          print(f"::error::Failed backend test: {case.get('classname', '')}::{case.get('name', '')}")
-              elif output.exists():
+                  try:
+                      root = ET.parse(report).getroot()
+                  except ET.ParseError:
+                      print("::error::Backend pytest report is incomplete or malformed.")
+                  else:
+                      valid_report = True
+                      print(
+                          "::notice::Backend pytest report: "
+                          f"{root.get('tests', 'unknown')} tests; "
+                          f"{root.get('failures', '0')} failures; "
+                          f"{root.get('errors', '0')} errors; "
+                          f"{root.get('skipped', '0')} skipped."
+                      )
+                      for case in root.iter("testcase"):
+                          failure = next((child for child in case if child.tag in {"failure", "error"}), None)
+                          if failure is not None:
+                              failure_count += 1
+                              print(f"::error::Failed backend test: {case.get('classname', '')}::{case.get('name', '')}")
+              if output.exists() and not valid_report:
                   contents = output.read_text(errors="replace")
+                  output_failures = 0
                   for line in contents.splitlines():
-                      match = re.match(r"^(FAILED|ERROR)\s+(\S+)", line)
+                      match = re.search(r"\b(FAILED|ERROR)\s+([A-Za-z0-9_./:-]+::[^\s]+)", line)
                       if match:
-                          failure_count += 1
+                          output_failures += 1
                           print(f"::error::Pytest {match.group(1).lower()}: {match.group(2)}")
-                  if not any(re.match(r"^(FAILED|ERROR)\s+\S+", line) for line in contents.splitlines()):
+                  failure_count += output_failures
+                  summary_line = next(
+                      (
+                          line
+                          for line in contents.splitlines()
+                          if " in " in line
+                          and re.search(r"\d+\s+(?:passed|failed|errors?|skipped)", line)
+                      ),
+                      "",
+                  )
+                  if summary_line:
+                      counts = {
+                          name: (re.search(rf"(\d+)\s+{name}", summary_line).group(1)
+                                 if re.search(rf"(\d+)\s+{name}", summary_line)
+                                 else "0")
+                          for name in ("passed", "failed", "errors?", "skipped")
+                      }
+                      print(
+                          "::notice::Backend pytest console counts: "
+                          f"{counts['passed']} passed; {counts['failed']} failed; "
+                          f"{counts['errors?']} errors; {counts['skipped']} skipped."
+                      )
+                  if not output_failures:
                       lowered = contents.lower()
                       if any(term in lowered for term in ("oomkilled", "out of memory", "process was killed")):
                           category = "runner-or-container-memory-termination"
@@ -104,6 +148,10 @@ jobs:
                           category = "pytest-command-startup-failure"
                       elif any(term in lowered for term in ("error collecting", "error during collection", "no tests ran")):
                           category = "pytest-collection-failure"
+                      elif any(term in lowered for term in ("junitxml", "junit xml", "permission denied", "failed to write")):
+                          category = "test-report-generation-failure"
+                      elif any(term in lowered for term in ("timeout", "timed out", "timeouterror")):
+                          category = "test-execution-timeout"
                       elif any(term in lowered for term in ("error response from daemon", "cannot connect to the docker daemon", "container exited")):
                           category = "docker-test-container-failure"
                       else:
