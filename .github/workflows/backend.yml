@@ -46,14 +46,24 @@ jobs:
       - name: Prepare backend test reports
         run: mkdir -p .ci-test-results
       - name: Real pipeline and failure-injection tests
-        run: docker compose --env-file .env.backend.local -f compose.yaml -f compose.test.yaml run --rm tests pytest -q -m "not production_integration" --junitxml=/ci-test-results/backend-standard.xml
+        run: |
+          set +e
+          docker compose --env-file .env.backend.local -f compose.yaml -f compose.test.yaml run --rm tests pytest -q -m "not production_integration" --junitxml=/ci-test-results/backend-standard.xml >.ci-test-results/backend-standard.log 2>&1
+          status=$?
+          echo "Standard backend pytest exit code: $status"
+          exit "$status"
       - name: Stop disposable test stack
         if: always()
         run: docker compose --env-file .env.backend.local -f compose.yaml -f compose.test.yaml down -v --remove-orphans
       - name: Start isolated production-mode test services
         run: docker compose --env-file .env.backend.local -f compose.yaml -f compose.test.yaml -f compose.production-test.yaml up -d postgres redis storage migrate api transfers worker lifecycle supervisor
       - name: Production transfer, archive, and sandbox tests
-        run: docker compose --env-file .env.backend.local -f compose.yaml -f compose.test.yaml -f compose.production-test.yaml run --rm tests pytest -q -m production_integration --junitxml=/ci-test-results/backend-production.xml
+        run: |
+          set +e
+          docker compose --env-file .env.backend.local -f compose.yaml -f compose.test.yaml -f compose.production-test.yaml run --rm tests pytest -q -m production_integration --junitxml=/ci-test-results/backend-production.xml >.ci-test-results/backend-production.log 2>&1
+          status=$?
+          echo "Production-mode backend pytest exit code: $status"
+          exit "$status"
       - name: Stop isolated production-mode test stack
         if: always()
         run: docker compose --env-file .env.backend.local -f compose.yaml -f compose.test.yaml -f compose.production-test.yaml down -v --remove-orphans
@@ -63,26 +73,32 @@ jobs:
           python - <<'PY'
           import xml.etree.ElementTree as ET
           from pathlib import Path
+          import re
 
-          reports = (
-              Path(".ci-test-results/backend-standard.xml"),
-              Path(".ci-test-results/backend-production.xml"),
+          test_runs = (
+              (Path(".ci-test-results/backend-standard.xml"), Path(".ci-test-results/backend-standard.log")),
+              (Path(".ci-test-results/backend-production.xml"), Path(".ci-test-results/backend-production.log")),
           )
-          found_report = False
+          found_output = False
           failure_count = 0
-          for report in reports:
-              if not report.exists():
-                  continue
-              found_report = True
-              for case in ET.parse(report).iter("testcase"):
-                  failure = next((child for child in case if child.tag in {"failure", "error"}), None)
-                  if failure is not None:
-                      failure_count += 1
-                      print(f"::error::Failed backend test: {case.get('classname', '')}::{case.get('name', '')}")
-          if not found_report:
-              print("::notice::Backend pytest did not produce a JUnit report.")
+          for report, output in test_runs:
+              found_output = found_output or report.exists() or output.exists()
+              if report.exists():
+                  for case in ET.parse(report).iter("testcase"):
+                      failure = next((child for child in case if child.tag in {"failure", "error"}), None)
+                      if failure is not None:
+                          failure_count += 1
+                          print(f"::error::Failed backend test: {case.get('classname', '')}::{case.get('name', '')}")
+              elif output.exists():
+                  for line in output.read_text(errors="replace").splitlines():
+                      match = re.match(r"^(FAILED|ERROR)\s+(\S+)", line)
+                      if match:
+                          failure_count += 1
+                          print(f"::error::Pytest {match.group(1).lower()}: {match.group(2)}")
+          if not found_output:
+              print("::notice::Backend pytest did not produce a test report or console output file.")
           elif not failure_count:
-              print("::notice::Backend pytest reports contain no failures.")
+              print("::notice::Backend pytest reports contain no failure node identifiers.")
           PY
       - name: Remove transient backend test reports
         if: always()
