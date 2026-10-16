@@ -108,6 +108,7 @@ jobs:
         run: |
           python - <<'PY'
           import xml.etree.ElementTree as ET
+          import os
           from pathlib import Path
           import re
 
@@ -117,6 +118,7 @@ jobs:
           )
           found_output = False
           failure_count = 0
+          summary_lines = []
           safe_parameters = {
               "image-to-text", "pdf-to-text", "ocr-pdf", "tar-to-zip", "zip-to-tar",
               "tar-zip", "zip-tar",
@@ -193,6 +195,13 @@ jobs:
                       print("::error::Backend pytest report is incomplete or malformed.")
                   else:
                       valid_report = True
+                      report_summary = (
+                          f"{report.stem}: {safe_count(root.get('tests', 'unknown'))} tests; "
+                          f"{safe_count(root.get('failures', '0'))} failures; "
+                          f"{safe_count(root.get('errors', '0'))} errors; "
+                          f"{safe_count(root.get('skipped', '0'))} skipped"
+                      )
+                      summary_lines.append(report_summary)
                       print(
                           "::notice::Backend pytest report: "
                           f"{safe_count(root.get('tests', 'unknown'))} tests; "
@@ -204,11 +213,13 @@ jobs:
                           failure = next((child for child in case if child.tag in {"failure", "error"}), None)
                           if failure is not None:
                               failure_count += 1
-                              print(
+                              failure_summary = (
                                   "::error::Failed backend test: "
                                   f"{safe_test_name(case.get('classname'), case.get('name'))} "
                                   f"({safe_failure_category(failure)})"
                               )
+                              summary_lines.append(failure_summary.replace("::error::", ""))
+                              print(failure_summary)
               if output.exists() and not valid_report:
                   contents = output.read_text(errors="replace")
                   output_failures = 0
@@ -216,10 +227,12 @@ jobs:
                       match = re.search(r"\b(FAILED|ERROR)\s+([A-Za-z0-9_./:-]+::[^\s]+)", line)
                       if match:
                           output_failures += 1
-                          print(
+                          failure_summary = (
                               f"::error::Pytest {match.group(1).lower()}: "
                               f"{safe_test_name(*match.group(2).split('::', 1))}"
                           )
+                          summary_lines.append(failure_summary.replace("::error::", ""))
+                          print(failure_summary)
                   failure_count += output_failures
                   summary_line = next(
                       (
@@ -237,11 +250,13 @@ jobs:
                                  else "0")
                           for name in ("passed", "failed", "errors?", "skipped")
                       }
-                      print(
+                      console_summary = (
                           "::notice::Backend pytest console counts: "
                           f"{counts['passed']} passed; {counts['failed']} failed; "
                           f"{counts['errors?']} errors; {counts['skipped']} skipped."
                       )
+                      summary_lines.append(console_summary.replace("::notice::", ""))
+                      print(console_summary)
                   if not output_failures:
                       lowered = contents.lower()
                       if any(term in lowered for term in ("oomkilled", "out of memory", "process was killed")):
@@ -258,11 +273,19 @@ jobs:
                           category = "docker-test-container-failure"
                       else:
                           category = "test-command-failed-without-pytest-summary"
+                      summary_lines.append(f"Diagnostic category: {category}")
                       print(f"::error::Backend test diagnostic category: {category}")
           if not found_output:
+              summary_lines.append("Backend pytest did not produce a report or console output file.")
               print("::notice::Backend pytest did not produce a test report or console output file.")
           elif not failure_count:
+              summary_lines.append("No failure node identifiers were reported.")
               print("::notice::Backend pytest reports contain no failure node identifiers.")
+          summary_path = Path(os.environ.get("GITHUB_STEP_SUMMARY", ".ci-test-results/backend-summary.md"))
+          summary_path.write_text(
+              "# Backend pytest results\n\n" + "\n".join(f"- {line}" for line in summary_lines) + "\n",
+              encoding="utf-8",
+          )
           PY
       - name: Remove transient backend test reports
         if: always()
