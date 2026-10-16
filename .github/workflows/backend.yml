@@ -47,10 +47,34 @@ jobs:
         run: mkdir -p .ci-test-results
       - name: Verify tests container can write through bind
         run: |
-          docker compose --env-file .env.backend.local -f compose.yaml -f compose.test.yaml run --rm --no-deps tests python -c "from pathlib import Path; Path('/ci-test-results/.write-probe').write_text('ok', encoding='ascii')"
-          test "$(cat .ci-test-results/.write-probe)" = "ok"
-          rm .ci-test-results/.write-probe
-          echo "Tests container can write through the configured results bind."
+          trap 'rm -f .ci-test-results/.write-probe .ci-test-results/.write-probe.log' EXIT
+          set +e
+          docker compose --env-file .env.backend.local -f compose.yaml -f compose.test.yaml run --rm --no-deps tests python -c "from pathlib import Path; Path('/ci-test-results/.write-probe').write_text('ok', encoding='ascii')" >.ci-test-results/.write-probe.log 2>&1
+          status=$?
+          set -e
+          if [ "$status" -ne 0 ]; then
+            if grep -Eqi 'permission denied|operation not permitted' .ci-test-results/.write-probe.log; then
+              echo "::error::Tests-container bind probe category: write-permission-denied."
+            elif grep -Eqi 'read-only file system' .ci-test-results/.write-probe.log; then
+              echo "::error::Tests-container bind probe category: mount-read-only."
+            elif grep -Eqi 'no such file or directory|not a directory' .ci-test-results/.write-probe.log; then
+              echo "::error::Tests-container bind probe category: target-or-source-path-missing."
+            elif grep -Eqi 'cannot connect to the docker daemon|error response from daemon|container exited' .ci-test-results/.write-probe.log; then
+              echo "::error::Tests-container bind probe category: container-startup-or-daemon-failure."
+            else
+              echo "::error::Tests-container bind probe category: command-failed (exit=$status)."
+            fi
+            exit "$status"
+          fi
+          if [ ! -f .ci-test-results/.write-probe ]; then
+            echo "::error::Tests-container bind probe category: host-readback-file-missing."
+            exit 1
+          fi
+          if [ "$(cat .ci-test-results/.write-probe)" != "ok" ]; then
+            echo "::error::Tests-container bind probe category: host-readback-content-mismatch."
+            exit 1
+          fi
+          echo "Tests-container bind probe: write and host readback passed."
       - name: Real pipeline and failure-injection tests
         run: |
           set +e
