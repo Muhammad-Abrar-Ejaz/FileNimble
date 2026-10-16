@@ -44,7 +44,12 @@ jobs:
       - name: Start real services
         run: docker compose --env-file .env.backend.local -f compose.yaml -f compose.test.yaml up -d postgres redis storage migrate api worker lifecycle supervisor
       - name: Prepare backend test reports
-        run: mkdir -p .ci-test-results
+        run: |
+          mkdir -p .ci-test-results
+          # The isolated test container may use a remapped UID on the hosted runner.
+          # Keep the CI-only report directory writable while the sticky bit protects
+          # files created by other UIDs within this disposable directory.
+          chmod 1777 .ci-test-results
       - name: Verify tests container can write through bind
         run: |
           trap 'rm -f .ci-test-results/.write-probe .ci-test-results/.write-probe.log' EXIT
