@@ -195,19 +195,26 @@ jobs:
                       print("::error::Backend pytest report is incomplete or malformed.")
                   else:
                       valid_report = True
+                      suites = [root] if root.tag == "testsuite" else root.findall("testsuite")
+                      def report_count(field):
+                          value = root.get(field)
+                          if value is None and suites:
+                              value = sum(int(suite.get(field, "0")) for suite in suites)
+                          return safe_count(value if value is not None else "unknown")
+
                       report_summary = (
-                          f"{report.stem}: {safe_count(root.get('tests', 'unknown'))} tests; "
-                          f"{safe_count(root.get('failures', '0'))} failures; "
-                          f"{safe_count(root.get('errors', '0'))} errors; "
-                          f"{safe_count(root.get('skipped', '0'))} skipped"
+                          f"{report.stem}: {report_count('tests')} tests; "
+                          f"{report_count('failures')} failures; "
+                          f"{report_count('errors')} errors; "
+                          f"{report_count('skipped')} skipped"
                       )
                       summary_lines.append(report_summary)
                       print(
                           "::notice::Backend pytest report: "
-                          f"{safe_count(root.get('tests', 'unknown'))} tests; "
-                          f"{safe_count(root.get('failures', '0'))} failures; "
-                          f"{safe_count(root.get('errors', '0'))} errors; "
-                          f"{safe_count(root.get('skipped', '0'))} skipped."
+                          f"{report_count('tests')} tests; "
+                          f"{report_count('failures')} failures; "
+                          f"{report_count('errors')} errors; "
+                          f"{report_count('skipped')} skipped."
                       )
                       for case in root.iter("testcase"):
                           failure = next((child for child in case if child.tag in {"failure", "error"}), None)
