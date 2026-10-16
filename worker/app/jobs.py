@@ -12,9 +12,11 @@ from app.capabilities import CAPABILITIES, get_capability
 from app.config import settings
 from app.db import connect
 from app.security import fail
+from app.production_policy import conversion_error
 
 ACTIVE = ("CREATED", "UPLOADING", "VALIDATING", "QUEUED", "PROCESSING")
 TERMINAL = ("FAILED", "CANCELLED", "EXPIRED")
+GLOBAL_QUEUE_LOCK = "filenimble-global-conversion-admission-v1"
 
 
 def now():
@@ -51,6 +53,7 @@ def rate_limit(subject, limit, window_seconds=60):
 def created_response(db, job):
     uploads = []
     if job["state"] == "UPLOADING":
+        require_conversion(job["capability"])
         ttl = min(settings.signed_ttl, int((job["upload_expires_at"] - now()).total_seconds()))
         if ttl <= 0:
             fail("JOB_EXPIRED", "The upload window has expired.", 410)
@@ -61,7 +64,9 @@ def created_response(db, job):
             {
                 "fileId": str(file["id"]),
                 "method": "PUT",
-                "url": storage.sign_upload(file["object_key"], ttl, job["source_bytes"]),
+                "url": storage.sign_upload(
+                    file["object_key"], ttl, job["source_bytes"], tool=job["capability"]
+                ),
                 "headers": {"Content-Type": "application/octet-stream"},
             }
         ]
@@ -73,7 +78,18 @@ def created_response(db, job):
     }
 
 
+def require_conversion(tool):
+    error = conversion_error(tool, settings)
+    if error:
+        fail(
+            error,
+            "This server converter is unavailable in this deployment.",
+            503 if error == "SERVICE_UNAVAILABLE" else 400,
+        )
+
+
 def create(request, owner, ip, key):
+    require_conversion(request.tool)
     if request.tool == "__fixture__":
         if not settings.fixture or settings.environment != "test":
             fail("UNSUPPORTED_FORMAT", "No server capability is enabled for this tool.")
@@ -96,6 +112,8 @@ def create(request, owner, ip, key):
         # Serialize quota reservation and idempotency per IP and session, in stable order.
         for subject in sorted(["ip:" + ip, "owner:" + owner]):
             db.execute("SELECT pg_advisory_xact_lock(hashtextextended(%s,0))", (subject,))
+        # Serialize global capacity checks across identities and API replicas.
+        db.execute("SELECT pg_advisory_xact_lock(hashtextextended(%s,0))", (GLOBAL_QUEUE_LOCK,))
         existing = db.execute(
             "SELECT * FROM conversion_jobs WHERE owner_hash=%s AND idempotency_key=%s FOR UPDATE",
             (owner, key),
@@ -110,12 +128,30 @@ def create(request, owner, ip, key):
             usable(existing)
             return created_response(db, existing)
         count = db.execute(
-            "SELECT count(*) AS n FROM conversion_jobs WHERE owner_hash=%s AND state=ANY(%s) AND expires_at>now() AND deleted_at IS NULL",
+            "SELECT count(*) AS n FROM conversion_jobs WHERE owner_hash=%s AND state=ANY(%s) AND expires_at>now() AND deleted_at IS NULL AND (state!='UPLOADING' OR upload_expires_at>now())",
             (owner, list(ACTIVE)),
         ).fetchone()["n"]
         is_ocr = request.tool in {"image-to-text", "pdf-to-text", "ocr-pdf"}
         if count >= (1 if is_ocr else settings.max_jobs):
             fail("RATE_LIMITED", "Too many active jobs.", 429)
+        ip_count = db.execute(
+            "SELECT count(*) AS n FROM conversion_jobs WHERE ip_hash=%s AND state=ANY(%s) AND expires_at>now() AND deleted_at IS NULL AND (state!='UPLOADING' OR upload_expires_at>now())",
+            (ip, list(ACTIVE)),
+        ).fetchone()["n"]
+        if ip_count >= settings.max_ip_jobs:
+            fail("RATE_LIMITED", "Too many active jobs from this network.", 429)
+        global_count = db.execute(
+            "SELECT count(*) AS n FROM conversion_jobs WHERE state=ANY(%s) AND expires_at>now() AND deleted_at IS NULL AND (state!='UPLOADING' OR upload_expires_at>now())",
+            (list(ACTIVE),),
+        ).fetchone()["n"]
+        if global_count >= settings.max_global_jobs:
+            fail("QUEUE_FULL", "Conversion capacity is full. Try again shortly.", 429)
+        global_rate = db.execute(
+            "INSERT INTO quota_windows(subject,window_id,requests) VALUES ('create-global',%s,1) ON CONFLICT(subject,window_id) DO UPDATE SET requests=quota_windows.requests+1 RETURNING requests",
+            (int(time.time()) // settings.create_rate_global_window_seconds,),
+        ).fetchone()["requests"]
+        if global_rate > settings.create_rate_global:
+            fail("RATE_LIMITED", "The beta conversion allowance is temporarily full.", 429)
         for subject, maximum in [
             (
                 "bytes-owner:" + owner,
@@ -178,6 +214,7 @@ def finalize(job_id, owner):
     with connect() as db:
         job = owned(db, job_id, owner)
         usable(job)
+        require_conversion(job["capability"])
         if job["state"] in ("QUEUED", "PROCESSING", "COMPLETED"):
             return {"state": job["state"]}
         if job["upload_expires_at"] <= now():

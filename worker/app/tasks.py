@@ -16,6 +16,7 @@ from app.capabilities import CAPABILITIES, get_capability
 from app.config import settings
 from app.db import connect, counter, heartbeat
 from app.jobs import now
+from app.production_policy import conversion_error
 
 celery = Celery("filenimble", broker=settings.redis)
 celery.conf.update(
@@ -129,10 +130,11 @@ def process(job_id):
             if job["capability"] == "__fixture__"
             else capability is not None and (capability.enabled or settings.native_test)
         )
-        if not allowed:
+        policy_error = conversion_error(job["capability"], settings)
+        if not allowed or policy_error:
             db.execute(
-                "UPDATE conversion_jobs SET state='FAILED',error_code='UNSUPPORTED_FORMAT',cleanup_after=now(),completed_at=now() WHERE id=%s",
-                (job_id,),
+                "UPDATE conversion_jobs SET state='FAILED',error_code=%s,cleanup_after=now(),completed_at=now() WHERE id=%s",
+                (policy_error or "UNSUPPORTED_FORMAT", job_id),
             )
             return
         db.execute(
@@ -142,6 +144,8 @@ def process(job_id):
                 settings.lease_seconds,
                 "tesseract-5.5.0-eng-v1"
                 if job["capability"] in {"image-to-text", "pdf-to-text", "ocr-pdf"}
+                else "phase11-archive-v1"
+                if capability is not None and capability.family == "archive"
                 else "phase5-fixture-v1",
                 job_id,
             ),

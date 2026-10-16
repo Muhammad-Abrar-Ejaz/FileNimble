@@ -4,6 +4,7 @@ Only fixed images and adapters are accepted. No host files enter a sandbox.
 """
 
 import json
+import os
 import socket
 import struct
 import tempfile
@@ -17,11 +18,14 @@ from fastapi import APIRouter, HTTPException, Request
 from fastapi.responses import FileResponse
 
 from phase11_policy import TOOLS as PHASE11_TOOLS, OUTPUT_LIMIT, ARCHIVE_INPUT_LIMIT
+from app.capabilities import get_capability
+from app.production_policy import conversion_error, runner_context
 
 router = APIRouter()
 runs = {}
 lock = threading.Lock()
 slots = threading.BoundedSemaphore(1)
+NAMESPACE = os.getenv("RUNNER_NAMESPACE", "local-phase6")
 MAX_INPUT = 25 * 1024 * 1024
 MAX_OUTPUT = 100 * 1024 * 1024
 TOOLS = {"word-to-pdf", "powerpoint-to-pdf", "excel-to-pdf"}
@@ -97,9 +101,15 @@ def policy(tool):
 
 
 def execute(record):
-    engine = docker.from_env(timeout=5)
+    engine = None
     container = connection = None
     try:
+        context = runner_context()
+        if context.environment == "production":
+            error = conversion_error(record["tool"], context)
+            if error:
+                raise ValueError(error)
+        engine = docker.from_env(timeout=5)
         family, memory, media_type, signature = policy(record["tool"])
         container = engine.containers.create(
             f"filenimble-{family}:phase11"
@@ -123,7 +133,7 @@ def execute(record):
                 else "rw,noexec,nosuid,nodev,size=256m,uid=10001,gid=10001,mode=700",
                 "/tmp": "rw,noexec,nosuid,nodev,size=32m,uid=10001,gid=10001,mode=700",  # noqa: S108 -- private per-job tmpfs.
             },
-            labels={"filenimble.sandbox": "local-phase6", "filenimble.started": str(time.time())},
+            labels={"filenimble.sandbox": NAMESPACE, "filenimble.started": str(time.time())},
             log_config=docker.types.LogConfig(type="none"),
         )
         container.start()
@@ -197,7 +207,14 @@ def execute(record):
                 raise ValueError("INVALID_OUTPUT")
         record["metadata"] = metadata
     except Exception as error:
-        allowed = {"CANCELLED", "INVALID_OUTPUT", "RESOURCE_LIMIT", "CONVERSION_TIMEOUT"}
+        allowed = {
+            "CANCELLED",
+            "INVALID_OUTPUT",
+            "RESOURCE_LIMIT",
+            "CONVERSION_TIMEOUT",
+            "UNSUPPORTED_FORMAT",
+            "SERVICE_UNAVAILABLE",
+        }
         record["error"] = str(error) if str(error) in allowed else "CONVERSION_FAILED"
         record["output"].unlink(missing_ok=True)
     finally:
@@ -208,7 +225,8 @@ def execute(record):
                 container.remove(force=True)
             except Exception:
                 record["error"] = "SERVICE_UNAVAILABLE"
-        engine.close()
+        if engine:
+            engine.close()
         record["input"].unlink(missing_ok=True)
         record["done"] = True
         record["finished"] = time.monotonic()
@@ -225,6 +243,16 @@ def sweep():
 
 @router.post("/native/{run_id}/{tool}", status_code=202)
 async def start(run_id: UUID, tool: str, request: Request):
+    if os.getenv("APP_ENV") == "production":
+        try:
+            get_capability(tool)
+        except ValueError:
+            raise HTTPException(404, "Unsupported capability") from None
+        error = conversion_error(tool, runner_context())
+        if error == "SERVICE_UNAVAILABLE":
+            raise HTTPException(503, "Deployment verification is pending")
+        if error:
+            raise HTTPException(404, "Unsupported capability")
     if tool not in TOOLS:
         raise HTTPException(404, "Unsupported capability")
     options = {}

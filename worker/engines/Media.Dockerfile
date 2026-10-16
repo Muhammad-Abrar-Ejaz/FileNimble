@@ -1,5 +1,5 @@
 FROM python:3.12-slim@sha256:2f17fc044b579bab302c2e8054d3a686e2cb9a83de48e70534b94cd8ebbe06a9 AS build
-RUN apt-get update && apt-get install -y --no-install-recommends build-essential pkg-config nasm curl ca-certificates xz-utils libvpx-dev zlib1g-dev
+RUN apt-get update && apt-get install -y --no-install-recommends build-essential pkg-config ca-certificates xz-utils libvpx-dev zlib1g-dev && if [ "$(dpkg --print-architecture)" = amd64 ]; then apt-get install -y --no-install-recommends nasm; fi && rm -rf /var/lib/apt/lists/*
 WORKDIR /build
 COPY --from=ffmpeg-source ffmpeg-8.1.3.tar.xz /build/ffmpeg.tar.xz
 RUN echo "7138d28c96d9d3e3af4ee3d8cad72741f8ffb40da90c1112235dea3ecd3178a3  /build/ffmpeg.tar.xz" | sha256sum -c -
@@ -11,7 +11,8 @@ RUN mkdir -p /usr/local/share/filenimble-licenses && cp COPYING.LGPLv2.1 LICENSE
 FROM python:3.12-slim@sha256:2f17fc044b579bab302c2e8054d3a686e2cb9a83de48e70534b94cd8ebbe06a9
 ENV PYTHONDONTWRITEBYTECODE=1 PYTHONUNBUFFERED=1 HOME=/work TMPDIR=/work
 COPY --from=build /usr/local/bin/ffmpeg /usr/local/bin/ffprobe /usr/local/bin/
-COPY --from=build /usr/lib/x86_64-linux-gnu/libvpx.so* /usr/lib/x86_64-linux-gnu/
+RUN apt-get update && apt-get install -y --no-install-recommends libvpx9 && rm -rf /var/lib/apt/lists/*
+RUN /usr/local/bin/ffmpeg -version && /usr/local/bin/ffprobe -version
 COPY --from=build /usr/local/share/filenimble-licenses /usr/local/share/filenimble-licenses
 RUN useradd --uid 10001 --no-create-home converter
 WORKDIR /engine

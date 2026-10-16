@@ -10,4 +10,7 @@ ignore = ["S101", "S104", "S311"]
 pythonpath = ["."]
 addopts = "--tb=short -p no:cacheprovider"
 testpaths = ["tests"]
-markers = ["integration: requires the real local Compose stack"]
+markers = [
+  "integration: requires the real local Compose stack",
+  "production_integration: requires the isolated production-mode Compose stack",
+]

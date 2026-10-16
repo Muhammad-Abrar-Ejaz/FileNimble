@@ -9,7 +9,7 @@ on:
 jobs:
   backend:
     runs-on: ubuntu-latest
-    timeout-minutes: 20
+    timeout-minutes: 45
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -17,6 +17,12 @@ jobs:
           node-version: 22
       - name: Generate local-only test configuration
         run: node scripts/setup-backend.mjs
+      - name: Validate fail-closed Oracle deployment configuration
+        run: |
+          node scripts/setup-oracle.mjs --host api.filenimble.app --email ci@example.net
+          node scripts/check-oracle.mjs
+      - name: Test local-only operator watchdog logic
+        run: node --test scripts/oracle.setup.test.mjs scripts/oracle-watchdog.test.mjs
       - name: Validate and build backend test images
         run: |
           node scripts/prepare-media.mjs
@@ -30,15 +36,264 @@ jobs:
               exit 1
             fi
           done
-      - name: Python checks
-        run: |
-          docker run --rm filenimble-backend:phase5 ruff check --no-cache /app
-          docker run --rm filenimble-backend:phase5 ruff format --check --no-cache /app
-          docker run --rm filenimble-backend:phase5 pip check
+      - name: Ruff lint
+        run: docker run --rm filenimble-backend:phase5 ruff check --no-cache /app
+      - name: Ruff format check
+        run: docker run --rm filenimble-backend:phase5 ruff format --check --no-cache /app
+      - name: Python dependency integrity
+        run: docker run --rm filenimble-backend:phase5 pip check
       - name: Start real services
         run: docker compose --env-file .env.backend.local -f compose.yaml -f compose.test.yaml up -d postgres redis storage migrate api worker lifecycle supervisor
+      - name: Prepare backend test reports
+        run: |
+          mkdir -p .ci-test-results
+          # The isolated test container may use a remapped UID on the hosted runner.
+          # Keep the CI-only report directory writable while the sticky bit protects
+          # files created by other UIDs within this disposable directory.
+          chmod 1777 .ci-test-results
+      - name: Verify tests container can write through bind
+        run: |
+          trap 'rm -f .ci-test-results/.write-probe .ci-test-results/.write-probe.log' EXIT
+          set +e
+          docker compose --env-file .env.backend.local -f compose.yaml -f compose.test.yaml run --rm --no-deps tests python -c "from pathlib import Path; Path('/ci-test-results/.write-probe').write_text('ok', encoding='ascii')" >.ci-test-results/.write-probe.log 2>&1
+          status=$?
+          set -e
+          if [ "$status" -ne 0 ]; then
+            if grep -Eqi 'permission denied|operation not permitted' .ci-test-results/.write-probe.log; then
+              echo "::error::Tests-container bind probe category: write-permission-denied."
+            elif grep -Eqi 'read-only file system' .ci-test-results/.write-probe.log; then
+              echo "::error::Tests-container bind probe category: mount-read-only."
+            elif grep -Eqi 'no such file or directory|not a directory' .ci-test-results/.write-probe.log; then
+              echo "::error::Tests-container bind probe category: target-or-source-path-missing."
+            elif grep -Eqi 'cannot connect to the docker daemon|error response from daemon|container exited' .ci-test-results/.write-probe.log; then
+              echo "::error::Tests-container bind probe category: container-startup-or-daemon-failure."
+            else
+              echo "::error::Tests-container bind probe category: command-failed (exit=$status)."
+            fi
+            exit "$status"
+          fi
+          if [ ! -f .ci-test-results/.write-probe ]; then
+            echo "::error::Tests-container bind probe category: host-readback-file-missing."
+            exit 1
+          fi
+          if [ "$(cat .ci-test-results/.write-probe)" != "ok" ]; then
+            echo "::error::Tests-container bind probe category: host-readback-content-mismatch."
+            exit 1
+          fi
+          echo "Tests-container bind probe: write and host readback passed."
       - name: Real pipeline and failure-injection tests
-        run: docker compose --env-file .env.backend.local -f compose.yaml -f compose.test.yaml run --rm tests pytest -q
+        run: |
+          set +e
+          docker compose --env-file .env.backend.local -f compose.yaml -f compose.test.yaml run --rm tests pytest -q -m "not production_integration" --junitxml=/ci-test-results/backend-standard.xml >.ci-test-results/backend-standard.log 2>&1
+          status=$?
+          echo "Standard backend pytest exit code: $status"
+          exit "$status"
       - name: Stop disposable test stack
         if: always()
         run: docker compose --env-file .env.backend.local -f compose.yaml -f compose.test.yaml down -v --remove-orphans
+      - name: Start isolated production-mode test services
+        run: docker compose --env-file .env.backend.local -f compose.yaml -f compose.test.yaml -f compose.production-test.yaml up -d postgres redis storage migrate api transfers worker lifecycle supervisor
+      - name: Production transfer, archive, and sandbox tests
+        run: |
+          set +e
+          docker compose --env-file .env.backend.local -f compose.yaml -f compose.test.yaml -f compose.production-test.yaml run --rm tests pytest -q -m production_integration --junitxml=/ci-test-results/backend-production.xml >.ci-test-results/backend-production.log 2>&1
+          status=$?
+          echo "Production-mode backend pytest exit code: $status"
+          exit "$status"
+      - name: Stop isolated production-mode test stack
+        if: always()
+        run: docker compose --env-file .env.backend.local -f compose.yaml -f compose.test.yaml -f compose.production-test.yaml down -v --remove-orphans
+      - name: Summarize backend test failures
+        if: always()
+        run: |
+          python - <<'PY'
+          import xml.etree.ElementTree as ET
+          import os
+          from pathlib import Path
+          import re
+
+          test_runs = (
+              (Path(".ci-test-results/backend-standard.xml"), Path(".ci-test-results/backend-standard.log")),
+              (Path(".ci-test-results/backend-production.xml"), Path(".ci-test-results/backend-production.log")),
+          )
+          found_output = False
+          failure_count = 0
+          summary_lines = []
+          safe_parameters = {
+              "image-to-text", "pdf-to-text", "ocr-pdf", "tar-to-zip", "zip-to-tar",
+              "tar-zip", "zip-tar",
+          }
+
+          def safe_count(value):
+              return str(value) if str(value).isdigit() else "unknown"
+
+          def safe_test_name(classname, name):
+              # Keep only static pytest identifiers. Parameter values may contain
+              # user data, URLs, or credentials, so omit bracketed parameters.
+              classname = str(classname or "").split("[", 1)[0]
+              raw_name = str(name or "")
+              parameter = re.fullmatch(r"([A-Za-z0-9_.-]+)\[([A-Za-z0-9_.-]+)\]", raw_name)
+              name = parameter.group(1) if parameter else raw_name.split("[", 1)[0]
+              safe_class = re.fullmatch(r"[A-Za-z0-9_.]+", classname)
+              safe_name = re.fullmatch(r"[A-Za-z0-9_.-]+", name)
+              if safe_class and safe_name:
+                  suffix = f"[{parameter.group(2)}]" if parameter and parameter.group(2) in safe_parameters else ""
+                  return f"{classname}::{name}{suffix}"[:180]
+              return "unrecognized-test-identifier"
+
+          def safe_failure_category(failure):
+              error_type = str(failure.get("type", ""))
+              if error_type in {"AssertionError", "builtins.AssertionError"}:
+                  category = "assertion"
+              elif error_type in {"TimeoutError", "builtins.TimeoutError"}:
+                  category = "timeout"
+              elif error_type in {"PermissionError", "builtins.PermissionError"}:
+                  category = "permission"
+              elif error_type in {"ConnectionError", "builtins.ConnectionError"}:
+                  category = "service-connection"
+              else:
+                  category = "test-error"
+              trace = failure.text or ""
+              terminal = re.search(
+                  r"archive job ended in (FAILED|EXPIRED|CANCELLED) with code=([A-Z0-9_]+|none)",
+                  trace,
+              )
+              if terminal:
+                  return f"archive-terminal-state={terminal.group(1)} code={terminal.group(2)}"
+              timeout = re.search(
+                  r"archive job timed out waiting for completion state=([A-Z]+) code=([A-Z0-9_]+|none)",
+                  trace,
+              )
+              if timeout:
+                  return f"archive-timeout state={timeout.group(1)} code={timeout.group(2)}"
+              if "unpurged role counts" in trace:
+                  counts = {
+                      role: (
+                          re.search(rf"['\"]{role}['\"]\s*:\s*(\d+)", trace).group(1)
+                          if re.search(rf"['\"]{role}['\"]\s*:\s*(\d+)", trace)
+                          else "0"
+                      )
+                      for role in ("upload", "input", "output")
+                  }
+                  return (
+                      "cleanup-unpurged-objects "
+                      f"(upload={counts['upload']}, input={counts['input']}, output={counts['output']})"
+                  )
+              mismatch = re.search(r"\bassert\s+(\d+)\s*==\s*(\d+)", trace)
+              if mismatch:
+                  return f"assertion mismatch actual={mismatch.group(1)} expected={mismatch.group(2)}"
+              line = re.search(r"(?:^|[/\\])test_[A-Za-z0-9_]+\.py:(\d+)(?::|\b)", trace, re.MULTILINE)
+              return f"{category} at test line {line.group(1)}" if line else category
+
+          for report, output in test_runs:
+              found_output = found_output or report.exists() or output.exists()
+              valid_report = False
+              if report.exists():
+                  try:
+                      root = ET.parse(report).getroot()
+                  except ET.ParseError:
+                      print("::error::Backend pytest report is incomplete or malformed.")
+                  else:
+                      valid_report = True
+                      suites = [root] if root.tag == "testsuite" else root.findall("testsuite")
+                      def report_count(field):
+                          value = root.get(field)
+                          if value is None and suites:
+                              value = sum(int(suite.get(field, "0")) for suite in suites)
+                          return safe_count(value if value is not None else "unknown")
+
+                      report_summary = (
+                          f"{report.stem}: {report_count('tests')} tests; "
+                          f"{report_count('failures')} failures; "
+                          f"{report_count('errors')} errors; "
+                          f"{report_count('skipped')} skipped"
+                      )
+                      summary_lines.append(report_summary)
+                      print(
+                          "::notice::Backend pytest report: "
+                          f"{report_count('tests')} tests; "
+                          f"{report_count('failures')} failures; "
+                          f"{report_count('errors')} errors; "
+                          f"{report_count('skipped')} skipped."
+                      )
+                      for case in root.iter("testcase"):
+                          failure = next((child for child in case if child.tag in {"failure", "error"}), None)
+                          if failure is not None:
+                              failure_count += 1
+                              failure_summary = (
+                                  "::error::Failed backend test: "
+                                  f"{safe_test_name(case.get('classname'), case.get('name'))} "
+                                  f"({safe_failure_category(failure)})"
+                              )
+                              summary_lines.append(failure_summary.replace("::error::", ""))
+                              print(failure_summary)
+              if output.exists() and not valid_report:
+                  contents = output.read_text(errors="replace")
+                  output_failures = 0
+                  for line in contents.splitlines():
+                      match = re.search(r"\b(FAILED|ERROR)\s+([A-Za-z0-9_./:-]+::[^\s]+)", line)
+                      if match:
+                          output_failures += 1
+                          failure_summary = (
+                              f"::error::Pytest {match.group(1).lower()}: "
+                              f"{safe_test_name(*match.group(2).split('::', 1))}"
+                          )
+                          summary_lines.append(failure_summary.replace("::error::", ""))
+                          print(failure_summary)
+                  failure_count += output_failures
+                  summary_line = next(
+                      (
+                          line
+                          for line in contents.splitlines()
+                          if " in " in line
+                          and re.search(r"\d+\s+(?:passed|failed|errors?|skipped)", line)
+                      ),
+                      "",
+                  )
+                  if summary_line:
+                      counts = {
+                          name: (re.search(rf"(\d+)\s+{name}", summary_line).group(1)
+                                 if re.search(rf"(\d+)\s+{name}", summary_line)
+                                 else "0")
+                          for name in ("passed", "failed", "errors?", "skipped")
+                      }
+                      console_summary = (
+                          "::notice::Backend pytest console counts: "
+                          f"{counts['passed']} passed; {counts['failed']} failed; "
+                          f"{counts['errors?']} errors; {counts['skipped']} skipped."
+                      )
+                      summary_lines.append(console_summary.replace("::notice::", ""))
+                      print(console_summary)
+                  if not output_failures:
+                      lowered = contents.lower()
+                      if any(term in lowered for term in ("oomkilled", "out of memory", "process was killed")):
+                          category = "runner-or-container-memory-termination"
+                      elif any(term in lowered for term in ("pytest: not found", "command not found", "executable file not found")):
+                          category = "pytest-command-startup-failure"
+                      elif any(term in lowered for term in ("error collecting", "error during collection", "no tests ran")):
+                          category = "pytest-collection-failure"
+                      elif any(term in lowered for term in ("junitxml", "junit xml", "permission denied", "failed to write")):
+                          category = "test-report-generation-failure"
+                      elif any(term in lowered for term in ("timeout", "timed out", "timeouterror")):
+                          category = "test-execution-timeout"
+                      elif any(term in lowered for term in ("error response from daemon", "cannot connect to the docker daemon", "container exited")):
+                          category = "docker-test-container-failure"
+                      else:
+                          category = "test-command-failed-without-pytest-summary"
+                      summary_lines.append(f"Diagnostic category: {category}")
+                      print(f"::error::Backend test diagnostic category: {category}")
+          if not found_output:
+              summary_lines.append("Backend pytest did not produce a report or console output file.")
+              print("::notice::Backend pytest did not produce a test report or console output file.")
+          elif not failure_count:
+              summary_lines.append("No failure node identifiers were reported.")
+              print("::notice::Backend pytest reports contain no failure node identifiers.")
+          summary_path = Path(os.environ.get("GITHUB_STEP_SUMMARY", ".ci-test-results/backend-summary.md"))
+          summary_path.write_text(
+              "# Backend pytest results\n\n" + "\n".join(f"- {line}" for line in summary_lines) + "\n",
+              encoding="utf-8",
+          )
+          PY
+      - name: Remove transient backend test reports
+        if: always()
+        run: rm -rf .ci-test-results

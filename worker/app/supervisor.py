@@ -17,10 +17,16 @@ from fastapi import FastAPI, HTTPException, Request
 from pydantic import BaseModel, ConfigDict, Field
 
 from app.schemas import Options
-from app.native_runner import router as native_router, sweep as native_sweep
+from app.native_runner import (
+    router as native_router,
+    sweep as native_sweep,
+    NAMESPACE as native_namespace,
+)
 
 LABEL = "filenimble.sandbox"
-NAMESPACE = "local-phase5"
+NAMESPACE = os.getenv("RUNNER_NAMESPACE", "local-phase5")
+if os.getenv("RUNNER_NAMESPACE"):
+    NAMESPACE += "-fixture"
 IMAGE = "filenimble-sandbox:phase5"
 lock = threading.Lock()
 runs = {}
@@ -34,7 +40,7 @@ def docker_client():
 def reset_owned_containers(stale_only=False):
     with closing(docker_client()) as engine:
         for container in engine.containers.list(
-            all=True, filters={"label": f"{LABEL}=local-phase6"}
+            all=True, filters={"label": f"{LABEL}={native_namespace}"}
         ):
             created = float(container.labels.get("filenimble.started", "0"))
             if not stale_only or time.time() - created > 150:
@@ -83,6 +89,8 @@ async def authenticate(request: Request, call_next):
         request.headers.get("x-runner-key", ""), os.environ["RUNNER_SECRET"]
     ):
         return JSONResponse({"error": "NOT_AUTHORIZED"}, status_code=401)
+    if os.getenv("APP_ENV") == "production" and not request.url.path.startswith("/native/"):
+        return JSONResponse({"error": "NOT_AUTHORIZED"}, status_code=404)
     if request.url.path.startswith("/native/"):
         return await call_next(request)
     size = 0

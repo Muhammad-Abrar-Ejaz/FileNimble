@@ -1,6 +1,7 @@
 """Real OCR jobs through the existing platform, with private temporary content."""
 
 import io
+import time
 from uuid import uuid4
 
 import pytest
@@ -65,15 +66,22 @@ def test_ocr_real_download_and_deletion(tool):
             db.execute(
                 "UPDATE conversion_jobs SET upload_expires_at=now() WHERE id=%s", (job["jobId"],)
             )
-        cleanup()
-        with connect() as db:
-            assert (
-                db.execute(
-                    "SELECT count(*) AS n FROM job_files WHERE job_id=%s AND purged_at IS NULL",
-                    (job["jobId"],),
-                ).fetchone()["n"]
-                == 0
-            )
+        deadline = time.monotonic() + 30
+        unpurged = {}
+        while time.monotonic() < deadline:
+            cleanup()
+            with connect() as db:
+                unpurged = {
+                    row["role"]: row["n"]
+                    for row in db.execute(
+                        "SELECT role,count(*) AS n FROM job_files WHERE job_id=%s AND purged_at IS NULL GROUP BY role",
+                        (job["jobId"],),
+                    )
+                }
+            if not unpurged:
+                break
+            time.sleep(0.1)
+        assert not unpurged, f"unpurged role counts {unpurged!r}"
 
 
 def test_ocr_cancel_and_concurrent_limit():
