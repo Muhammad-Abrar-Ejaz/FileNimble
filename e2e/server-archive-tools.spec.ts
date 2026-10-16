@@ -74,7 +74,7 @@ async function prepareMockBackend(page: import('@playwright/test').Page, slug: '
 }
 
 for (const slug of ['tar-to-zip', 'zip-to-tar'] as const) {
-  test(`${slug} completes the browser upload, job, status and private download flow`, async ({ page }) => {
+  test(`${slug} completes the browser upload, job, status and private download flow`, async ({ page }, testInfo) => {
     const input = slug === 'tar-to-zip' ? makeTar() : await makeZip();
     let output: Buffer;
     if (slug === 'tar-to-zip') {
@@ -82,7 +82,7 @@ for (const slug of ['tar-to-zip', 'zip-to-tar'] as const) {
       output = Buffer.from(await zip.generateAsync({ type: 'nodebuffer', compression: 'STORE' }));
     } else output = makeTar();
     const backend = await prepareMockBackend(page, slug, input, output);
-    await page.goto(`/${slug}`);
+    await page.goto(`/${slug}`, { waitUntil: 'domcontentloaded' });
     await page.getByLabel('Upload files').setInputFiles({ name: slug === 'tar-to-zip' ? 'fixture.tar' : 'fixture.zip', mimeType: slug === 'tar-to-zip' ? 'application/x-tar' : 'application/zip', buffer: input });
     await expect(page.getByText('1 file ready to process')).toBeVisible();
     await page.getByRole('button', { name: 'Upload and convert' }).click();
@@ -94,9 +94,9 @@ for (const slug of ['tar-to-zip', 'zip-to-tar'] as const) {
     await page.getByRole('button', { name: 'Download', exact: true }).click();
     const download = await downloadPromise;
     expect(download.suggestedFilename()).toBe(`${slug}-result.${slug === 'tar-to-zip' ? 'zip' : 'tar'}`);
-    const path = await download.path();
-    expect(path).toBeTruthy();
-    const downloaded = await readFile(path!);
+    const path = testInfo.outputPath(`${slug}-result.${slug === 'tar-to-zip' ? 'zip' : 'tar'}`);
+    await download.saveAs(path);
+    const downloaded = await readFile(path);
     if (slug === 'tar-to-zip') {
       const zip = await JSZip.loadAsync(downloaded);
       expect(await zip.file('notes/fixture.txt')?.async('nodebuffer')).toEqual(CONTENT);
@@ -109,17 +109,17 @@ for (const slug of ['tar-to-zip', 'zip-to-tar'] as const) {
 }
 
 test('OCR stays planned in the public website while the archive pages stay available', async ({ page }) => {
-  await page.goto('/ocr-pdf');
+  await page.goto('/ocr-pdf', { waitUntil: 'domcontentloaded' });
   await expect(page.getByRole('heading', { name: /Make a Scanned PDF Searchable — Planned/ })).toBeVisible();
   await expect(page.getByLabel('Upload files')).toHaveCount(0);
-  await page.goto('/tools');
+  await page.goto('/tools', { waitUntil: 'domcontentloaded' });
   await expect(page.getByRole('link', { name: /Convert TAR to ZIP/ })).toBeVisible();
   await expect(page.getByRole('link', { name: /Make a Scanned PDF Searchable/ })).toHaveCount(0);
 });
 
 test('server configuration failure is shown without attempting an upload', async ({ page }) => {
   await page.route('**/api/v1/jobs', route => route.fulfill({ status: 503, json: { error: 'SERVICE_UNAVAILABLE', message: 'Server processing is not configured.' } }));
-  await page.goto('/tar-to-zip');
+  await page.goto('/tar-to-zip', { waitUntil: 'domcontentloaded' });
   await page.getByLabel('Upload files').setInputFiles({ name: 'fixture.tar', mimeType: 'application/x-tar', buffer: makeTar() });
   await page.getByRole('button', { name: 'Upload and convert' }).click();
   await expect(page.getByText('Server processing is not configured.', { exact: true })).toBeVisible();
