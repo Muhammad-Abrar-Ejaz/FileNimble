@@ -117,7 +117,10 @@ jobs:
           )
           found_output = False
           failure_count = 0
-          safe_parameters = {"image-to-text", "pdf-to-text", "ocr-pdf", "tar-to-zip", "zip-to-tar"}
+          safe_parameters = {
+              "image-to-text", "pdf-to-text", "ocr-pdf", "tar-to-zip", "zip-to-tar",
+              "tar-zip", "zip-tar",
+          }
 
           def safe_count(value):
               return str(value) if str(value).isdigit() else "unknown"
@@ -149,6 +152,18 @@ jobs:
               else:
                   category = "test-error"
               trace = failure.text or ""
+              terminal = re.search(
+                  r"archive job ended in (FAILED|EXPIRED|CANCELLED) with code=([A-Z0-9_]+|none)",
+                  trace,
+              )
+              if terminal:
+                  return f"archive-terminal-state={terminal.group(1)} code={terminal.group(2)}"
+              timeout = re.search(
+                  r"archive job timed out waiting for completion state=([A-Z]+) code=([A-Z0-9_]+|none)",
+                  trace,
+              )
+              if timeout:
+                  return f"archive-timeout state={timeout.group(1)} code={timeout.group(2)}"
               if "unpurged role counts" in trace:
                   counts = {
                       role: (

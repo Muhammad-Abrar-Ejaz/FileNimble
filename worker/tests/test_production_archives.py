@@ -80,15 +80,23 @@ def transfer(url, method, data=None):
 
 def wait(c, job, target="COMPLETED"):
     deadline = time.monotonic() + 45
+    last_status = None
     while time.monotonic() < deadline:
         result = c.get("/api/v1/jobs/" + job["jobId"])
         assert result.status_code == 200
         status = result.json()
+        last_status = status
         if status["state"] == target:
             return status
-        assert status["state"] not in {"FAILED", "EXPIRED", "CANCELLED"}
+        if status["state"] in {"FAILED", "EXPIRED", "CANCELLED"}:
+            pytest.fail(
+                f"archive job ended in {status['state']} with code={status.get('error') or 'none'}"
+            )
         time.sleep(0.2)
-    pytest.fail("Disposable archive job did not complete within its bound")
+    pytest.fail(
+        "archive job timed out waiting for completion "
+        f"state={last_status['state']} code={last_status.get('error') or 'none'}"
+    )
 
 
 def members(data, extension):
