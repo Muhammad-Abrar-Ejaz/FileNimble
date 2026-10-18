@@ -13,6 +13,7 @@ test("real same-origin job, signed browser upload/download, ownership and deleti
     });
     if (created.status !== 201) throw new Error("Job creation failed: " + created.status);
     const job = await created.json();
+    if (!job.uploads[0]?.url || !["localhost", "127.0.0.1"].includes(new URL(job.uploads[0].url).hostname)) throw new Error("Signed upload endpoint is not browser-reachable");
     const uploaded = await fetch(job.uploads[0].url, { method: "PUT", headers: job.uploads[0].headers, body: bytes });
     if (uploaded.status !== 200) throw new Error("Signed browser upload failed: " + uploaded.status);
     const path = "/api/v1/jobs/" + job.jobId;
