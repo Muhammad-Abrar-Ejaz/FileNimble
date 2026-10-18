@@ -130,6 +130,7 @@ def create(
     cpuset=None,
     cpus="0.5",
     log_driver="none",
+    user=None,
 ):
     name = RUN + "-" + service
     args = [
@@ -155,6 +156,8 @@ def create(
     ]
     if network != "none":
         args += ["--network-alias", service]
+    if user:
+        args += ["--user", user]
     if secure:
         args += [
             "--read-only",
@@ -586,9 +589,26 @@ def main():
         env=supervisor_env,
         mem="256m",
         extra=["--volume", "/var/run/docker.sock:/var/run/docker.sock"],
+        user="0:0",
     )
     start(supervisor)
     REPORT["supervisor"] = "PASS: ephemeral GitHub-hosted runner Docker daemon only"
+    runner_probe = (
+        "import os,socket;from urllib.parse import urlsplit;"
+        "u=urlsplit(os.environ.get('RUNNER_URL',''));"
+        "assert u.hostname=='supervisor' and u.port==8001;"
+        "s=socket.create_connection((u.hostname,u.port),timeout=2);"
+        "s.close();print('READY')"
+    )
+    for _ in range(60):
+        ready = cli("exec", RUN + "-worker", "python", "-c", runner_probe, check=False, timeout=5)
+        if ready.returncode == 0 and ready.stdout.strip() == b"READY":
+            REPORT["worker_supervisor_connectivity"] = "PASS"
+            break
+        time.sleep(0.5)
+    else:
+        REPORT["worker_supervisor_connectivity"] = "FAIL"
+        raise RuntimeError("worker_supervisor_connectivity_failed")
     harness = create(
         "harness",
         testimage,
