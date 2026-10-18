@@ -22,7 +22,7 @@ export default function WebpToJpgPage() {
     },
     {
       q: 'Are my images uploaded to your servers?',
-      a: 'Never. The conversion is performed 100% in your browser using HTML5 Canvas. Your images remain private on your computer.',
+      a: 'This conversion runs in your browser using HTML5 Canvas. FileNimble does not upload the selected image for this conversion.',
     },
     {
       q: 'Can I choose the JPG output quality?',

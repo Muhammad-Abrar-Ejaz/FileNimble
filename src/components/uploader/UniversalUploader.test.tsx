@@ -16,13 +16,13 @@ describe("UniversalUploader Component", () => {
     expect(screen.getByText("Choose Files")).toBeDefined();
   });
 
-  it("renders privacy label guarantee", () => {
+  it("renders the supplied processing label", () => {
     render(
       <UniversalUploader
-        privacyLabel="100% Private local execution"
+        privacyLabel="Processed locally in this browser."
       />
     );
-    expect(screen.getByText("100% Private local execution")).toBeDefined();
+    expect(screen.getByText("Processed locally in this browser.")).toBeDefined();
   });
 
   it("displays file size and batch limits correctly", () => {

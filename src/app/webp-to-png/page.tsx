@@ -26,7 +26,7 @@ export default function WebpToPngPage() {
     },
     {
       q: 'Are my images uploaded to any server?',
-      a: 'No. FileNimble executes the entire decoding and encoding process locally in your browser using HTML5 Canvas. Your files never leave your device.',
+      a: 'No. This conversion runs locally in your browser using HTML5 Canvas. FileNimble does not upload the selected image for this conversion.',
     },
   ];
 

@@ -22,7 +22,7 @@ export default function ImageCropPage() {
     },
     {
       q: 'Are my photos uploaded to any server?',
-      a: 'No. The visual cropper and canvas cropping pipeline run 100% locally on your device in your web browser. Your images remain completely private.',
+      a: 'No. The visual cropper and canvas pipeline process the selected image in your browser; FileNimble does not upload it for this conversion.',
     },
   ];
 

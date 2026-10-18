@@ -14,7 +14,7 @@ export function DocumentToolPage({ slug }: { slug: string }) {
   const registry = getToolBySlug(slug)!;
   if (registry.status !== 'live') return <article className="mx-auto max-w-4xl space-y-6 px-4 py-12">
     <h1 className="text-3xl font-bold">{tool.title} — Planned</h1>
-    <p>This converter is not available. No files are selected or uploaded on this page.</p>
+    <p>This tool is not part of the supported release and cannot process or upload files. No files are selected or uploaded on this page.</p>
     <h2 className="text-xl font-semibold">Current limitations</h2><p>{tool.limitations}</p>
     <p>Quality, security, licensing and resource-limit qualification must pass before release. No release date is promised.</p>
     <Link className="underline" href="/tools">Browse available tools</Link>

@@ -38,7 +38,7 @@ export function Footer({ className }: FooterProps) {
 
             <div className="flex items-center gap-2 text-xs text-emerald-700 bg-emerald-50 px-3 py-2 rounded-xl border border-emerald-200 w-fit">
               <ShieldCheck size={16} className="text-emerald-600 shrink-0" aria-hidden="true" />
-              <span>Browser-First Processing • No Permanent Storage</span>
+              <span>Browser processing • Temporary server storage</span>
             </div>
           </div>
 

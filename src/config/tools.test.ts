@@ -120,7 +120,7 @@ describe("Tool Registry", () => {
       expect(tool?.status).toBe("planned");
       expect(tool?.indexable).toBe(false);
       expect(tool?.processingMode).toBe("hybrid");
-      expect(tool?.privacyLabel).toContain("external AI provider");
+      expect(tool?.privacyLabel).toBe("AI processing disabled in this release");
     }
   });
 

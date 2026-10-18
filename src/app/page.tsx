@@ -47,7 +47,7 @@ export default function HomePage() {
             </h1>
 
             <p className="mt-5 text-base sm:text-lg text-text-muted leading-relaxed max-w-2xl mx-auto">
-              Convert images, organize PDF pages, and transform supported documents or data. Check each tool’s processing label and limits; converters outside the current release remain marked planned.
+              Use ready browser tools for supported local conversions, or convert TAR to ZIP and ZIP to TAR with temporary server processing. Tools marked Planned are not available in this release; each available tool lists its processing method and limits.
             </p>
 
             {/* Quick feature pill row */}
@@ -165,7 +165,7 @@ export default function HomePage() {
               Simple 3-Step Workflow
             </h2>
             <p className="mt-2 text-sm text-text-muted">
-              No complicated settings, registration forms, or waiting queues.
+              Choose a ready tool and follow its format and size limits. Server-based TAR ↔ ZIP jobs use a limited queue and may ask you to retry when capacity is full.
             </p>
           </div>
 
@@ -192,7 +192,7 @@ export default function HomePage() {
                 Configure & Process
               </h3>
               <p className="mt-2 text-xs sm:text-sm text-text-muted leading-relaxed">
-                Choose output format, adjust quality or compression level, and click Convert. Check each tool’s processing label before selecting files.
+                Follow the selected tool’s options and processing label, then start the conversion when you are ready.
               </p>
             </div>
 
@@ -202,10 +202,10 @@ export default function HomePage() {
               </div>
               <h3 className="text-base font-bold text-text-strong flex items-center gap-2 justify-center sm:justify-start">
                 <Download size={18} className="text-primary" aria-hidden="true" />
-                Instant Download
+                Download When Ready
               </h3>
               <p className="mt-2 text-xs sm:text-sm text-text-muted leading-relaxed">
-                Download your converted file or multi-file ZIP archive immediately. Files are never stored or tracked.
+                Download the result when processing finishes. TAR ↔ ZIP uses temporary server storage: abandoned jobs expire one hour after creation, completed outputs one hour after completion, and service outages can delay cleanup. Minimal job records are scheduled for removal seven days after confirmed file cleanup; delays may extend that period. See the Privacy policy for details.
               </p>
             </div>
           </div>
@@ -218,13 +218,13 @@ export default function HomePage() {
           <div className="max-w-3xl">
             <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-100 text-emerald-800 text-xs font-semibold mb-4 border border-emerald-200">
               <ShieldCheck size={14} className="text-emerald-700" aria-hidden="true" />
-              <span>Privacy-First Architecture</span>
+              <span>Know Where Processing Happens</span>
             </div>
             <h2 className="text-2xl sm:text-3xl font-black text-text-strong tracking-tight">
               Your files belong to you. Always.
             </h2>
             <p className="mt-3 text-sm text-text-muted leading-relaxed">
-              Tools labelled Runs in browser keep file content on your device. OCR and supported document tools use temporary server processing. Each tool explains its limits before conversion; read our privacy policy for retention and cleanup details.
+              Tools labelled Runs in browser process file content on your device. The only server conversions available in this release are TAR to ZIP and ZIP to TAR; they use temporary storage and a limited worker queue. OCR, AI and other tools marked Planned cannot process files in this release. Read our Privacy policy for expiry and cleanup details.
             </p>
             <div className="mt-6 flex flex-wrap gap-4 text-xs font-semibold text-text-strong">
               <div className="flex items-center gap-1.5 bg-surface px-3 py-2 rounded-xl border border-border-subtle shadow-2xs">

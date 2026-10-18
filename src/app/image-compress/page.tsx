@@ -26,7 +26,7 @@ export default function ImageCompressPage() {
     },
     {
       q: 'Are my images uploaded to any server?',
-      a: 'No. The entire compression process runs locally on your computer inside your web browser. Your files remain completely private.',
+      a: 'No. This compression tool processes the selected image in your browser; FileNimble does not upload it for this conversion.',
     },
   ];
 

@@ -190,7 +190,7 @@ export function PngToJpgConverterClient() {
             maxFileBytes={50 * 1024 * 1024}
             title="Drop PNG images here or click to browse"
             subtitle="Select one or multiple PNG images. Files are converted locally on your device."
-            privacyLabel="100% Private — Processed entirely in your browser (Never uploaded)"
+            privacyLabel="This conversion runs in your browser; FileNimble does not upload the selected image."
             onFilesChange={setFiles}
           />
 

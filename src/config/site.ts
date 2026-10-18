@@ -2,7 +2,7 @@ export const siteConfig = {
   name: "FileNimble",
   tagline: "Any file. Right format.",
   description:
-    "Convert images, PDFs and structured data with browser tools or the currently supported temporary server converters, with clear limits for each tool.",
+    "Use browser-based file tools or convert TAR to ZIP and ZIP to TAR with temporary server processing. Planned tools are not available in this release.",
   url: new URL(process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000").origin,
   ogImage: "/brand/filenimble-logo.png",
   links: {

@@ -317,7 +317,7 @@ export function SharedImageConverterClient({
                 {failedFiles.length > 0 && `, ${failedFiles.length} Failed`})
               </h3>
               <p className="text-xs text-slate-500 dark:text-slate-400">
-                All files processed 100% in your browser.
+                All selected files are processed in this browser.
               </p>
             </div>
 
