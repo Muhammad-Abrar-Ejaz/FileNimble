@@ -13,6 +13,8 @@ jobs:
   archive-browser:
     runs-on: ubuntu-latest
     timeout-minutes: 20
+    env:
+      PLAYWRIGHT_JSON_OUTPUT_NAME: ${{ runner.temp }}/playwright-report.json
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -30,7 +32,6 @@ jobs:
           CI: true
           PLAYWRIGHT_BASE_URL: http://127.0.0.1:3100
           PLAYWRIGHT_SERVER_MODE: production
-          PLAYWRIGHT_JSON_OUTPUT_NAME: ${{ runner.temp }}/playwright-report.json
         run: npx playwright test e2e/server-archive-tools.spec.ts e2e/accessibility.spec.ts --project=chromium --workers=1 --reporter=line,json
       - name: Summarize browser test failures safely
         if: failure()
