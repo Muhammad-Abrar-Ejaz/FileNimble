@@ -463,6 +463,31 @@ def main():
         image_expression,
         b'os.getenv("CAPACITY_ARCHIVE_IMAGE", "filenimble-archive:phase11") if family == "archive" else "filenimble-media:phase11"',
     )
+    start_needle = b"        container.start()\n"
+    assert patched.count(start_needle) == 1
+    limit_probe = b"""        if os.getenv("CAPACITY_DIAGNOSTICS") == "1":
+            host = container.attrs.get("HostConfig", {})
+            record["test_resource_limits"] = {
+                "memory": host.get("Memory", -1),
+                "memory_swap": host.get("MemorySwap", -1),
+                "nano_cpus": host.get("NanoCpus", -1),
+                "cpuset": host.get("CpusetCpus", ""),
+                "pids": host.get("PidsLimit", -1),
+                "network": "none" if host.get("NetworkMode") == "none" else "other",
+                "read_only": host.get("ReadonlyRootfs") is True,
+                "cap_drop": "ALL" if host.get("CapDrop") == ["ALL"] else "other",
+                "no_new_privileges": "no-new-privileges:true" in host.get("SecurityOpt", []),
+            }
+"""
+    patched = patched.replace(start_needle, start_needle + limit_probe)
+    status_needle = (
+        b'return {key: record[key] for key in ("done", "error", "metadata") if key in record}'
+    )
+    assert patched.count(status_needle) == 1
+    patched = patched.replace(
+        status_needle,
+        b'return {key: record[key] for key in ("done", "error", "metadata", "test_resource_limits") if key in record}',
+    )
     compile(patched.decode(), "native_runner.py", "exec")
     task_source = (REPO / "worker/app/tasks.py").read_bytes().replace(b"\r\n", b"\n")
     task_needle = (
@@ -492,6 +517,34 @@ def main():
         )
         finish_failure(job_id, run_id, "SERVICE_UNAVAILABLE")"""
     task_patched = task_source.replace(task_needle, task_diagnostic)
+    result_needle = (
+        b'            result = runner("GET", run_path)\n            if result["done"]:\n'
+    )
+    assert task_patched.count(result_needle) == 1
+    task_measurements = b"""            result = runner("GET", run_path)
+            if result["done"] and native:
+                peak = result.get("metadata", {}).get("peakMemoryBytes")
+                if type(peak) is int and peak >= 0:
+                    logging.getLogger("worker").warning(
+                        "CAPACITY_SANDBOX_MEMORY peak=%d", peak
+                    )
+                limits = result.get("test_resource_limits", {})
+                if isinstance(limits, dict):
+                    logging.getLogger("worker").warning(
+                        "CAPACITY_SANDBOX_LIMITS memory=%d swap=%d nano_cpus=%d cpuset=%s pids=%d network=%s readonly=%s cap_drop=%s no_new_privileges=%s",
+                        limits.get("memory", -1),
+                        limits.get("memory_swap", -1),
+                        limits.get("nano_cpus", -1),
+                        limits.get("cpuset", ""),
+                        limits.get("pids", -1),
+                        limits.get("network", "other"),
+                        str(limits.get("read_only", False)).lower(),
+                        limits.get("cap_drop", "other"),
+                        str(limits.get("no_new_privileges", False)).lower(),
+                    )
+            if result["done"]:
+"""
+    task_patched = task_patched.replace(result_needle, task_measurements)
     compile(task_patched.decode(), "tasks.py", "exec")
     REPORT["test_only_failure_diagnostics"] = (
         "sanitized exception class and HTTP status; no messages, URLs, headers, or bodies"
@@ -581,6 +634,7 @@ def main():
         "PRODUCTION_CONVERSIONS_ENABLED": "true",
         "PRODUCTION_TOOL_ALLOWLIST": "tar-to-zip,zip-to-tar",
         "CAPACITY_ARCHIVE_IMAGE": ARCHIVE,
+        "CAPACITY_DIAGNOSTICS": "1",
     }
     supervisor = create(
         "supervisor",
@@ -677,6 +731,29 @@ def main():
         {"exception": error_type, "http_status": status}
         for error_type, status in diagnostic_pattern.findall(log_text)
     ][:16]
+    memory_pattern = re.compile(r"CAPACITY_SANDBOX_MEMORY peak=(\d+)")
+    REPORT["sandbox_memory_peak_bytes"] = [
+        int(value) for value in memory_pattern.findall(log_text)
+    ][:8]
+    limits_pattern = re.compile(
+        r"CAPACITY_SANDBOX_LIMITS memory=(\d+) swap=(\d+) nano_cpus=(\d+) cpuset=([\d,-]+) pids=(\d+) network=(none|other) readonly=(true|false) cap_drop=(ALL|other) no_new_privileges=(true|false)"
+    )
+    REPORT["sandbox_resource_limits"] = [
+        {
+            "memory": int(memory),
+            "memory_swap": int(swap),
+            "nano_cpus": int(nano_cpus),
+            "cpuset": cpuset,
+            "pids": int(pids),
+            "network": network,
+            "read_only": read_only == "true",
+            "cap_drop": cap_drop,
+            "no_new_privileges": no_new_privileges == "true",
+        }
+        for memory, swap, nano_cpus, cpuset, pids, network, read_only, cap_drop, no_new_privileges in limits_pattern.findall(
+            log_text
+        )
+    ][:8]
     REPORT["schema_unchanged"] = dump(db) == before
     REPORT["ledger_rows"] = int(sql(db, "select count(*) from schema_migrations"))
     REPORT["database_bytes"] = int(sql(db, "select pg_database_size('filenimble')"))
@@ -809,6 +886,40 @@ def main():
         and not x["oom"]
         for x in states
     )
+    sandbox_limits = REPORT["sandbox_resource_limits"]
+    sandbox_peaks = REPORT["sandbox_memory_peak_bytes"]
+    expected_sandbox_memory = 128 * 1024 * 1024
+    REPORT["sandbox_resource_measurements_verified"] = (
+        len(sandbox_limits) == 4
+        and len(sandbox_peaks) == 4
+        and all(
+            item["memory"] == expected_sandbox_memory
+            and item["memory_swap"] == expected_sandbox_memory
+            and item["nano_cpus"] == 1_000_000_000
+            and item["cpuset"] == SERVICE_CPUSET
+            and item["pids"] == 64
+            and item["network"] == "none"
+            and item["read_only"]
+            and item["cap_drop"] == "ALL"
+            and item["no_new_privileges"]
+            for item in sandbox_limits
+        )
+        and all(0 < peak <= expected_sandbox_memory for peak in sandbox_peaks)
+    )
+    REPORT["tests"]["sandbox_resource_measurements"] = {
+        "result": "PASS" if REPORT["sandbox_resource_measurements_verified"] else "FAIL",
+        "evidence": {
+            "sandbox_count": len(sandbox_limits),
+            "memory_peak_bytes": sandbox_peaks,
+            "limit_memory_bytes": expected_sandbox_memory,
+            "cpuset": SERVICE_CPUSET,
+            "swap_disabled": True,
+            "network_disabled": True,
+            "read_only": True,
+            "cap_drop_all": True,
+            "no_new_privileges": True,
+        },
+    }
     REPORT["result"] = (
         "PASS"
         if p.returncode == 0
@@ -822,6 +933,7 @@ def main():
         and REPORT["schema_unchanged"]
         and REPORT["ledger_rows"] == 0
         and REPORT["resource_limits_verified"]
+        and REPORT["sandbox_resource_measurements_verified"]
         and REPORT["oom_event_probe"] == "PASS"
         and REPORT["sandbox_oom_event_count"] == 0
         else "FAIL"
@@ -937,6 +1049,12 @@ if __name__ == "__main__":
                     for item in REPORT["worker_diagnostics"]
                 )
                 lines += ["", f"Sanitized worker exception categories: `{categories}`."]
+            resource_gate = REPORT.get("tests", {}).get("sandbox_resource_measurements", {})
+            if resource_gate:
+                lines += [
+                    "",
+                    f"Sandbox resources: `{resource_gate.get('result')}`; cgroup peaks bytes `{resource_gate.get('evidence', {}).get('memory_peak_bytes')}`; limits `{resource_gate.get('evidence', {})}`.",
+                ]
             events = REPORT.get("sandbox_container_events", {})
             if events:
                 lines += [
