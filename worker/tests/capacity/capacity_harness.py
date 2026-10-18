@@ -429,7 +429,10 @@ def disabled():
         status = c.get("/api/v1/ai/status")
         if status.status_code != 200 or status.json() != {"enabled": False, "provider": None}:
             raise GateFailure("ai_status_not_disabled")
-        r = c.post("/api/v1/ai/process", json={"tool": "summarize-text", "text": "Synthetic"})
+        r = c.post(
+            "/api/v1/ai/process",
+            json={"tool": "ai-document-summarizer", "text": "Synthetic"},
+        )
         if r.status_code != 503 or error_code(r) != "AI_DISABLED":
             raise GateFailure(
                 "ai_process_status_" + str(r.status_code) + "_error_" + error_code(r).lower()
