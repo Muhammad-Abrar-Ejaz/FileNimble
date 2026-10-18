@@ -22,7 +22,7 @@ export function PrivacyBadge({ mode, className, size = "sm" }: PrivacyBadgeProps
             sizeClasses,
             className
           )}
-          title="This tool processes files directly in your browser. Files never leave your device."
+          title="This conversion processes file content in your browser and does not upload it to FileNimble."
         >
           <ShieldCheck size={iconSize} className="text-emerald-600 shrink-0" aria-hidden="true" />
           <span>Runs in browser</span>
@@ -37,10 +37,10 @@ export function PrivacyBadge({ mode, className, size = "sm" }: PrivacyBadgeProps
             sizeClasses,
             className
           )}
-          title="Files use isolated workers and temporary storage. Expiry and cleanup apply; outages can delay deletion."
+          title="Files use isolated workers and temporary storage. Expiry and cleanup apply; outages can delay physical deletion."
         >
           <Server size={iconSize} className="text-blue-600 shrink-0" aria-hidden="true" />
-          <span>Secure server processing</span>
+          <span>Temporary server processing</span>
         </span>
       );
 

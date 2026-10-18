@@ -77,7 +77,7 @@ export function Header({ className }: HeaderProps) {
 
             <div className="hidden lg:flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-emerald-50 text-emerald-700 text-xs font-medium border border-emerald-200">
               <ShieldCheck size={14} className="text-emerald-600" aria-hidden="true" />
-              <span>100% Privacy</span>
+              <span>Clear Processing Labels</span>
             </div>
 
             {/* Mobile Menu Button */}

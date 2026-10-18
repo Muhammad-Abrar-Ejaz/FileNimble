@@ -26,7 +26,7 @@ export default function ImageResizePage() {
     },
     {
       q: 'Are my photos uploaded to a server?',
-      a: 'No. Resizing is performed 100% locally on your device via HTML5 Canvas. Your images never leave your browser.',
+      a: 'No. This resizing conversion runs in your browser using HTML5 Canvas; FileNimble does not upload the selected image for this conversion.',
     },
   ];
 

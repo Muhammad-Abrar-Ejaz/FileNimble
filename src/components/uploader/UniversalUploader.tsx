@@ -40,7 +40,7 @@ export function UniversalUploader({
   title = "Drop files here or click to upload",
   subtitle,
   accept,
-  privacyLabel = "100% Private — Processed locally in your browser",
+  privacyLabel = "Check the tool’s label to see whether files stay in your browser or upload after you start conversion.",
   className,
   disabled = false,
 }: UniversalUploaderProps) {
@@ -395,7 +395,7 @@ export function UniversalUploader({
         </fieldset>
       )}
 
-      {/* Privacy Guarantee Footer */}
+      {/* Processing information footer */}
       <div className="mt-4 flex items-center justify-center gap-2 text-xs text-text-muted">
         <ShieldCheck size={14} className="text-emerald-600 shrink-0" aria-hidden="true" />
         <span>{privacyLabel}</span>

@@ -9,6 +9,6 @@ export function AiToolPage({ slug }: { slug: AiToolSlug }) {
       <h2 className="text-xl font-bold">Supported input and limitations</h2>
       <p className="mt-3 text-text-muted">{tool.details} PDF processing accepts up to 10 MiB and 20 pages. Extracted or pasted text is capped at 12,000 characters. AI results are generated, may omit or misinterpret content, and are not professional advice.</p>
     </section>
-    <p className="mx-auto max-w-4xl text-sm text-text-muted">This experimental tool is not included in the public tool directory or sitemap while provider, quality, and release checks remain incomplete.</p>
+    <p className="mx-auto max-w-4xl text-sm text-text-muted">AI processing is disabled in this release. This experimental tool is not included in the public tool directory or sitemap and cannot submit text for processing.</p>
   </div>;
 }

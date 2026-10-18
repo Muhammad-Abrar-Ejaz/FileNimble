@@ -341,7 +341,7 @@
     "processingMode": "server",
     "notes": "Qualified previously, but intentionally unavailable in the current production allowlist. Keep planned until OCR is separately approved and enabled.",
     "title": "Make a Scanned PDF Searchable",
-    "description": "Create a PDF with scanned page images and a searchable English OCR text layer.",
+    "description": "Planned searchable-PDF OCR tool; unavailable in this release. No PDF is uploaded or processed.",
     "inputFormats": [
       "pdf"
     ],
@@ -355,9 +355,9 @@
         "pdf"
       ]
     },
-    "privacyLabel": "Temporary server processing",
+    "privacyLabel": "Unavailable in this release",
     "seoTitle": "Make a Scanned PDF Searchable | FileNimble",
-    "seoDescription": "Create a PDF with scanned page images and a searchable English OCR text layer.",
+    "seoDescription": "Planned searchable-PDF OCR tool; unavailable in this release. No PDF is uploaded or processed.",
     "relatedTools": [
       "image-to-text",
       "pdf-to-text"
@@ -372,7 +372,7 @@
     "processingMode": "server",
     "notes": "Qualified previously, but intentionally unavailable in the current production allowlist. Keep planned until OCR is separately approved and enabled.",
     "title": "Extract English Text from Scanned PDF",
-    "description": "Run OCR on up to five PDF pages and download recognized English text in page order.",
+    "description": "Planned PDF text OCR tool; unavailable in this release. No PDF is uploaded or processed.",
     "inputFormats": [
       "pdf"
     ],
@@ -386,9 +386,9 @@
         "pdf"
       ]
     },
-    "privacyLabel": "Temporary server processing",
+    "privacyLabel": "Unavailable in this release",
     "seoTitle": "Extract English Text from Scanned PDF | FileNimble",
-    "seoDescription": "Run OCR on up to five PDF pages and download recognized English text in page order.",
+    "seoDescription": "Planned PDF text OCR tool; unavailable in this release. No PDF is uploaded or processed.",
     "relatedTools": [
       "image-to-text",
       "ocr-pdf"
@@ -879,7 +879,7 @@
     ],
     "privacyLabel": "Runs in browser",
     "seoTitle": "JPG to PNG Converter – Convert JPG to PNG Online | FileNimble",
-    "seoDescription": "Convert JPG images to lossless PNG format online in seconds. 100% private browser-side conversion with zero server uploads."
+    "seoDescription": "Convert JPG images to PNG in your browser. FileNimble does not upload the selected image for this conversion."
   },
   {
     "id": "png_to_jpg",
@@ -914,7 +914,7 @@
     ],
     "privacyLabel": "Runs in browser",
     "seoTitle": "PNG to JPG Converter – Convert PNG Images Online | FileNimble",
-    "seoDescription": "Convert PNG images to JPG format online in seconds. 100% private browser-side conversion with customizable quality and background color.",
+    "seoDescription": "Convert PNG images to JPG in your browser with adjustable quality and background color. FileNimble does not upload the selected image for this conversion.",
     "notes": "Fully functional Phase 2 client-side canvas converter."
   },
   {
@@ -953,7 +953,7 @@
     ],
     "privacyLabel": "Runs in browser",
     "seoTitle": "JPG to WebP Converter – Reduce Image Size Online | FileNimble",
-    "seoDescription": "Convert JPG images to modern WebP format online in seconds. Choose quality and compare actual output sizes with 100% private browser-side conversion."
+    "seoDescription": "Convert JPG images to WebP in your browser, adjust quality and compare output sizes. FileNimble does not upload the selected image for this conversion."
   },
   {
     "id": "png_to_webp",
@@ -1025,7 +1025,7 @@
     ],
     "privacyLabel": "Runs in browser",
     "seoTitle": "WebP to JPG Converter – Convert WebP to JPEG Online | FileNimble",
-    "seoDescription": "Convert WebP images to standard JPG format online in seconds. Handle transparency with customizable background colors. 100% private browser-side conversion."
+    "seoDescription": "Convert WebP images to JPG in your browser and choose a background color for transparency. FileNimble does not upload the selected image for this conversion."
   },
   {
     "id": "webp_to_png",
@@ -1061,7 +1061,7 @@
     ],
     "privacyLabel": "Runs in browser",
     "seoTitle": "WebP to PNG Converter – Convert WebP with Transparency | FileNimble",
-    "seoDescription": "Convert WebP images to lossless PNG format online in seconds. Full transparency support and 100% private browser-side conversion with zero server uploads."
+    "seoDescription": "Convert WebP images to PNG in your browser with transparency support. FileNimble does not upload the selected image for this conversion."
   },
   {
     "id": "avif_to_jpg",
@@ -1229,7 +1229,7 @@
     "processingMode": "client",
     "notes": "Phase 3 client-side image utility. Limit: 24 megapixels, 16,384 pixels per side; still images only.",
     "title": "Image Compressor",
-    "description": "Shrink image file size with real-time quality control. Fast, private, and 100% browser-based.",
+    "description": "Reduce image file size with browser-based quality controls. FileNimble does not upload the selected image for this conversion.",
     "inputFormats": [
       "jpg",
       "jpeg",
@@ -1354,7 +1354,7 @@
     ],
     "privacyLabel": "Runs in browser",
     "seoTitle": "Image Cropper – Crop JPG, PNG & WebP Online | FileNimble",
-    "seoDescription": "Crop images online with an interactive visual cropper and preset aspect ratios (1:1, 4:3, 16:9). 100% private browser-side cropping with zero server uploads."
+    "seoDescription": "Crop images in your browser with preset aspect ratios (1:1, 4:3, 16:9) and a visual cropper. FileNimble does not upload the selected image for this conversion."
   },
   {
     "id": "image_rotate",
@@ -2444,7 +2444,7 @@
     "id": "ai_document_summarizer",
     "slug": "ai-document-summarizer",
     "title": "AI Document Summarizer",
-    "description": "Summarize pasted text or selectable PDF text with an optional external AI provider.",
+    "description": "Planned AI tool; unavailable in this release. AI processing is disabled.",
     "category": "ai",
     "status": "planned",
     "indexable": false,
@@ -2452,14 +2452,14 @@
     "inputFormats": ["txt", "pdf"],
     "outputFormats": ["txt"],
     "limits": { "maxFileBytes": 10485760, "maxBatchCount": 1, "allowedMimeTypes": ["application/pdf"], "allowedExtensions": ["pdf"] },
-    "privacyLabel": "PDF text is extracted locally; submitted text is sent to FileNimble and the configured external AI provider only after consent.",
+    "privacyLabel": "AI processing disabled in this release",
     "notes": "AI is disabled until provider credentials/configuration and quality, privacy, security and cost gates pass."
   },
   {
     "id": "translate_document",
     "slug": "translate-document",
     "title": "Translate Document Text",
-    "description": "Translate pasted text or selectable PDF text with an optional external AI provider.",
+    "description": "Planned AI tool; unavailable in this release. AI processing is disabled.",
     "category": "ai",
     "status": "planned",
     "indexable": false,
@@ -2467,14 +2467,14 @@
     "inputFormats": ["txt", "pdf"],
     "outputFormats": ["txt"],
     "limits": { "maxFileBytes": 10485760, "maxBatchCount": 1, "allowedMimeTypes": ["application/pdf"], "allowedExtensions": ["pdf"] },
-    "privacyLabel": "PDF text is extracted locally; submitted text is sent to FileNimble and the configured external AI provider only after consent.",
+    "privacyLabel": "AI processing disabled in this release",
     "notes": "AI is disabled until provider credentials/configuration and translation-quality, privacy, security and cost gates pass."
   },
   {
     "id": "pdf_to_structured_markdown",
     "slug": "pdf-to-structured-markdown",
     "title": "Convert PDF Text to Structured Markdown",
-    "description": "Organize selectable PDF text as structured Markdown with an optional external AI provider.",
+    "description": "Planned AI tool; unavailable in this release. AI processing is disabled.",
     "category": "ai",
     "status": "planned",
     "indexable": false,
@@ -2482,7 +2482,7 @@
     "inputFormats": ["pdf"],
     "outputFormats": ["md"],
     "limits": { "maxFileBytes": 10485760, "maxBatchCount": 1, "allowedMimeTypes": ["application/pdf"], "allowedExtensions": ["pdf"] },
-    "privacyLabel": "PDF text is extracted locally; submitted text is sent to FileNimble and the configured external AI provider only after consent.",
+    "privacyLabel": "AI processing disabled in this release",
     "notes": "AI is disabled until provider credentials/configuration and structure-quality, privacy, security and cost gates pass."
   },
   {
@@ -2494,7 +2494,7 @@
     "processingMode": "server",
     "notes": "Qualified previously, but intentionally unavailable in the current production allowlist. Keep planned until OCR is separately approved and enabled.",
     "title": "Extract English Text from an Image",
-    "description": "Recognize printed English text in a PNG or JPEG with temporary server-side Tesseract OCR.",
+    "description": "Planned image-to-text OCR tool; unavailable in this release. No image is uploaded or processed.",
     "inputFormats": [
       "png",
       "jpg",
@@ -2512,9 +2512,9 @@
         "jpeg"
       ]
     },
-    "privacyLabel": "Temporary server processing",
+    "privacyLabel": "Unavailable in this release",
     "seoTitle": "Extract English Text from an Image | FileNimble",
-    "seoDescription": "Recognize printed English text in a PNG or JPEG with temporary server-side Tesseract OCR.",
+    "seoDescription": "Planned image-to-text OCR tool; unavailable in this release. No image is uploaded or processed.",
     "notes": "FN-120 qualified: English PNG/JPEG OCR; server-side, 10 MiB/4 MP. Quality, security, output and license gates passed.",
     "relatedTools": [
       "pdf-to-text",

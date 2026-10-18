@@ -23,7 +23,7 @@ export default function JpgToPngPage() {
     },
     {
       q: 'Are my images uploaded to FileNimble servers?',
-      a: 'Never. The entire conversion process runs directly inside your web browser using HTML5 Canvas APIs. Your images remain private on your device at all times.',
+      a: 'This conversion runs in your browser using HTML5 Canvas. FileNimble does not upload the selected image for this conversion.',
     },
     {
       q: 'Why convert JPG to PNG if quality does not increase?',

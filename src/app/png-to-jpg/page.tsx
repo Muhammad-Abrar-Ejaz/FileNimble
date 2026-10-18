@@ -26,7 +26,7 @@ export default function PngToJpgPage() {
     },
     {
       q: "Are my PNG files uploaded to your servers?",
-      a: "No. The entire conversion runs directly on your computer inside your web browser using HTML5 Canvas and createImageBitmap APIs. Your files never leave your device.",
+      a: "No. This conversion runs in your browser using HTML5 Canvas and createImageBitmap. FileNimble does not upload the selected image for this conversion.",
     },
     {
       q: "What happens to transparent PNG backgrounds?",

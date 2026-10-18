@@ -145,7 +145,7 @@ export function MobileNav({ isOpen, onClose }: MobileNavProps) {
         <div className="mt-8 pt-4 border-t border-border-subtle text-xs text-text-muted space-y-3">
           <div className="flex items-center gap-2 text-emerald-700 bg-emerald-50 px-3 py-2 rounded-xl border border-emerald-200">
             <ShieldCheck size={16} className="shrink-0 text-emerald-600" aria-hidden="true" />
-            <span>100% Client-Side Privacy Guaranteed</span>
+            <span>Browser and server processing are labeled</span>
           </div>
           <p className="text-[11px] text-center text-text-muted">
             © {new Date().getFullYear()} FileNimble. All rights reserved.

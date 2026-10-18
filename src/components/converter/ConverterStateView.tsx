@@ -204,7 +204,7 @@ export function ConverterStateView({
           <div className="pt-3 border-t border-border-subtle flex flex-wrap items-center justify-between gap-3">
             <div className="flex items-center gap-2 text-xs text-text-muted">
               <ShieldCheck size={14} className="text-emerald-600" aria-hidden="true" />
-              <span>Processed safely • No permanent storage</span>
+              <span>Temporary processing • See Privacy for retention details</span>
             </div>
 
             <div className="flex items-center gap-2.5">
