@@ -85,7 +85,9 @@ export function Header({ className }: HeaderProps) {
               type="button"
               onClick={() => setMobileMenuOpen(true)}
               className="p-2 rounded-xl text-text-muted hover:text-text-strong hover:bg-gray-100 md:hidden transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+              aria-haspopup="dialog"
               aria-expanded={mobileMenuOpen}
+              aria-controls={mobileMenuOpen ? "mobile-navigation-dialog" : undefined}
               aria-label="Open mobile navigation menu"
             >
               <Menu size={22} aria-hidden="true" />

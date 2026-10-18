@@ -298,7 +298,7 @@ export function UniversalUploader({
         aria-label={title}
         className={cn(
           "relative flex flex-col items-center justify-center p-8 sm:p-10 rounded-3xl border-2 border-dashed transition-all cursor-pointer select-none",
-          "focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2",
+          "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2",
           isDragging
             ? "border-primary bg-primary/5 scale-[1.01] shadow-md"
             : "border-border-subtle bg-surface hover:border-primary/50 hover:bg-gray-50/50 shadow-xs",
@@ -309,9 +309,9 @@ export function UniversalUploader({
           <UploadCloud size={28} aria-hidden="true" />
         </div>
 
-        <h3 className="text-base sm:text-lg font-bold text-text-strong text-center">
+        <h2 className="text-base sm:text-lg font-bold text-text-strong text-center">
           {title}
-        </h3>
+        </h2>
 
         <p className="mt-1 text-xs sm:text-sm text-text-muted text-center max-w-md">
           {subtitle ||

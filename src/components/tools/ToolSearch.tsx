@@ -80,14 +80,14 @@ export function ToolSearch({
             value={query}
             onChange={(e) => setQuery(e.target.value)}
             placeholder="Search all 130+ tools (e.g. PDF to Word, compress image, merge PDF)..."
-            className="w-full pl-12 pr-11 py-3.5 rounded-2xl bg-surface border border-border-subtle shadow-xs text-text-strong placeholder:text-text-muted text-sm sm:text-base focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all"
+            className="w-full pl-12 pr-11 py-3.5 rounded-2xl bg-surface border border-border-subtle shadow-xs text-text-strong placeholder:text-text-muted text-sm sm:text-base focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:border-transparent transition-all"
             aria-label="Search conversion tools"
           />
           {query && (
             <button
               type="button"
               onClick={() => setQuery("")}
-              className="absolute right-3.5 p-1 rounded-full text-text-muted hover:text-text-strong hover:bg-gray-100 transition-colors"
+              className="absolute right-3.5 p-1 rounded-full text-text-muted hover:text-text-strong hover:bg-gray-100 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2"
               aria-label="Clear search input"
             >
               <X size={16} aria-hidden="true" />
@@ -107,7 +107,7 @@ export function ToolSearch({
             aria-pressed={selectedCategory === "all"}
             onClick={() => setSelectedCategory("all")}
             className={cn(
-              "px-3 py-1.5 rounded-full text-xs font-medium transition-all shrink-0 cursor-pointer",
+              "px-3 py-1.5 rounded-full text-xs font-medium transition-all shrink-0 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2",
               selectedCategory === "all"
                 ? "bg-primary text-white shadow-xs"
                 : "bg-surface text-text-muted hover:text-text-strong border border-border-subtle hover:bg-gray-50"
@@ -127,7 +127,7 @@ export function ToolSearch({
                 aria-pressed={selectedCategory === cat.id}
                 onClick={() => setSelectedCategory(cat.id)}
                 className={cn(
-                  "px-3 py-1.5 rounded-full text-xs font-medium transition-all shrink-0 cursor-pointer",
+                  "px-3 py-1.5 rounded-full text-xs font-medium transition-all shrink-0 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2",
                   selectedCategory === cat.id
                     ? "bg-primary text-white shadow-xs"
                     : "bg-surface text-text-muted hover:text-text-strong border border-border-subtle hover:bg-gray-50"
@@ -153,7 +153,7 @@ export function ToolSearch({
               setQuery("");
               setSelectedCategory("all");
             }}
-            className="text-primary hover:underline font-medium cursor-pointer"
+            className="text-primary hover:underline font-medium cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 rounded-sm"
           >
             Reset filters
           </button>
@@ -182,7 +182,7 @@ export function ToolSearch({
               setQuery("");
               setSelectedCategory("all");
             }}
-            className="mt-4 inline-flex items-center px-4 py-2 rounded-xl text-xs font-medium bg-primary text-white hover:bg-primary-hover transition-colors"
+            className="mt-4 inline-flex items-center px-4 py-2 rounded-xl text-xs font-medium bg-primary text-white hover:bg-primary-hover transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2"
           >
             Show all tools
           </button>

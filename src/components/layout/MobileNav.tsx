@@ -60,6 +60,7 @@ export function MobileNav({ isOpen, onClose }: MobileNavProps) {
   return (
     <div
       ref={dialogRef}
+      id="mobile-navigation-dialog"
       className="fixed inset-0 z-50 md:hidden"
       role="dialog"
       aria-modal="true"
@@ -93,7 +94,7 @@ export function MobileNav({ isOpen, onClose }: MobileNavProps) {
             <button
               type="button"
               onClick={onClose}
-              className="p-2 rounded-xl text-text-muted hover:text-text-strong hover:bg-gray-100 transition-colors"
+              className="p-2 rounded-xl text-text-muted hover:text-text-strong hover:bg-gray-100 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2"
               aria-label="Close navigation menu"
             >
               <X size={20} aria-hidden="true" />
