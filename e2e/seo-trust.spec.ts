@@ -2,7 +2,9 @@ import { test, expect } from '@playwright/test';
 import registry from '../tool_registry.starter.json';
 
 test('trust pages, keyboard links and format navigation remain usable', async ({ page }) => {
-  for (const path of ['/about', '/privacy', '/terms', '/contact', '/tools', '/formats', '/formats/pdf', '/formats/docx']) {
+  // Format hubs are intentionally generated only when a live, indexable tool
+  // supports that format. DOCX currently has no released converter.
+  for (const path of ['/about', '/privacy', '/terms', '/contact', '/tools', '/formats', '/formats/pdf', '/formats/md']) {
     expect((await page.goto(path))?.status()).toBe(200);
     await expect(page.locator('main h1')).toHaveCount(1);
     await expect(page.getByRole('navigation', { name: 'Breadcrumb', exact: true })).toBeVisible();
@@ -52,7 +54,9 @@ test('planned pages, aliases and private endpoints do not become indexable tools
 });
 
 test('converter schema and canonical survive query variants without duplicate entities', async ({ page }) => {
-  for (const slug of ['png-to-jpg', 'merge-pdf', 'csv-to-json', 'image-to-text']) {
+  // Planned tools remain noindex and intentionally have no structured data.
+  // Exercise the schema assertions against released, indexable tools only.
+  for (const slug of ['png-to-jpg', 'merge-pdf', 'csv-to-json', 'tar-to-zip']) {
     await page.goto(`/${slug}?source=test#example`);
     const canonical = await page.locator('link[rel=canonical]').getAttribute('href');
     expect(new URL(canonical!).pathname).toBe(`/${slug}`);
@@ -67,6 +71,6 @@ test('converter schema and canonical survive query variants without duplicate en
   }
   await expect(page.getByRole('heading', { name: 'Temporary server processing' })).toBeVisible();
   const intro = page.locator('h1').locator('..');
-  await expect(intro.getByText('Secure server processing')).toBeVisible();
+  await expect(intro.getByText('Temporary server processing')).toBeVisible();
   await expect(intro.getByText('Runs in browser')).toHaveCount(0);
 });
