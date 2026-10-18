@@ -30,7 +30,11 @@ jobs:
           CI: true
           PLAYWRIGHT_BASE_URL: http://127.0.0.1:3100
           PLAYWRIGHT_SERVER_MODE: production
-        run: npx playwright test e2e/server-archive-tools.spec.ts e2e/accessibility.spec.ts --project=chromium --workers=1 --reporter=line
+          PLAYWRIGHT_JSON_OUTPUT_NAME: ${{ runner.temp }}/playwright-report.json
+        run: npx playwright test e2e/server-archive-tools.spec.ts e2e/accessibility.spec.ts --project=chromium --workers=1 --reporter=line,json
+      - name: Summarize browser test failures safely
+        if: failure()
+        run: node scripts/summarize-playwright-failures.mjs
       - name: Upload Playwright diagnostics
         if: always()
         uses: actions/upload-artifact@v4
