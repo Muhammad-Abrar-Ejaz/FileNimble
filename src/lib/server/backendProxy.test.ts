@@ -1,7 +1,10 @@
 // @vitest-environment node
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { NextRequest } from "next/server";
+import { getContext } from "@netlify/functions";
 import { backendProxy } from "./backendProxy";
+
+vi.mock("@netlify/functions", () => ({ getContext: vi.fn() }));
 
 const id = "12345678-1234-1234-1234-123456789012";
 function request(method = "GET", body?: string, origin = "http://localhost:3000") {
@@ -16,6 +19,7 @@ describe("same-origin backend boundary", () => {
     vi.stubEnv("CONVERSION_API_SECRET", "test-only-secret");
     vi.stubEnv("NEXT_PUBLIC_SITE_URL", "http://localhost:3000");
     vi.stubEnv("TRUSTED_CLIENT_IP_HEADER", "");
+    vi.mocked(getContext).mockImplementation(() => { throw new Error("No platform context in test"); });
   });
   afterEach(() => { vi.unstubAllEnvs(); vi.unstubAllGlobals(); });
   it("rejects unconfigured backend without affecting browser routes", async () => {
@@ -102,5 +106,43 @@ describe("same-origin backend boundary", () => {
     expect(fetcher.mock.calls[0][1].headers.get("x-internal-key")).toBe("test-only-secret");
     expect(response.headers.get("x-internal-key")).toBeNull();
     expect(await response.text()).not.toContain("test-only-secret");
+  });
+  it("uses Netlify's trusted function context and ignores client-supplied forwarding headers", async () => {
+    vi.stubEnv("APP_ENV", "production");
+    vi.stubEnv("SITE_ORIGIN", "https://filenimble-preview.netlify.app");
+    vi.stubEnv("CONVERSION_API_URL", "https://backend.example.org");
+    vi.mocked(getContext).mockReturnValue({ ip: "203.0.113.45" } as ReturnType<typeof getContext>);
+    const fetcher = vi.fn().mockResolvedValue(new Response('{"enabled":false}'));
+    vi.stubGlobal("fetch", fetcher);
+    const req = new NextRequest("https://filenimble-preview.netlify.app/api/v1/tools", {
+      headers: {
+        origin: "https://filenimble-preview.netlify.app",
+        "x-forwarded-for": "198.51.100.10",
+        "x-vercel-forwarded-for": "198.51.100.11",
+      },
+    });
+
+    const response = await backendProxy(req, ["tools"]);
+    expect(response.status).toBe(200);
+    expect(vi.mocked(getContext)).toHaveBeenCalledOnce();
+    expect(fetcher.mock.calls[0][1].headers.get("x-client-ip")).toBe("203.0.113.45");
+  });
+  it("fails closed to unknown IP for production requests without trusted platform context", async () => {
+    vi.stubEnv("APP_ENV", "production");
+    vi.stubEnv("SITE_ORIGIN", "https://filenimble-preview.netlify.app");
+    vi.stubEnv("CONVERSION_API_URL", "https://backend.example.org");
+    const fetcher = vi.fn().mockResolvedValue(new Response('{"enabled":false}'));
+    vi.stubGlobal("fetch", fetcher);
+    const req = new NextRequest("https://filenimble-preview.netlify.app/api/v1/tools", {
+      headers: {
+        origin: "https://filenimble-preview.netlify.app",
+        "x-forwarded-for": "198.51.100.10",
+        "x-vercel-forwarded-for": "198.51.100.11",
+      },
+    });
+
+    const response = await backendProxy(req, ["tools"]);
+    expect(response.status).toBe(200);
+    expect(fetcher.mock.calls[0][1].headers.get("x-client-ip")).toBe("unknown");
   });
 });
