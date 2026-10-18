@@ -25,12 +25,41 @@ jobs:
         run: npx playwright install --with-deps chromium
       - name: Build production frontend
         run: npm run build
-      - name: Run archive browser flow and integrity tests
+      - name: Start production build for Lighthouse
+        run: |
+          npm run start -- --hostname 127.0.0.1 --port 3101 > "$RUNNER_TEMP/lighthouse-server.log" 2>&1 &
+          echo $! > "$RUNNER_TEMP/lighthouse-server.pid"
+          for attempt in $(seq 1 30); do
+            if curl --fail --silent http://127.0.0.1:3101/ > /dev/null; then exit 0; fi
+            sleep 1
+          done
+          echo "LIGHTHOUSE_SERVER_START_FAILED"
+          exit 1
+      - name: Run Lighthouse accessibility audit
+        env:
+          LIGHTHOUSE_REPORT_PATH: ${{ runner.temp }}/lighthouse-accessibility.json
+        run: |
+          CHROME_PATH="$(node -e "process.stdout.write(require('@playwright/test').chromium.executablePath())")"
+          npx --yes lighthouse@13.5.0 http://127.0.0.1:3101/ --only-categories=accessibility --chrome-path="$CHROME_PATH" --chrome-flags="--headless --no-sandbox" --output=json --output-path="$LIGHTHOUSE_REPORT_PATH" --quiet
+          node scripts/summarize-lighthouse.mjs "$LIGHTHOUSE_REPORT_PATH"
+      - name: Stop Lighthouse production server
+        if: always()
+        run: |
+          if [[ -f "$RUNNER_TEMP/lighthouse-server.pid" ]]; then
+            kill "$(cat "$RUNNER_TEMP/lighthouse-server.pid")" 2>/dev/null || true
+          fi
+      - name: Run archive integrity and accessibility browser tests
         env:
           CI: true
           PLAYWRIGHT_BASE_URL: http://127.0.0.1:3100
           PLAYWRIGHT_SERVER_MODE: production
-        run: npx playwright test e2e/server-archive-tools.spec.ts --project=chromium --workers=1 --reporter=line
+          PLAYWRIGHT_JSON_OUTPUT_NAME: ${{ runner.temp }}/playwright-report.json
+        run: npx playwright test e2e/server-archive-tools.spec.ts e2e/accessibility.spec.ts --project=chromium --workers=1 --reporter=line,json
+      - name: Summarize browser test failures safely
+        if: failure()
+        env:
+          PLAYWRIGHT_JSON_OUTPUT_NAME: ${{ runner.temp }}/playwright-report.json
+        run: node scripts/summarize-playwright-failures.mjs
       - name: Upload Playwright diagnostics
         if: always()
         uses: actions/upload-artifact@v4

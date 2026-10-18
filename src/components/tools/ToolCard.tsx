@@ -107,7 +107,6 @@ export function ToolCard({ tool, className, showCategory = true }: ToolCardProps
     "group relative rounded-2xl bg-surface border border-border-subtle shadow-xs",
     "hover:border-primary/40 hover:shadow-md transition-all duration-200",
     "focus-within:ring-2 focus-within:ring-primary focus-within:ring-offset-2",
-    !isLive && "opacity-90 hover:opacity-100",
     className
   );
 

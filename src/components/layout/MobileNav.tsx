@@ -60,6 +60,7 @@ export function MobileNav({ isOpen, onClose }: MobileNavProps) {
   return (
     <div
       ref={dialogRef}
+      id="mobile-navigation-dialog"
       className="fixed inset-0 z-50 md:hidden"
       role="dialog"
       aria-modal="true"
@@ -77,7 +78,7 @@ export function MobileNav({ isOpen, onClose }: MobileNavProps) {
         <div>
           {/* Header */}
           <div className="flex items-center justify-between pb-4 border-b border-border-subtle">
-            <Link href="/" onClick={onClose} className="flex items-center gap-2.5">
+            <Link href="/" onClick={onClose} className="flex items-center gap-2.5 rounded-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2">
               <Image
                 src="/brand/filenimble-logo.png"
                 alt="FileNimble Logo"
@@ -93,7 +94,7 @@ export function MobileNav({ isOpen, onClose }: MobileNavProps) {
             <button
               type="button"
               onClick={onClose}
-              className="p-2 rounded-xl text-text-muted hover:text-text-strong hover:bg-gray-100 transition-colors"
+              className="p-2 rounded-xl text-text-muted hover:text-text-strong hover:bg-gray-100 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2"
               aria-label="Close navigation menu"
             >
               <X size={20} aria-hidden="true" />
@@ -107,7 +108,7 @@ export function MobileNav({ isOpen, onClose }: MobileNavProps) {
                 key={item.href}
                 href={item.href}
                 onClick={onClose}
-                className="flex items-center justify-between px-3.5 py-2.5 rounded-xl text-sm font-semibold text-text-strong hover:bg-primary/5 hover:text-primary transition-colors"
+                className="flex items-center justify-between px-3.5 py-2.5 rounded-xl text-sm font-semibold text-text-strong hover:bg-primary/5 hover:text-primary transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2"
               >
                 <span>{item.title}</span>
                 <ArrowRight size={14} className="text-text-muted" aria-hidden="true" />
@@ -126,7 +127,7 @@ export function MobileNav({ isOpen, onClose }: MobileNavProps) {
                   key={cat.id}
                   href={`/#${cat.id}`}
                   onClick={onClose}
-                  className="flex items-center gap-2.5 px-3.5 py-2 rounded-xl text-xs font-medium text-text-muted hover:text-text-strong hover:bg-gray-50 transition-colors"
+                  className="flex items-center gap-2.5 px-3.5 py-2 rounded-xl text-xs font-medium text-text-muted hover:text-text-strong hover:bg-gray-50 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2"
                 >
                   <div
                     className="w-6 h-6 rounded-md flex items-center justify-center shrink-0"
