@@ -84,6 +84,7 @@ for (const slug of ['tar-to-zip', 'zip-to-tar'] as const) {
     } else output = makeTar();
     const backend = await prepareMockBackend(page, slug, input, output);
     await page.goto(`/${slug}`, { waitUntil: 'domcontentloaded' });
+    await page.waitForLoadState('networkidle');
     await page.getByLabel('Upload files').setInputFiles({ name: slug === 'tar-to-zip' ? 'fixture.tar' : 'fixture.zip', mimeType: slug === 'tar-to-zip' ? 'application/x-tar' : 'application/zip', buffer: input });
     await expect(page.getByText('1 file ready to process')).toBeVisible();
     await page.getByRole('button', { name: 'Upload and convert' }).click();
@@ -121,7 +122,9 @@ test('OCR stays planned in the public website while the archive pages stay avail
 test('server configuration failure is shown without attempting an upload', async ({ page }) => {
   await page.route('**/api/v1/jobs', route => route.fulfill({ status: 503, json: { error: 'SERVICE_UNAVAILABLE', message: 'Server processing is not configured.' } }));
   await page.goto('/tar-to-zip', { waitUntil: 'domcontentloaded' });
+  await page.waitForLoadState('networkidle');
   await page.getByLabel('Upload files').setInputFiles({ name: 'fixture.tar', mimeType: 'application/x-tar', buffer: makeTar() });
+  await expect(page.getByText('1 file ready to process')).toBeVisible();
   await page.getByRole('button', { name: 'Upload and convert' }).click();
   await expect(page.getByText('Server processing is not configured.', { exact: true })).toBeVisible();
   await expect(page.getByText(/Uploading to temporary private storage/)).toHaveCount(0);
