@@ -49,6 +49,9 @@ jobs:
         run: docker run --rm filenimble-backend:phase5 pip check
       - name: Start real services
         run: docker compose --env-file .env.backend.local -f compose.yaml -f compose.test.yaml -f compose.browser-test.yaml up -d postgres redis storage migrate api worker lifecycle supervisor
+      - name: Verify browser-facing storage endpoint
+        run: |
+          docker compose --env-file .env.backend.local -f compose.yaml -f compose.test.yaml -f compose.browser-test.yaml exec -T api python -c "from app.config import settings; assert settings.s3_public == 'http://localhost:3900', 'Browser storage endpoint is not host-reachable'; print('Browser storage endpoint: host-reachable')"
       - name: Prepare backend test reports
         run: |
           mkdir -p .ci-test-results

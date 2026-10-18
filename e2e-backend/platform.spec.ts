@@ -27,6 +27,7 @@ test("real same-origin job, signed browser upload/download, ownership and deleti
           method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ fileId: status.files[0].fileId }),
         });
         const token = await authorized.json();
+        if (!token.url || !["localhost", "127.0.0.1"].includes(new URL(token.url).hostname)) throw new Error("Signed download endpoint is not browser-reachable");
         const download = await fetch(token.url);
         return { jobId: job.jobId, fileId: status.files[0].fileId, content: await download.text(), cache: response.headers.get("cache-control"), robots: response.headers.get("x-robots-tag"), cookieVisible: document.cookie.includes("fn_session") };
       }
