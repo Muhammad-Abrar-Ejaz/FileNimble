@@ -3,6 +3,7 @@
 import hashlib
 import json
 import os
+import re
 import secrets
 import shutil
 import subprocess
@@ -128,6 +129,7 @@ def create(
     secure=True,
     cpuset=None,
     cpus="0.5",
+    log_driver="none",
 ):
     name = RUN + "-" + service
     args = [
@@ -149,7 +151,7 @@ def create(
         "--pids-limit",
         "64",
         "--log-driver",
-        "none",
+        log_driver,
     ]
     if network != "none":
         args += ["--network-alias", service]
@@ -446,7 +448,7 @@ def main():
     CREATED.remove(bootstrap)
     # Instrument only the disposable backend image to pin child sandboxes to
     # Oracle's two-core envelope; repository production source stays untouched.
-    original = (REPO / "worker/app/native_runner.py").read_bytes()
+    original = (REPO / "worker/app/native_runner.py").read_bytes().replace(b"\r\n", b"\n")
     needle = b"            nano_cpus=1_000_000_000,"
     assert original.count(needle) == 1
     patched = original.replace(
@@ -459,13 +461,48 @@ def main():
         b'os.getenv("CAPACITY_ARCHIVE_IMAGE", "filenimble-archive:phase11") if family == "archive" else "filenimble-media:phase11"',
     )
     compile(patched.decode(), "native_runner.py", "exec")
+    task_source = (REPO / "worker/app/tasks.py").read_bytes().replace(b"\r\n", b"\n")
+    task_needle = (
+        b'    except Exception:\n        finish_failure(job_id, run_id, "SERVICE_UNAVAILABLE")'
+    )
+    assert task_source.count(task_needle) == 1
+    task_diagnostic = b"""    except Exception as error:
+        error_type = type(error).__name__
+        if error_type not in {
+            "HTTPStatusError",
+            "ConnectError",
+            "ReadTimeout",
+            "APIError",
+            "ClientError",
+            "EndpointConnectionError",
+            "ValueError",
+            "OSError",
+            "TimeoutError",
+        }:
+            error_type = "OTHER"
+        response = getattr(error, "response", None)
+        status = getattr(response, "status_code", None)
+        if type(status) is not int or not 100 <= status <= 599:
+            status = "none"
+        logging.getLogger("worker").warning(
+            "CAPACITY_DIAGNOSTIC type=%s status=%s", error_type, status
+        )
+        finish_failure(job_id, run_id, "SERVICE_UNAVAILABLE")"""
+    task_patched = task_source.replace(task_needle, task_diagnostic)
+    compile(task_patched.decode(), "tasks.py", "exec")
+    REPORT["test_only_failure_diagnostics"] = (
+        "sanitized exception class and HTTP status; no messages, URLs, headers, or bodies"
+    )
     import tempfile
 
     with tempfile.TemporaryDirectory(prefix="fn-capacity-image-") as td:
         context = Path(td)
         (context / "native_runner.py").write_bytes(patched)
+        (context / "tasks.py").write_bytes(task_patched)
         (context / "Dockerfile").write_text(
-            "FROM " + BACK + "\nCOPY native_runner.py /app/app/native_runner.py\n"
+            "FROM "
+            + BACK
+            + "\nCOPY native_runner.py /app/app/native_runner.py\nCOPY tasks.py /app/app/tasks.py\n"
         )
         bounded = BACK + "-bounded"
         cli("build", "-t", bounded, str(context), timeout=180)
@@ -524,7 +561,16 @@ def main():
         ),
         ("lifecycle", "256m", ["python", "-m", "app.lifecycle"]),
     ]:
-        start(create(service, bounded, command, env=env, mem=mem))
+        start(
+            create(
+                service,
+                bounded,
+                command,
+                env=env,
+                mem=mem,
+                log_driver="local" if service == "worker" else "none",
+            )
+        )
     supervisor_env = {
         "APP_ENV": "production",
         "RUNNER_SECRET": ENV["RUNNER_SECRET"],
@@ -602,6 +648,15 @@ def main():
             "exit": p.returncode,
         }
     REPORT["samples"] = samples
+    worker_logs = cli("logs", RUN + "-worker", check=False, timeout=10)
+    log_text = (worker_logs.stdout + worker_logs.stderr).decode(errors="replace")
+    diagnostic_pattern = re.compile(
+        r"CAPACITY_DIAGNOSTIC type=(HTTPStatusError|ConnectError|ReadTimeout|APIError|ClientError|EndpointConnectionError|ValueError|OSError|TimeoutError|OTHER) status=(\d{3}|none)"
+    )
+    REPORT["worker_diagnostics"] = [
+        {"exception": error_type, "http_status": status}
+        for error_type, status in diagnostic_pattern.findall(log_text)
+    ][:16]
     REPORT["schema_unchanged"] = dump(db) == before
     REPORT["ledger_rows"] = int(sql(db, "select count(*) from schema_migrations"))
     REPORT["database_bytes"] = int(sql(db, "select pg_database_size('filenimble')"))
@@ -642,8 +697,6 @@ def main():
     )
 
     def memory_bytes(value):
-        import re
-
         match = re.fullmatch(r"([0-9.]+)(B|KiB|MiB|GiB)", value.strip())
         return (
             int(
@@ -663,6 +716,41 @@ def main():
         "sandbox_memory_samples": [x for x in samples if x.get("Name", "").startswith("fn-job-")],
     }
     event_end = str(int(time.time()))
+    sandbox_events = cli(
+        "events",
+        "--since",
+        event_start,
+        "--until",
+        event_end,
+        "--filter",
+        "type=container",
+        "--filter",
+        "label=filenimble.sandbox=" + NAMESPACE,
+        "--format",
+        "{{json .}}",
+        check=False,
+        timeout=10,
+    )
+    actions = {}
+    exit_codes = set()
+    for line in sandbox_events.stdout.decode().splitlines():
+        if not line.strip():
+            continue
+        try:
+            event = json.loads(line)
+        except ValueError:
+            continue
+        action = event.get("Action")
+        if action in {"create", "start", "die", "destroy", "oom"}:
+            actions[action] = actions.get(action, 0) + 1
+        raw_code = event.get("Actor", {}).get("Attributes", {}).get("exitCode")
+        if isinstance(raw_code, str) and raw_code.isdigit():
+            exit_codes.add(int(raw_code))
+    REPORT["sandbox_container_events"] = {
+        "probe": "PASS" if sandbox_events.returncode == 0 else "BLOCKED",
+        "actions": actions,
+        "exit_codes": sorted(exit_codes),
+    }
     oom_events = cli(
         "events",
         "--since",
@@ -823,6 +911,18 @@ if __name__ == "__main__":
                 ]
             if REPORT.get("orchestrator_error"):
                 lines += ["", f"Orchestrator status: `{REPORT['orchestrator_error']}`."]
+            if REPORT.get("worker_diagnostics"):
+                categories = ", ".join(
+                    item["exception"] + "/" + item["http_status"]
+                    for item in REPORT["worker_diagnostics"]
+                )
+                lines += ["", f"Sanitized worker exception categories: `{categories}`."]
+            events = REPORT.get("sandbox_container_events", {})
+            if events:
+                lines += [
+                    "",
+                    f"Sandbox container events: probe `{events.get('probe')}`, actions `{events.get('actions')}`, exit codes `{events.get('exit_codes')}`.",
+                ]
             Path(summary).write_text("\n".join(lines) + "\n", encoding="utf-8")
         if REPORT.get("result") != "PASS":
             raise SystemExit(1)

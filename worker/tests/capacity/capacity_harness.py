@@ -36,6 +36,7 @@ SAFE_ERROR_CODES = {
     "UPLOAD_INCOMPLETE",
     "TIMEOUT",
     "CANCELLED",
+    "AI_DISABLED",
 }
 
 
@@ -392,14 +393,16 @@ def malformed():
 def disabled():
     with client() as c:
         tools = c.get("/api/v1/tools")
-        assert tools.status_code == 200
+        if tools.status_code != 200:
+            raise GateFailure("tool_catalog_http_" + str(tools.status_code))
         enabled = {
             x["slug"]
             for x in tools.json()
             if x.get("processingMode") == "server"
             and x.get("runtimeAvailability", {}).get("available") is True
         }
-        assert enabled == {"tar-to-zip", "zip-to-tar"}
+        if enabled != {"tar-to-zip", "zip-to-tar"}:
+            raise GateFailure("runtime_allowlist_mismatch")
         inputs = {
             "image-to-text": ("x.png", "image/png"),
             "wav-to-flac": ("x.wav", "audio/wav"),
@@ -424,18 +427,21 @@ def disabled():
                     + error_code(r).lower()
                 )
         status = c.get("/api/v1/ai/status")
-        assert status.status_code == 200 and status.json() == {"enabled": False, "provider": None}
+        if status.status_code != 200 or status.json() != {"enabled": False, "provider": None}:
+            raise GateFailure("ai_status_not_disabled")
         r = c.post("/api/v1/ai/process", json={"tool": "summarize-text", "text": "Synthetic"})
-        assert r.status_code == 503 and r.json().get("error") == "AI_DISABLED"
+        if r.status_code != 503 or error_code(r) != "AI_DISABLED":
+            raise GateFailure(
+                "ai_process_status_" + str(r.status_code) + "_error_" + error_code(r).lower()
+            )
     with httpx.Client(base_url="http://api:8000") as c:
-        assert (
-            c.post(
-                "/api/v1/jobs",
-                headers={"x-client-ip": "arbitrary", "x-forwarded-for": "arbitrary"},
-                json={},
-            ).status_code
-            == 401
+        r = c.post(
+            "/api/v1/jobs",
+            headers={"x-client-ip": "arbitrary", "x-forwarded-for": "arbitrary"},
+            json={},
         )
+        if r.status_code != 401:
+            raise GateFailure("unauthenticated_request_status_" + str(r.status_code))
     return {
         "runtime_enabled_tools": sorted(enabled),
         "disabled_tools_rejected": "UNSUPPORTED_FORMAT",
