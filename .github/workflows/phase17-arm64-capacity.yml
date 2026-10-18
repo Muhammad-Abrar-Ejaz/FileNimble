@@ -1,0 +1,67 @@
+name: Phase 17 isolated ARM64 capacity
+
+on:
+  pull_request:
+    branches: [main]
+    types: [opened, synchronize, reopened, ready_for_review]
+    paths:
+      - "worker/**"
+      - ".github/workflows/phase17-arm64-capacity.yml"
+
+permissions:
+  contents: read
+
+concurrency:
+  group: phase17-arm64-capacity-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+jobs:
+  capacity:
+    # Standard GitHub-hosted ARM64 runner. The repository is public, so this
+    # uses the public-repository free runner allocation and no runner labels
+    # for larger or paid machines.
+    runs-on: ubuntu-24.04-arm
+    timeout-minutes: 60
+    steps:
+      - name: Check out reviewed backend source
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+          persist-credentials: false
+
+      - name: Verify ARM64 free runner and Docker daemon
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$(uname -m)" = "aarch64"
+          test "$(docker info --format '{{.OSType}}')" = "linux"
+          python3 --version
+          docker version --format 'Docker server {{.Server.Version}}'
+          python3 - <<'PY'
+          import os
+          from pathlib import Path
+          import platform
+
+          memory_kib = int(next(line.split()[1] for line in Path('/proc/meminfo').read_text().splitlines() if line.startswith('MemTotal:')))
+          cpus = len(os.sched_getaffinity(0))
+          print(f"Runner: arch={platform.machine()} cpus={cpus} memory_bytes={memory_kib * 1024}")
+          if memory_kib < 7 * 1024 * 1024 or cpus < 4:
+              raise SystemExit('ARM64 runner does not meet minimum host resources')
+          PY
+
+      - name: Run API-to-worker capacity suite in disposable Docker stack
+        env:
+          CAPACITY_REPORT_PATH: ${{ runner.temp }}/phase17-capacity-report.json
+        run: |
+          set -euo pipefail
+          python3 worker/tests/capacity/run_capacity.py
+
+      - name: Upload sanitized measurement report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: phase17-arm64-capacity-report
+          path: ${{ runner.temp }}/phase17-capacity-report.json
+          if-no-files-found: ignore
+          retention-days: 7
+

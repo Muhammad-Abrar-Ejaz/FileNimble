@@ -1,0 +1,10 @@
+{
+  "result": "PASS",
+  "schema_dump_sha256": "dac30e622281bac92c6cab7858367e088acdbad3966949e5dc8359021df416a8",
+  "postgres_image": "postgres@sha256:b0f9560a2de083e2cc7382e75f808c7381a32852a7ec49117deedb300e552b24",
+  "tables": 7,
+  "rows": 0,
+  "migrations_executed": false,
+  "ledger_rows": 0,
+  "restore_catalog_match": true
+}
