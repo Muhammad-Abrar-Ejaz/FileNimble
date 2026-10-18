@@ -116,7 +116,14 @@ test('keyboard focus, search controls, and mobile navigation remain accessible',
   const close = dialog.getByRole('button', { name: 'Close navigation menu' });
   await expect(close).toBeFocused();
   await page.keyboard.press('Tab');
-  await expect(dialog.getByRole('link').first()).toBeFocused();
+  const primaryLinks = dialog.getByRole('navigation', { name: 'Mobile Primary Navigation' }).getByRole('link');
+  await expect(primaryLinks.first()).toBeFocused();
+  const focusableElements = dialog.locator('a[href], button:not(:disabled)');
+  await focusableElements.last().focus();
+  await page.keyboard.press('Tab');
+  await expect(focusableElements.first()).toBeFocused();
+  await page.keyboard.press('Shift+Tab');
+  await expect(focusableElements.last()).toBeFocused();
   await page.keyboard.press('Escape');
   await expect(dialog).toHaveCount(0);
   await expect(opener).toBeFocused();

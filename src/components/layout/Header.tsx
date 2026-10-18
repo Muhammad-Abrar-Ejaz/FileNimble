@@ -65,7 +65,7 @@ export function Header({ className }: HeaderProps) {
           <div className="flex items-center gap-2 sm:gap-3">
             <Link
               href="/#search"
-              className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-xl bg-gray-100/80 hover:bg-gray-200/70 text-text-muted hover:text-text-strong text-xs font-semibold border border-border-subtle/60 transition-all"
+              className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-xl bg-gray-100/80 hover:bg-gray-200/70 text-text-muted hover:text-text-strong text-xs font-semibold border border-border-subtle/60 transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2"
               aria-label="Search all tools"
             >
               <Search size={14} aria-hidden="true" />
