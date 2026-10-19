@@ -1,4 +1,4 @@
-name: filenimble-local
+name: ${COMPOSE_PROJECT_NAME:-filenimble-local}
 x-backend: &backend
   build:
     context: .
@@ -18,6 +18,7 @@ x-backend: &backend
     JOB_TOKEN_SECRET: ${JOB_TOKEN_SECRET:?Run setup-backend}
     CONVERSION_API_SECRET: ${CONVERSION_API_SECRET:?Run setup-backend}
     RUNNER_SECRET: ${RUNNER_SECRET:?Run setup-backend}
+    RUNNER_NAMESPACE: ${RUNNER_NAMESPACE:-local-phase5}
     RUNNER_URL: http://supervisor:8001
     S3_ENDPOINT: http://storage:3900
     S3_PUBLIC_ENDPOINT: http://localhost:3900
@@ -65,7 +66,7 @@ services:
       GARAGE_DEFAULT_SECRET_KEY: ${S3_SECRET_ACCESS_KEY:?Run setup-backend}
       GARAGE_DEFAULT_BUCKET: filenimble
     volumes:
-      - ./tmp/garage.toml:/etc/garage.toml:ro
+      - ./tmp/${GARAGE_CONFIG_FILE:-garage.toml}:/etc/garage.toml:ro
       - storage-data:/var/lib/garage
     ports: [127.0.0.1:3900:3900]
     mem_limit: 256m
@@ -110,6 +111,7 @@ services:
     volumes: [/var/run/docker.sock:/var/run/docker.sock]
     environment:
       RUNNER_SECRET: ${RUNNER_SECRET:?Run setup-backend}
+      RUNNER_NAMESPACE: ${RUNNER_NAMESPACE:-local-phase5}
     command: [uvicorn, app.supervisor:app, --host, 0.0.0.0, --port, "8001", --no-access-log]
     mem_limit: 256m
     tmpfs: ["/tmp:size=160m,noexec,nosuid,nodev"]

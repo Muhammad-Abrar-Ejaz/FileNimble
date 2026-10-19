@@ -5,8 +5,8 @@ x-production-env: &production-env
   PRODUCTION_TOOL_ALLOWLIST: tar-to-zip,zip-to-tar
   ENABLE_TEST_CAPABILITY: "0"
   ENABLE_NATIVE_QUALIFICATION: "0"
-  TRANSFER_PUBLIC_URL: https://api.example.org
-  SITE_ORIGIN: https://www.filenimble.app
+  TRANSFER_PUBLIC_URL: ${TRANSFER_PUBLIC_URL:-https://api.example.org}
+  SITE_ORIGIN: ${SITE_ORIGIN:-https://www.filenimble.app}
   TRANSFER_TOKEN_SECRET: ${TRANSFER_TOKEN_SECRET:?Use generated local CI secrets}
   AI_ENABLED: "false"
   AI_PROVIDER: ""
@@ -22,12 +22,12 @@ services:
   supervisor:
     environment:
       <<: *production-env
-      RUNNER_NAMESPACE: phase15-qualification-ci
+      RUNNER_NAMESPACE: ${RUNNER_NAMESPACE:-phase15-qualification-ci}
   tests:
     environment:
       <<: *production-env
       PHASE15_DISPOSABLE: "1"
-      RUNNER_NAMESPACE: phase15-qualification-ci
+      RUNNER_NAMESPACE: ${RUNNER_NAMESPACE:-phase15-qualification-ci}
   transfers:
     image: filenimble-backend:phase5
     init: true

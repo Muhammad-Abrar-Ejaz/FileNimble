@@ -54,5 +54,8 @@ print(json.dumps({'limits_verified':True}))
                 "/work": "rw,noexec,nosuid,nodev,size=128m,uid=10001,gid=10001,mode=700",
                 "/tmp": "rw,noexec,nosuid,nodev,size=32m,uid=10001,gid=10001,mode=700",  # noqa: S108 -- private per-container tmpfs.
             },
+            # Docker Desktop's default `local` log driver does not return output
+            # through docker-py attach here; the probe emits only this boolean.
+            log_config=docker.types.LogConfig(type="json-file"),
         )
     assert json.loads(output) == {"limits_verified": True}
