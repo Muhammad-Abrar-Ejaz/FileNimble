@@ -1,7 +1,29 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { isIP } from 'node:net';
+import { getContext } from '@netlify/functions';
 
 const endpoint = /^jobs(?:\/[0-9a-f-]{36}(?:\/(?:complete-upload|cancel|download-token))?)?$|^tools(?:\/[a-z0-9-]+)?$|^ai\/(?:status|process)$/;
+
+function trustedClientIP(request: NextRequest): string {
+  // Keep Vercel's platform-injected value while the existing production site
+  // remains there. Netlify exposes its address through the function context.
+  if (process.env.VERCEL_ENV === 'production') {
+    const value = request.headers.get('x-vercel-forwarded-for')?.split(',')[0].trim();
+    return value && isIP(value) ? value : 'unknown';
+  }
+
+  try {
+    const value = getContext().ip;
+    return value && isIP(value) ? value : 'unknown';
+  } catch {
+    // Generic reverse-proxy support is only a fallback for deployments where
+    // Netlify context is unavailable. Never fall back to arbitrary X-Forwarded-For.
+    const header = process.env.TRUSTED_CLIENT_IP_HEADER;
+    const value = header ? request.headers.get(header)?.split(',')[0].trim() : undefined;
+    if (value) return isIP(value) ? value : 'unknown';
+    return process.env.APP_ENV === 'production' ? 'unknown' : 'local';
+  }
+}
 
 export async function backendProxy(request: NextRequest, segments: string[]) {
   const path = segments.join('/');
@@ -29,10 +51,7 @@ export async function backendProxy(request: NextRequest, segments: string[]) {
     if (request.headers.get('origin') !== expected) return error(403,'NOT_AUTHORIZED','Request origin is not allowed.');
   }
   const upstream = new Headers({'x-internal-key':key,'Content-Type':'application/json'});
-  // Set this only behind a reverse proxy that replaces the specified header.
-  const ipHeader = process.env.VERCEL_ENV === 'production' ? 'x-vercel-forwarded-for' : process.env.TRUSTED_CLIENT_IP_HEADER;
-  const clientIP = ipHeader ? request.headers.get(ipHeader)?.split(',')[0].trim() : undefined;
-  upstream.set('x-client-ip',clientIP && isIP(clientIP) ? clientIP : ipHeader ? 'unknown' : 'local');
+  upstream.set('x-client-ip', trustedClientIP(request));
   const session = request.cookies.get('fn_session');
   if (session) upstream.set('cookie','fn_session='+encodeURIComponent(session.value));
   const idempotency = request.headers.get('idempotency-key');

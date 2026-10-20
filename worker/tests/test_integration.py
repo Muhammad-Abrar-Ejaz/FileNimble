@@ -1,4 +1,4 @@
-"""Real Compose services. Failure injection targets only filenimble-local containers."""
+"""Real Compose services. Failure injection targets only the selected test project."""
 
 import json
 import os
@@ -86,11 +86,12 @@ def download(c, job, status):
 
 def service(name):
     engine = docker.from_env()
+    project = os.getenv("TEST_COMPOSE_PROJECT", "filenimble-local")
     matches = engine.containers.list(
         all=True,
         filters={
             "label": [
-                "com.docker.compose.project=filenimble-local",
+                f"com.docker.compose.project={project}",
                 f"com.docker.compose.service={name}",
             ]
         },
@@ -723,10 +724,17 @@ def test_sandbox_restrictions_actually_enforced():
             for name in result["environment"]
         )
         engine = docker.from_env()
-        assert (
-            engine.containers.list(all=True, filters={"label": "filenimble.sandbox=local-phase5"})
-            == []
-        )
+        runner_namespaces = {
+            os.getenv("RUNNER_NAMESPACE", "local-phase5"),
+            f"{os.getenv('RUNNER_NAMESPACE', 'local-phase5')}-fixture",
+        }
+        for namespace in runner_namespaces:
+            assert (
+                engine.containers.list(
+                    all=True, filters={"label": f"filenimble.sandbox={namespace}"}
+                )
+                == []
+            )
 
 
 def test_worker_crash_and_expired_lease_recovery():

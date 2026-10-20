@@ -48,7 +48,7 @@ jobs:
       - name: Python dependency integrity
         run: docker run --rm filenimble-backend:phase5 pip check
       - name: Start real services
-        run: docker compose --env-file .env.backend.local -f compose.yaml -f compose.test.yaml up -d postgres redis storage migrate api worker lifecycle supervisor
+        run: docker compose --env-file .env.backend.local -f compose.yaml -f compose.test.yaml -f compose.browser-test.yaml up -d postgres redis storage migrate api worker lifecycle supervisor
       - name: Prepare backend test reports
         run: |
           mkdir -p .ci-test-results
@@ -93,6 +93,16 @@ jobs:
           status=$?
           echo "Standard backend pytest exit code: $status"
           exit "$status"
+      - name: Install browser for API proxy integration
+        run: |
+          npm ci
+          npx playwright install --with-deps chromium
+      - name: Recreate API for host-side browser storage tests
+        run: |
+          docker compose --env-file .env.backend.local -f compose.yaml -f compose.test.yaml -f compose.browser-test.yaml up -d --force-recreate --wait api
+          docker compose --env-file .env.backend.local -f compose.yaml -f compose.test.yaml -f compose.browser-test.yaml exec -T api python -c "from app.config import settings; assert settings.s3_public == 'http://localhost:3900', 'Browser storage endpoint is not host-reachable'; print('Browser storage endpoint: host-reachable')"
+      - name: Real browser API, session, and signed-storage integration
+        run: npx playwright test --config=playwright.backend.config.ts e2e-backend/platform.spec.ts --project=chromium --workers=1 --reporter=list
       - name: Stop disposable test stack
         if: always()
         run: docker compose --env-file .env.backend.local -f compose.yaml -f compose.test.yaml down -v --remove-orphans

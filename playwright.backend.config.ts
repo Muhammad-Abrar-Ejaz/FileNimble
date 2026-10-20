@@ -14,7 +14,7 @@ export default defineConfig({
     { name: "Mobile Chrome", use: { ...devices["Pixel 5"] } },
   ],
   webServer: {
-    command: "node scripts/backend-web.mjs start 3100",
+    command: "node scripts/backend-web.mjs dev 3100",
     url: "http://localhost:3100",
     reuseExistingServer: false,
     timeout: 60000,

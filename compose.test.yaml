@@ -3,6 +3,8 @@ x-test: &test
   APP_ENV: test
   ENABLE_TEST_CAPABILITY: "1"
   S3_PUBLIC_ENDPOINT: http://storage:3900
+  TEST_COMPOSE_PROJECT: ${COMPOSE_PROJECT_NAME:-filenimble-local}
+  RUNNER_NAMESPACE: ${RUNNER_NAMESPACE:-local-phase5}
 services:
   api:
     environment: *test
@@ -19,4 +21,4 @@ services:
     user: "0:0"
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
-      - ./.ci-test-results:/ci-test-results
+      - ./${CI_TEST_RESULTS_DIR:-.ci-test-results}:/ci-test-results
