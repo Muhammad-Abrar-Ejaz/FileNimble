@@ -1,0 +1,33 @@
+name: Phase 18 synthetic PostgreSQL backup and restore
+
+on:
+  push:
+    branches: [codex/phase18-synthetic-pg-backup-restore]
+  pull_request:
+    branches: [main]
+    paths:
+      - "worker/migrations/001_platform.sql"
+      - "scripts/phase18/synthetic-postgres-backup-restore.sh"
+      - ".github/workflows/phase18-synthetic-postgres-backup-restore.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: phase18-synthetic-postgres-backup-restore-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  backup-restore:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - name: Check out source without a persisted token
+        uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+
+      - name: Run isolated synthetic PostgreSQL backup and restore qualification
+        shell: bash
+        run: bash scripts/phase18/synthetic-postgres-backup-restore.sh
