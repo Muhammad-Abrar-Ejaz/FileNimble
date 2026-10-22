@@ -99,8 +99,8 @@ SQL
   restored_cols="$(psql -X -At -v ON_ERROR_STOP=1 -h "$restore_db" -U "$user" -d "$db" -c "SELECT table_name||'.'||column_name||'|'||data_type||'|'||is_nullable FROM information_schema.columns WHERE table_schema='public' ORDER BY table_name, ordinal_position")"
   [[ "$source_cols" == "$restored_cols" ]] || { echo 'FAIL: restored columns mismatch'; exit 1; }
 
-  source_constraints="$(psql -X -At -v ON_ERROR_STOP=1 -h "$source_db" -U "$user" -d "$db" -c "SELECT conname||'|'||contype||'|'||conrelid::regclass::text FROM pg_constraint c JOIN pg_namespace n ON n.oid=c.connamespace WHERE n.nspname='public' ORDER BY conname")"
-  restored_constraints="$(psql -X -At -v ON_ERROR_STOP=1 -h "$restore_db" -U "$user" -d "$db" -c "SELECT conname||'|'||contype||'|'||conrelid::regclass::text FROM pg_constraint c JOIN pg_namespace n ON n.oid=c.connamespace WHERE n.nspname='public' ORDER BY conname")"
+  source_constraints="$(psql -X -At -v ON_ERROR_STOP=1 -h "$source_db" -U "$user" -d "$db" -c "SELECT conname||'|'||contype::text||'|'||conrelid::regclass::text FROM pg_constraint c JOIN pg_namespace n ON n.oid=c.connamespace WHERE n.nspname='public' ORDER BY conname")"
+  restored_constraints="$(psql -X -At -v ON_ERROR_STOP=1 -h "$restore_db" -U "$user" -d "$db" -c "SELECT conname||'|'||contype::text||'|'||conrelid::regclass::text FROM pg_constraint c JOIN pg_namespace n ON n.oid=c.connamespace WHERE n.nspname='public' ORDER BY conname")"
   [[ "$source_constraints" == "$restored_constraints" ]] || { echo 'FAIL: restored constraints mismatch'; exit 1; }
 
   source_indexes="$(psql -X -At -v ON_ERROR_STOP=1 -h "$source_db" -U "$user" -d "$db" -c "SELECT indexname||'|'||indexdef FROM pg_indexes WHERE schemaname='public' ORDER BY indexname")"
@@ -125,6 +125,7 @@ SQL
   dump_sha="$(sha256sum "$archive" | awk '{print $1}')"
   dump_bytes="$(stat -c '%s' "$archive")"
   printf 'QUALIFICATION PASS: schema=PASS ledger=PASS excluded_operational_rows=PASS package_allowlist=PASS dump_bytes=%s dump_sha256=%s\n' "$dump_bytes" "$dump_sha"
+  rm -rf "$package" "$listing"
   exit 0
 fi
 
@@ -162,7 +163,17 @@ cleanup() {
     found="$(docker network inspect --format '{{ index .Labels "com.filenimble.phase18.pg-qualification" }}' "$network" 2>/dev/null || true)"
     [[ "$found" != "$label" ]] || docker network rm "$network" >/dev/null
   fi
-  case "$scratch" in "$runner_temp"/filenimble-pg-qualification.*) rm -rf -- "$scratch" ;; *) echo 'WARNING: refusing unexpected temp cleanup path' >&2 ;; esac
+  docker run --rm --user 0:0 -v "$scratch:/test:rw" postgres:17 rm -rf /test/package /test/restore-list.txt 2>/dev/null || true
+  case "$scratch" in
+    "$runner_temp"/filenimble-pg-qualification.*)
+      rm -rf -- "$scratch"
+      [[ ! -e "$scratch" ]] || { echo 'FAIL: scratch directory cleanup'; exit 1; }
+      echo "Temporary scratch directory and container resources cleanly removed."
+      ;;
+    *)
+      echo 'WARNING: refusing unexpected temp cleanup path' >&2
+      ;;
+  esac
 }
 trap cleanup EXIT
 
