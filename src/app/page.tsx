@@ -9,16 +9,16 @@ import { ToolSearch } from "@/components/tools/ToolSearch";
 import { CategoryGrid } from "@/components/tools/CategoryGrid";
 import { ToolCard } from "@/components/tools/ToolCard";
 import { AdSlot } from "@/components/ads";
+import { MonochromeStatsHero } from "@/components/home/MonochromeStatsHero";
 import {
   ShieldCheck,
-  Zap,
-  Lock,
   Layers,
   Sparkles,
   ArrowRight,
   FileCheck2,
   Sliders,
   Download,
+  Lock,
 } from "lucide-react";
 
 export const metadata = pageMetadata('/', 'FileNimble — Any file. Right format.', siteConfig.description);
@@ -33,52 +33,15 @@ export default function HomePage() {
     <div className="flex flex-col min-h-screen">
       <JsonLd data={{ '@context': 'https://schema.org', '@type': 'WebSite', name: 'FileNimble', url: canonicalUrl('/') }} />
       {/* 1. Hero Section */}
-      <section className="relative overflow-hidden pt-12 pb-16 sm:pt-20 sm:pb-24 bg-gradient-to-b from-surface via-background-app to-background-app border-b border-border-subtle/60">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center max-w-3xl mx-auto">
-            {/* Top pill badge */}
-            <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-primary/10 text-primary text-xs font-semibold mb-6 border border-primary/20">
-              <Sparkles size={14} className="animate-pulse" aria-hidden="true" />
-              <span>Next-Generation Online Converter</span>
-            </div>
-
-            <h1 className="text-4xl sm:text-5xl lg:text-6xl font-black text-text-strong tracking-tight leading-[1.1]">
-              Any file. <span className="text-primary">Right format.</span>
-            </h1>
-
-            <p className="mt-5 text-base sm:text-lg text-text-muted leading-relaxed max-w-2xl mx-auto">
-              Use ready browser tools for supported local conversions, or convert TAR to ZIP and ZIP to TAR with temporary server processing. Tools marked Planned are not available in this release; each available tool lists its processing method and limits.
-            </p>
-
-            {/* Quick feature pill row */}
-            <div className="mt-6 flex flex-wrap items-center justify-center gap-4 text-xs font-medium text-text-muted">
-              <span className="flex items-center gap-1.5">
-                <ShieldCheck size={15} className="text-emerald-600" aria-hidden="true" />
-                Clear processing labels
-              </span>
-              <span className="text-border-subtle">•</span>
-              <span className="flex items-center gap-1.5">
-                <Zap size={15} className="text-amber-500" aria-hidden="true" />
-                Lightning Fast
-              </span>
-              <span className="text-border-subtle">•</span>
-              <span className="flex items-center gap-1.5">
-                <Lock size={15} className="text-blue-600" aria-hidden="true" />
-                100% Free & No Sign-up
-              </span>
-            </div>
-          </div>
-
-          {/* Universal Dropzone Preview (Phase 0/1 UI Foundation) */}
-          <div className="mt-10 sm:mt-12">
-            <UniversalUploader
-              title="Drop files here to inspect & validate"
-              subtitle="Universal FileNimble dropzone — select any document, image, or archive to test validation"
-              privacyLabel="Files are validated locally in your browser. Choose a live tool below to convert."
-            />
-          </div>
-        </div>
-      </section>
+      <MonochromeStatsHero
+        description="Convert images, organize PDF pages, and transform supported documents or data. Use ready browser tools for supported local conversions, or convert TAR to ZIP and ZIP to TAR with temporary server processing. Tools marked Planned are not available in this release; each available tool lists its processing method and limits."
+      >
+        <UniversalUploader
+          title="Drop files here to inspect & validate"
+          subtitle="Universal FileNimble dropzone — select any document, image, or archive to test validation"
+          privacyLabel="Files are validated locally in your browser. Choose a live tool below to convert."
+        />
+      </MonochromeStatsHero>
 
       {/* Optional Ad slot after hero */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full">
