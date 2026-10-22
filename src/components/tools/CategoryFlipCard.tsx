@@ -101,7 +101,7 @@ export function CategoryFlipCard({
                     e.stopPropagation();
                     setIsFlipped(true);
                   }}
-                  className="action-btn p-1.5 rounded-lg text-text-muted hover:text-primary hover:bg-background-app transition-colors"
+                  className="action-btn min-h-[28px] min-w-[28px] p-1.5 rounded-lg text-text-muted hover:text-primary hover:bg-background-app transition-colors inline-flex items-center justify-center focus-visible:outline-2 focus-visible:outline-primary"
                   aria-label={`View supported formats for ${category.name}`}
                   title="Flip card for supported formats"
                 >
@@ -147,7 +147,7 @@ export function CategoryFlipCard({
               <button
                 type="button"
                 onClick={() => setIsFlipped(false)}
-                className="action-btn text-[11px] font-semibold text-text-muted hover:text-primary inline-flex items-center gap-1 p-1 rounded-md"
+                className="action-btn text-[11px] font-semibold text-text-muted hover:text-primary inline-flex items-center gap-1.5 min-h-[28px] px-2 py-1 rounded-md hover:bg-background-app transition-colors focus-visible:outline-2 focus-visible:outline-primary"
                 aria-label="Flip back to front"
               >
                 <RotateCw size={12} aria-hidden="true" />
@@ -179,15 +179,15 @@ export function CategoryFlipCard({
                   <CheckCircle2 size={12} className="text-emerald-600" aria-hidden="true" />
                   <span>Popular Live Tools</span>
                 </div>
-                <div className="space-y-1">
+                <div className="flex flex-col gap-1">
                   {liveTools.map((t) => (
                     <a
                       key={t.id}
                       href={`/${t.slug}`}
-                      className="block text-xs font-medium text-primary hover:underline truncate"
+                      className="flex items-center min-h-[28px] px-2 py-1 rounded-md text-xs font-medium text-primary hover:bg-primary/5 hover:underline truncate transition-colors focus-visible:outline-2 focus-visible:outline-primary"
                       onClick={(e) => e.stopPropagation()}
                     >
-                      → {t.title}
+                      <span className="truncate">→ {t.title}</span>
                     </a>
                   ))}
                 </div>
