@@ -119,11 +119,11 @@ SQL
   [[ "$source_indexes" == "$restored_indexes" ]] || { echo 'FAIL: restored indexes mismatch'; exit 1; }
 
   echo "Comparing sanitized schema-only DDL outputs between source and restored instances..."
-  pg_dump -h "$source_db" -U "$user" -d "$db" --schema-only --no-owner --no-privileges | grep -v -E '^(--|[[:space:]]*$)' > /test/source_schema.sql
-  pg_dump -h "$restore_db" -U "$user" -d "$db" --schema-only --no-owner --no-privileges | grep -v -E '^(--|[[:space:]]*$)' > /test/restore_schema.sql
+  pg_dump -h "$source_db" -U "$user" -d "$db" --schema-only --no-owner --no-privileges | grep -v -E '^(\\(restrict|unrestrict)|--|[[:space:]]*$)' > /test/source_schema.sql
+  pg_dump -h "$restore_db" -U "$user" -d "$db" --schema-only --no-owner --no-privileges | grep -v -E '^(\\(restrict|unrestrict)|--|[[:space:]]*$)' > /test/restore_schema.sql
 
   if cmp -s /test/source_schema.sql /test/restore_schema.sql; then
-    echo "Sanitized pg_dump schema outputs match 100% byte-for-byte."
+    echo "Sanitized pg_dump schema DDL matches 100% byte-for-byte across all statements."
   else
     echo "Demonstrating raw pg_dump statement ordering difference:"
     diff -u /test/source_schema.sql /test/restore_schema.sql || true
