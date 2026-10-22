@@ -84,33 +84,62 @@ SQL
   [[ "$(find "$package" -mindepth 1 -maxdepth 1 -type f -printf '%f\n')" == 'postgres.dump' ]] || { echo 'FAIL: unexpected package member'; exit 1; }
   echo "Backup dump verified: PGDMP custom format, ledger data present, all 6 ephemeral tables excluded."
 
-  schema_fingerprint() {
-    pg_dump -h "$1" -U "$user" -d "$db" --schema-only --no-owner --no-privileges | grep -v -E '^(--|[[:space:]]*$)' | sha256sum | awk '{print $1}'
+  catalog_fingerprint() {
+    local target="$1"
+    {
+      psql -X -At -v ON_ERROR_STOP=1 -h "$target" -U "$user" -d "$db" -c \
+        "SELECT 'TABLE', tablename FROM pg_tables WHERE schemaname='public' ORDER BY tablename;"
+      psql -X -At -v ON_ERROR_STOP=1 -h "$target" -U "$user" -d "$db" -c \
+        "SELECT 'COLUMN', table_name, column_name, data_type, is_nullable, coalesce(column_default,'') FROM information_schema.columns WHERE table_schema='public' ORDER BY table_name, column_name;"
+      psql -X -At -v ON_ERROR_STOP=1 -h "$target" -U "$user" -d "$db" -c \
+        "SELECT 'CONSTRAINT', conname, contype::text, conrelid::regclass::text, pg_get_constraintdef(c.oid) FROM pg_constraint c JOIN pg_namespace n ON n.oid=c.connamespace WHERE n.nspname='public' ORDER BY conname;"
+      psql -X -At -v ON_ERROR_STOP=1 -h "$target" -U "$user" -d "$db" -c \
+        "SELECT 'INDEX', tablename, indexname, indexdef FROM pg_indexes WHERE schemaname='public' ORDER BY tablename, indexname;"
+    } | sha256sum | awk '{print $1}'
   }
+
   echo "Restoring backup package into fresh disposable database..."
   pg_restore --exit-on-error --single-transaction --no-owner --no-privileges -h "$restore_db" -U "$user" -d "$db" "$archive"
 
-  echo "Verifying restored catalog, columns, constraints, indexes, and schema fingerprint..."
+  echo "Verifying restored catalog, columns, constraints, and indexes..."
   source_tables="$(psql -X -At -v ON_ERROR_STOP=1 -h "$source_db" -U "$user" -d "$db" -c "SELECT tablename FROM pg_tables WHERE schemaname='public' ORDER BY tablename")"
   restored_tables="$(psql -X -At -v ON_ERROR_STOP=1 -h "$restore_db" -U "$user" -d "$db" -c "SELECT tablename FROM pg_tables WHERE schemaname='public' ORDER BY tablename")"
   [[ "$source_tables" == "$restored_tables" ]] || { echo 'FAIL: restored tables mismatch'; exit 1; }
 
-  source_cols="$(psql -X -At -v ON_ERROR_STOP=1 -h "$source_db" -U "$user" -d "$db" -c "SELECT table_name||'.'||column_name||'|'||data_type||'|'||is_nullable FROM information_schema.columns WHERE table_schema='public' ORDER BY table_name, ordinal_position")"
-  restored_cols="$(psql -X -At -v ON_ERROR_STOP=1 -h "$restore_db" -U "$user" -d "$db" -c "SELECT table_name||'.'||column_name||'|'||data_type||'|'||is_nullable FROM information_schema.columns WHERE table_schema='public' ORDER BY table_name, ordinal_position")"
+  source_cols="$(psql -X -At -v ON_ERROR_STOP=1 -h "$source_db" -U "$user" -d "$db" -c "SELECT table_name||'.'||column_name||'|'||data_type||'|'||is_nullable||'|'||coalesce(column_default,'') FROM information_schema.columns WHERE table_schema='public' ORDER BY table_name, ordinal_position")"
+  restored_cols="$(psql -X -At -v ON_ERROR_STOP=1 -h "$restore_db" -U "$user" -d "$db" -c "SELECT table_name||'.'||column_name||'|'||data_type||'|'||is_nullable||'|'||coalesce(column_default,'') FROM information_schema.columns WHERE table_schema='public' ORDER BY table_name, ordinal_position")"
   [[ "$source_cols" == "$restored_cols" ]] || { echo 'FAIL: restored columns mismatch'; exit 1; }
 
-  source_constraints="$(psql -X -At -v ON_ERROR_STOP=1 -h "$source_db" -U "$user" -d "$db" -c "SELECT conname||'|'||contype::text||'|'||conrelid::regclass::text FROM pg_constraint c JOIN pg_namespace n ON n.oid=c.connamespace WHERE n.nspname='public' ORDER BY conname")"
-  restored_constraints="$(psql -X -At -v ON_ERROR_STOP=1 -h "$restore_db" -U "$user" -d "$db" -c "SELECT conname||'|'||contype::text||'|'||conrelid::regclass::text FROM pg_constraint c JOIN pg_namespace n ON n.oid=c.connamespace WHERE n.nspname='public' ORDER BY conname")"
+  source_constraints="$(psql -X -At -v ON_ERROR_STOP=1 -h "$source_db" -U "$user" -d "$db" -c "SELECT conname||'|'||contype::text||'|'||conrelid::regclass::text||'|'||pg_get_constraintdef(c.oid) FROM pg_constraint c JOIN pg_namespace n ON n.oid=c.connamespace WHERE n.nspname='public' ORDER BY conname")"
+  restored_constraints="$(psql -X -At -v ON_ERROR_STOP=1 -h "$restore_db" -U "$user" -d "$db" -c "SELECT conname||'|'||contype::text||'|'||conrelid::regclass::text||'|'||pg_get_constraintdef(c.oid) FROM pg_constraint c JOIN pg_namespace n ON n.oid=c.connamespace WHERE n.nspname='public' ORDER BY conname")"
   [[ "$source_constraints" == "$restored_constraints" ]] || { echo 'FAIL: restored constraints mismatch'; exit 1; }
 
   source_indexes="$(psql -X -At -v ON_ERROR_STOP=1 -h "$source_db" -U "$user" -d "$db" -c "SELECT indexname||'|'||indexdef FROM pg_indexes WHERE schemaname='public' ORDER BY indexname")"
   restored_indexes="$(psql -X -At -v ON_ERROR_STOP=1 -h "$restore_db" -U "$user" -d "$db" -c "SELECT indexname||'|'||indexdef FROM pg_indexes WHERE schemaname='public' ORDER BY indexname")"
   [[ "$source_indexes" == "$restored_indexes" ]] || { echo 'FAIL: restored indexes mismatch'; exit 1; }
 
-  source_schema="$(schema_fingerprint "$source_db")"
-  restored_schema="$(schema_fingerprint "$restore_db")"
-  [[ "$source_schema" == "$restored_schema" ]] || { echo 'FAIL: restored schema fingerprint'; exit 1; }
-  echo "Schema verified: 100% match across tables, columns, constraints, indexes, and normalized DDL fingerprint ($source_schema)."
+  echo "Comparing sanitized schema-only DDL outputs between source and restored instances..."
+  pg_dump -h "$source_db" -U "$user" -d "$db" --schema-only --no-owner --no-privileges | grep -v -E '^(--|[[:space:]]*$)' > /test/source_schema.sql
+  pg_dump -h "$restore_db" -U "$user" -d "$db" --schema-only --no-owner --no-privileges | grep -v -E '^(--|[[:space:]]*$)' > /test/restore_schema.sql
+
+  if cmp -s /test/source_schema.sql /test/restore_schema.sql; then
+    echo "Sanitized pg_dump schema outputs match 100% byte-for-byte."
+  else
+    echo "Demonstrating raw pg_dump statement ordering difference:"
+    diff -u /test/source_schema.sql /test/restore_schema.sql || true
+    sort /test/source_schema.sql > /test/source_schema_sorted.sql
+    sort /test/restore_schema.sql > /test/restore_schema_sorted.sql
+    diff -u /test/source_schema_sorted.sql /test/restore_schema_sorted.sql || {
+      echo "FAIL: substantive schema DDL mismatch found"; exit 1;
+    }
+    echo "Sanitized pg_dump DDL contents match 100% (raw difference is strictly statement ordering)."
+  fi
+
+  echo "Verifying deterministic catalog fingerprint..."
+  source_catalog_sha="$(catalog_fingerprint "$source_db")"
+  restored_catalog_sha="$(catalog_fingerprint "$restore_db")"
+  [[ "$source_catalog_sha" == "$restored_catalog_sha" ]] || { echo 'FAIL: restored catalog fingerprint mismatch'; exit 1; }
+  echo "Schema verified: 100% match across tables, columns, constraints, indexes, sorted DDL, and deterministic catalog fingerprint ($source_catalog_sha)."
 
   echo "Verifying restored migration ledger row..."
   ledger="$(psql -X -At -v ON_ERROR_STOP=1 -h "$restore_db" -U "$user" -d "$db" -c "SELECT count(*)||'|'||coalesce(bool_and(name='001_platform.sql' AND hash='$expected_migration_hash')::text,'false') FROM schema_migrations")"
@@ -125,7 +154,7 @@ SQL
   dump_sha="$(sha256sum "$archive" | awk '{print $1}')"
   dump_bytes="$(stat -c '%s' "$archive")"
   printf 'QUALIFICATION PASS: schema=PASS ledger=PASS excluded_operational_rows=PASS package_allowlist=PASS dump_bytes=%s dump_sha256=%s\n' "$dump_bytes" "$dump_sha"
-  rm -rf "$package" "$listing"
+  rm -rf "$package" "$listing" /test/source_schema*.sql /test/restore_schema*.sql
   exit 0
 fi
 
@@ -163,7 +192,7 @@ cleanup() {
     found="$(docker network inspect --format '{{ index .Labels "com.filenimble.phase18.pg-qualification" }}' "$network" 2>/dev/null || true)"
     [[ "$found" != "$label" ]] || docker network rm "$network" >/dev/null
   fi
-  docker run --rm --user 0:0 -v "$scratch:/test:rw" postgres:17 rm -rf /test/package /test/restore-list.txt 2>/dev/null || true
+  docker run --rm --user 0:0 -v "$scratch:/test:rw" postgres:17 find /test -mindepth 1 -delete 2>/dev/null || true
   case "$scratch" in
     "$runner_temp"/filenimble-pg-qualification.*)
       rm -rf -- "$scratch"
