@@ -79,33 +79,17 @@ describe("same-origin backend boundary", () => {
     expect(await response.text()).not.toContain("sensitive");
   });
   it("requires fixed HTTPS configuration in production", async () => {
-    vi.stubEnv("VERCEL_ENV", "production");
-    vi.stubEnv("SITE_ORIGIN", "https://file-nimble.vercel.app");
+    vi.stubEnv("APP_ENV", "production");
+    vi.stubEnv("SITE_ORIGIN", "https://www.filenimble.app");
     const fetcher = vi.fn(); vi.stubGlobal("fetch", fetcher);
     expect((await backendProxy(request(), ["tools"])).status).toBe(503);
     vi.stubEnv("CONVERSION_API_URL", "https://backend.example.org");
     vi.stubEnv("SITE_ORIGIN", "https://");
     expect((await backendProxy(request(), ["tools"])).status).toBe(503);
-    vi.stubEnv("SITE_ORIGIN", "https://file-nimble.vercel.app");
+    vi.stubEnv("SITE_ORIGIN", "https://www.filenimble.app");
     vi.stubEnv("CONVERSION_API_URL", "https://user:pass@backend.example.org/path");
     expect((await backendProxy(request(), ["tools"])).status).toBe(503);
     expect(fetcher).not.toHaveBeenCalled();
-  });
-  it("uses Vercel's platform client address and keeps API secrets server-side", async () => {
-    vi.stubEnv("VERCEL_ENV", "production");
-    vi.stubEnv("SITE_ORIGIN", "https://file-nimble.vercel.app");
-    vi.stubEnv("CONVERSION_API_URL", "https://backend.example.org");
-    const fetcher = vi.fn().mockResolvedValue(new Response('{"enabled":false}'));
-    vi.stubGlobal("fetch", fetcher);
-    const req = new NextRequest("https://file-nimble.vercel.app/api/v1/tools", {
-      headers: { "x-vercel-forwarded-for": "203.0.113.10", "x-forwarded-for": "10.0.0.1", "x-internal-key": "attacker" },
-    });
-    const response = await backendProxy(req, ["tools"]);
-    expect(response.status).toBe(200);
-    expect(fetcher.mock.calls[0][1].headers.get("x-client-ip")).toBe("203.0.113.10");
-    expect(fetcher.mock.calls[0][1].headers.get("x-internal-key")).toBe("test-only-secret");
-    expect(response.headers.get("x-internal-key")).toBeNull();
-    expect(await response.text()).not.toContain("test-only-secret");
   });
   it("uses Netlify's trusted function context and ignores client-supplied forwarding headers", async () => {
     vi.stubEnv("APP_ENV", "production");
@@ -118,7 +102,7 @@ describe("same-origin backend boundary", () => {
       headers: {
         origin: "https://filenimble-preview.netlify.app",
         "x-forwarded-for": "198.51.100.10",
-        "x-vercel-forwarded-for": "198.51.100.11",
+        "x-real-ip": "198.51.100.11",
       },
     });
 
@@ -137,7 +121,7 @@ describe("same-origin backend boundary", () => {
       headers: {
         origin: "https://filenimble-preview.netlify.app",
         "x-forwarded-for": "198.51.100.10",
-        "x-vercel-forwarded-for": "198.51.100.11",
+        "x-real-ip": "198.51.100.11",
       },
     });
 

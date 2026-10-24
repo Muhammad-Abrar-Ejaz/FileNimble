@@ -5,13 +5,6 @@ import { getContext } from '@netlify/functions';
 const endpoint = /^jobs(?:\/[0-9a-f-]{36}(?:\/(?:complete-upload|cancel|download-token))?)?$|^tools(?:\/[a-z0-9-]+)?$|^ai\/(?:status|process)$/;
 
 function trustedClientIP(request: NextRequest): string {
-  // Keep Vercel's platform-injected value while the existing production site
-  // remains there. Netlify exposes its address through the function context.
-  if (process.env.VERCEL_ENV === 'production') {
-    const value = request.headers.get('x-vercel-forwarded-for')?.split(',')[0].trim();
-    return value && isIP(value) ? value : 'unknown';
-  }
-
   try {
     const value = getContext().ip;
     return value && isIP(value) ? value : 'unknown';
@@ -33,7 +26,9 @@ export async function backendProxy(request: NextRequest, segments: string[]) {
   const base = process.env.CONVERSION_API_URL;
   const key = process.env.CONVERSION_API_SECRET;
   if (!base || !key) return error(503,'SERVICE_UNAVAILABLE','Server processing is not configured.');
-  const production = process.env.APP_ENV === 'production' || process.env.VERCEL_ENV === 'production';
+  // Netlify builds production output with NODE_ENV=production. APP_ENV is
+  // retained as an explicit deployment setting for production and previews.
+  const production = process.env.APP_ENV === 'production' || process.env.NODE_ENV === 'production';
   let expected: string;
   try {
     const target = new URL(base);
