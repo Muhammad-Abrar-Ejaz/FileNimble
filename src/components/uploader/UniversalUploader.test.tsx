@@ -77,4 +77,20 @@ describe("UniversalUploader Component", () => {
     await act(async () => { finish(new Uint8Array([137,80,78,71,13,10,26,10]).buffer); });
     expect(onFilesChange.mock.lastCall?.[0]).toEqual([]);
   });
+
+  it("provides touch-target sizing on Add more and Clear all buttons", async () => {
+    render(<UniversalUploader />);
+    const input = screen.getByLabelText("Upload files");
+    await act(async () => {
+      fireEvent.change(input, { target: { files: [new File(["text"], "sample.txt")] } });
+    });
+
+    const addMoreBtn = screen.getByRole("button", { name: /Add more/i });
+    const clearAllBtn = screen.getByRole("button", { name: /Clear all/i });
+
+    expect(addMoreBtn.className).toContain("min-h-[44px]");
+    expect(addMoreBtn.className).toContain("touch-manipulation");
+    expect(clearAllBtn.className).toContain("min-h-[44px]");
+    expect(clearAllBtn.className).toContain("touch-manipulation");
+  });
 });

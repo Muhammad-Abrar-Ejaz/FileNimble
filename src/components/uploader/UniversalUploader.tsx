@@ -356,20 +356,20 @@ export function UniversalUploader({
               {formatBytes(totalSize)}) • <strong>{validFilesCount}</strong> valid
             </span>
 
-            <div className="flex items-center gap-3">
+            <div className="flex items-center gap-1 sm:gap-2">
               <button
                 type="button"
                 onClick={() => fileInputRef.current?.click()}
-                className="text-primary hover:underline font-medium inline-flex items-center gap-1 cursor-pointer"
+                className="min-h-[44px] px-2.5 py-2 rounded-lg text-primary hover:underline hover:bg-primary/5 font-medium inline-flex items-center gap-1.5 cursor-pointer touch-manipulation focus-visible:outline-2 focus-visible:outline-primary"
               >
-                <Plus size={12} /> Add more
+                <Plus size={14} /> Add more
               </button>
               <button
                 type="button"
                 onClick={handleClearAll}
-                className="text-text-muted hover:text-red-600 font-medium inline-flex items-center gap-1 cursor-pointer"
+                className="min-h-[44px] px-2.5 py-2 rounded-lg text-text-muted hover:text-red-600 hover:bg-red-50 font-medium inline-flex items-center gap-1.5 cursor-pointer touch-manipulation focus-visible:outline-2 focus-visible:outline-red-600"
               >
-                <Trash2 size={12} /> Clear all
+                <Trash2 size={14} /> Clear all
               </button>
             </div>
           </div>

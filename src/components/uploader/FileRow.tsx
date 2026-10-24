@@ -71,12 +71,12 @@ export function FileRow({
   return (
     <div
       className={cn(
-        "flex items-center justify-between gap-3 p-3.5 rounded-xl bg-surface border border-border-subtle",
+        "flex items-center justify-between gap-2 sm:gap-3 p-2.5 sm:p-3.5 rounded-xl bg-surface border border-border-subtle",
         "transition-all duration-150 hover:border-border-subtle/80 shadow-2xs",
         item.status !== "valid" && item.status !== "checking" && "bg-red-50/20 border-red-200/60"
       )}
     >
-      <div className="flex items-center gap-3 min-w-0 flex-1">
+      <div className="flex items-center gap-2.5 sm:gap-3 min-w-0 flex-1">
         <div className="w-9 h-9 rounded-lg bg-gray-50 border border-border-subtle flex items-center justify-center shrink-0">
           {getFileIcon(item.file.name, item.file.type)}
         </div>
@@ -92,14 +92,14 @@ export function FileRow({
         </div>
       </div>
 
-      <div className="flex items-center gap-1 shrink-0">
+      <div className="flex items-center gap-0.5 sm:gap-1 shrink-0">
         {allowReorder && totalCount > 1 && (
           <div className="flex items-center">
             <button
               type="button"
               onClick={() => onMoveUp?.(index)}
               disabled={isFirst}
-              className="p-1 rounded-md text-text-muted hover:text-text-strong hover:bg-gray-100 disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
+              className="min-h-[44px] min-w-[44px] p-2 rounded-lg text-text-muted hover:text-text-strong hover:bg-gray-100 disabled:opacity-30 disabled:cursor-not-allowed transition-colors inline-flex items-center justify-center focus-visible:outline-2 focus-visible:outline-primary touch-manipulation"
               aria-label={`Move ${item.file.name} up`}
             >
               <ChevronUp size={16} aria-hidden="true" />
@@ -108,7 +108,7 @@ export function FileRow({
               type="button"
               onClick={() => onMoveDown?.(index)}
               disabled={isLast}
-              className="p-1 rounded-md text-text-muted hover:text-text-strong hover:bg-gray-100 disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
+              className="min-h-[44px] min-w-[44px] p-2 rounded-lg text-text-muted hover:text-text-strong hover:bg-gray-100 disabled:opacity-30 disabled:cursor-not-allowed transition-colors inline-flex items-center justify-center focus-visible:outline-2 focus-visible:outline-primary touch-manipulation"
               aria-label={`Move ${item.file.name} down`}
             >
               <ChevronDown size={16} aria-hidden="true" />
@@ -119,7 +119,7 @@ export function FileRow({
         <button
           type="button"
           onClick={() => onRemove(item.id)}
-          className="p-1.5 rounded-lg text-text-muted hover:text-red-600 hover:bg-red-50 transition-colors"
+          className="min-h-[44px] min-w-[44px] p-2.5 rounded-lg text-text-muted hover:text-red-600 hover:bg-red-50 transition-colors inline-flex items-center justify-center focus-visible:outline-2 focus-visible:outline-red-600 touch-manipulation"
           aria-label={`Remove ${item.file.name}`}
         >
           <X size={16} aria-hidden="true" />
