@@ -185,7 +185,7 @@ def test_gateway_rejects_origin_method_size_and_expired_grants_before_storage(
             client.put(
                 "/transfers/" + token,
                 content=b"abc",
-                headers={"origin": "https://file-nimble.vercel.app"},
+                headers={"origin": "https://old-preview.example.invalid"},
             ).status_code
             == 403
         )
