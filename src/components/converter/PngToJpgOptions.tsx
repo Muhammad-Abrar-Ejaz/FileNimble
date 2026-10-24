@@ -109,7 +109,7 @@ export function PngToJpgOptions({
                 disabled={disabled}
                 onClick={() => onBackgroundColorChange(preset.value)}
                 className={cn(
-                  "flex items-center gap-2 px-3.5 py-1.5 rounded-xl text-xs font-semibold transition-all cursor-pointer border",
+                  "min-h-[44px] flex items-center gap-2 px-3.5 py-2.5 rounded-xl text-xs font-semibold transition-all cursor-pointer border touch-manipulation focus-visible:outline-2 focus-visible:outline-primary",
                   isSelected
                     ? "bg-primary text-white border-primary shadow-xs"
                     : "bg-surface text-text-strong border-border-subtle hover:bg-gray-50"
@@ -132,7 +132,7 @@ export function PngToJpgOptions({
           {/* Custom Color Selector */}
           <div
             className={cn(
-              "flex items-center gap-2 px-3 py-1 rounded-xl text-xs font-semibold border transition-all",
+              "min-h-[44px] flex items-center gap-2.5 px-3 py-1.5 rounded-xl text-xs font-semibold border transition-all touch-manipulation",
               isCustomColor
                 ? "border-primary bg-primary/5 text-primary shadow-xs"
                 : "border-border-subtle bg-surface text-text-muted hover:bg-gray-50"
@@ -143,10 +143,10 @@ export function PngToJpgOptions({
               value={backgroundColor}
               disabled={disabled}
               onChange={(e) => onBackgroundColorChange(e.target.value)}
-              className="w-5 h-5 rounded-md border-0 p-0 cursor-pointer bg-transparent"
+              className="w-7 h-7 rounded-lg border border-border-subtle p-0.5 cursor-pointer bg-transparent focus-visible:outline-2 focus-visible:outline-primary"
               aria-label="Pick custom background color"
             />
-            <span className="font-mono uppercase text-[11px]">
+            <span className="font-mono uppercase text-xs">
               {backgroundColor}
             </span>
           </div>

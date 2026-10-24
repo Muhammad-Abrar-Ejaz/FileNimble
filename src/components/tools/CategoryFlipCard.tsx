@@ -61,7 +61,11 @@ export function CategoryFlipCard({
       className="perspective-1000 h-[260px] w-full"
       tabIndex={0}
       role="region"
-      aria-label={`${category.name} category card. Press Enter to flip for supported formats.`}
+      aria-label={
+        isFlipped
+          ? `${category.name} category card formats and tools. Press Enter to flip back.`
+          : `${category.name} category card. Press Enter to flip for supported formats.`
+      }
       onKeyDown={handleKeyDown}
     >
       <div
@@ -72,9 +76,12 @@ export function CategoryFlipCard({
       >
         {/* FRONT SIDE */}
         <div
+          inert={isFlipped ? true : undefined}
+          aria-hidden={isFlipped}
           className={cn(
             "absolute inset-0 w-full h-full backface-hidden rounded-2xl bg-surface border border-border-subtle p-5 flex flex-col justify-between select-none",
-            "hover:border-primary/40 hover:shadow-md transition-all duration-200 cursor-pointer"
+            "hover:border-primary/40 hover:shadow-md transition-all duration-200 cursor-pointer",
+            isFlipped && "pointer-events-none"
           )}
           onClick={handleFlipToggle}
         >
@@ -97,11 +104,12 @@ export function CategoryFlipCard({
                 </span>
                 <button
                   type="button"
+                  tabIndex={isFlipped ? -1 : 0}
                   onClick={(e) => {
                     e.stopPropagation();
                     setIsFlipped(true);
                   }}
-                  className="action-btn min-h-[28px] min-w-[28px] p-1.5 rounded-lg text-text-muted hover:text-primary hover:bg-background-app transition-colors inline-flex items-center justify-center focus-visible:outline-2 focus-visible:outline-primary"
+                  className="action-btn min-h-[32px] min-w-[32px] p-1.5 rounded-lg text-text-muted hover:text-primary hover:bg-background-app transition-colors inline-flex items-center justify-center focus-visible:outline-2 focus-visible:outline-primary"
                   aria-label={`View supported formats for ${category.name}`}
                   title="Flip card for supported formats"
                 >
@@ -131,9 +139,12 @@ export function CategoryFlipCard({
 
         {/* BACK SIDE */}
         <div
+          inert={!isFlipped ? true : undefined}
+          aria-hidden={!isFlipped}
           className={cn(
             "absolute inset-0 w-full h-full backface-hidden rotate-y-180 rounded-2xl bg-surface border border-primary/30 p-5 flex flex-col justify-between shadow-sm select-none",
-            "bg-gradient-to-br from-surface via-background-app to-surface"
+            "bg-gradient-to-br from-surface via-background-app to-surface",
+            !isFlipped && "pointer-events-none"
           )}
         >
           <div>
@@ -146,8 +157,9 @@ export function CategoryFlipCard({
               </div>
               <button
                 type="button"
+                tabIndex={isFlipped ? 0 : -1}
                 onClick={() => setIsFlipped(false)}
-                className="action-btn text-[11px] font-semibold text-text-muted hover:text-primary inline-flex items-center gap-1.5 min-h-[28px] px-2 py-1 rounded-md hover:bg-background-app transition-colors focus-visible:outline-2 focus-visible:outline-primary"
+                className="action-btn text-[11px] font-semibold text-text-muted hover:text-primary inline-flex items-center gap-1.5 min-h-[32px] px-2 py-1 rounded-md hover:bg-background-app transition-colors focus-visible:outline-2 focus-visible:outline-primary"
                 aria-label="Flip back to front"
               >
                 <RotateCw size={12} aria-hidden="true" />
@@ -184,6 +196,7 @@ export function CategoryFlipCard({
                     <a
                       key={t.id}
                       href={`/${t.slug}`}
+                      tabIndex={isFlipped ? 0 : -1}
                       className="flex items-center min-h-[28px] px-2 py-1 rounded-md text-xs font-medium text-primary hover:bg-primary/5 hover:underline truncate transition-colors focus-visible:outline-2 focus-visible:outline-primary"
                       onClick={(e) => e.stopPropagation()}
                     >
@@ -199,11 +212,12 @@ export function CategoryFlipCard({
             {onSelectCategory ? (
               <button
                 type="button"
+                tabIndex={isFlipped ? 0 : -1}
                 onClick={(e) => {
                   e.stopPropagation();
                   onSelectCategory(category.id);
                 }}
-                className="action-btn w-full py-1.5 px-3 rounded-lg bg-primary text-white text-xs font-semibold hover:bg-primary-hover transition-colors flex items-center justify-center gap-1.5"
+                className="action-btn w-full py-2 px-3 rounded-lg bg-primary text-white text-xs font-semibold hover:bg-primary-hover transition-colors flex items-center justify-center gap-1.5 focus-visible:outline-2 focus-visible:outline-primary"
               >
                 <span>View all {count} tools</span>
                 <ArrowRight size={13} aria-hidden="true" />
@@ -211,8 +225,9 @@ export function CategoryFlipCard({
             ) : (
               <a
                 href={`/#${category.id}`}
+                tabIndex={isFlipped ? 0 : -1}
                 onClick={(e) => e.stopPropagation()}
-                className="w-full py-1.5 px-3 rounded-lg bg-primary text-white text-xs font-semibold hover:bg-primary-hover transition-colors flex items-center justify-center gap-1.5 text-center"
+                className="w-full py-2 px-3 rounded-lg bg-primary text-white text-xs font-semibold hover:bg-primary-hover transition-colors flex items-center justify-center gap-1.5 text-center focus-visible:outline-2 focus-visible:outline-primary"
               >
                 <span>View all {count} tools</span>
                 <ArrowRight size={13} aria-hidden="true" />
