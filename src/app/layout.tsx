@@ -5,6 +5,8 @@ import { siteConfig } from "@/config/site";
 import { Header } from "@/components/layout/Header";
 import { Footer } from "@/components/layout/Footer";
 import { AdSenseScript, ConsentManager } from "@/components/ads";
+import { JsonLd } from "@/components/seo/PageSeo";
+import { canonicalUrl } from "@/lib/seo";
 
 const inter = Inter({
   subsets: ["latin"],
@@ -51,6 +53,18 @@ export default function RootLayout({
   return (
     <html lang="en" className={inter.variable}>
       <body className="min-h-screen flex flex-col bg-background-app text-text-strong antialiased">
+        {/* Global Organization Structured Data */}
+        <JsonLd
+          data={{
+            '@context': 'https://schema.org',
+            '@type': 'Organization',
+            name: siteConfig.name,
+            url: canonicalUrl('/'),
+            logo: canonicalUrl(siteConfig.ogImage),
+            description: siteConfig.description,
+          }}
+        />
+
         {/* Accessible Skip Link */}
         <a
           href="#main-content"
