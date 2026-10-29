@@ -1,8 +1,6 @@
-import React from "react";
 import {
   Sparkles,
   ArrowDown,
-  Search,
   Layers,
   Lock,
   ShieldCheck,
@@ -11,7 +9,6 @@ import {
 import { GlyphMatrixBackground } from "./GlyphMatrixBackground";
 
 interface MonochromeStatsHeroProps {
-  children?: React.ReactNode;
   description?: string;
 }
 
@@ -45,10 +42,7 @@ const STATS = [
   },
 ];
 
-export function MonochromeStatsHero({
-  children,
-  description = DEFAULT_DESCRIPTION,
-}: MonochromeStatsHeroProps) {
+export function MonochromeStatsHero({ description = DEFAULT_DESCRIPTION }: MonochromeStatsHeroProps) {
   return (
     <section className="relative overflow-hidden pt-12 pb-16 sm:pt-20 sm:pb-24 bg-gradient-to-b from-surface via-background-app to-background-app border-b border-border-subtle/60">
       {/* Subtle Matrix Background */}
@@ -75,20 +69,24 @@ export function MonochromeStatsHero({
           {/* Dual CTAs */}
           <div className="mt-8 flex flex-col sm:flex-row items-center justify-center gap-3.5">
             <a
-              href="#uploader"
+              href="#search"
               className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-6 py-3 rounded-xl bg-primary text-white text-sm font-semibold hover:bg-primary-hover shadow-xs transition-colors focus-visible:outline-2 focus-visible:outline-primary focus-visible:outline-offset-2"
             >
-              <span>Select or Drop Files</span>
+              <span>Choose an operation</span>
               <ArrowDown size={15} aria-hidden="true" />
             </a>
             <a
-              href="#search"
+              href="#categories"
               className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-6 py-3 rounded-xl bg-surface border border-border-subtle text-text-strong text-sm font-semibold hover:bg-background-app hover:border-border-subtle/80 shadow-2xs transition-colors focus-visible:outline-2 focus-visible:outline-primary focus-visible:outline-offset-2"
             >
-              <span>Explore All Tools</span>
-              <Search size={15} className="text-text-muted" aria-hidden="true" />
+              <span>Browse categories</span>
+              <Layers size={15} className="text-text-muted" aria-hidden="true" />
             </a>
           </div>
+
+          <p className="mt-3 text-sm text-text-muted">
+            Choose a tool first. Its page will guide you through selecting files and converting them.
+          </p>
 
           {/* Integrated Stats Grid */}
           <div className="mt-12 grid grid-cols-2 md:grid-cols-4 gap-3 sm:gap-4 text-left">
@@ -116,14 +114,8 @@ export function MonochromeStatsHero({
             })}
           </div>
         </div>
-
-        {/* Universal Uploader Slot */}
-        {children && (
-          <div id="uploader" className="mt-12 sm:mt-14 scroll-mt-20">
-            {children}
-          </div>
-        )}
       </div>
     </section>
   );
 }
+
