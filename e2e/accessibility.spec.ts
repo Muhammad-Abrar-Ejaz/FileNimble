@@ -32,7 +32,7 @@ test('homepage contrast and heading hierarchy meet accessible thresholds', async
     const searchInput = document.querySelector<HTMLInputElement>('input[aria-label="Search conversion tools"]');
     const heroDescription = document.querySelector<HTMLElement>('main > div > section p.text-text-muted');
     const toolDescription = document.querySelector<HTMLElement>('main article p.text-text-muted');
-    const uploaderTitle = document.querySelector('[role="button"] h2');
+    const operationCta = document.querySelector('main a[href="#search"] span');
     const renderedColor = (element: Element | null, pseudo?: string) => element ? getComputedStyle(element, pseudo).color : null;
     return {
       headings,
@@ -44,11 +44,11 @@ test('homepage contrast and heading hierarchy meet accessible thresholds', async
       heroDescription: renderedColor(heroDescription),
       toolDescription: renderedColor(toolDescription),
       toolCardOpacity: toolDescription ? getComputedStyle(toolDescription.closest('article')!).opacity : null,
-      uploaderTitleIsLevelTwo: Boolean(uploaderTitle),
+      operationCtaHasClearLabel: operationCta?.textContent?.trim() === 'Choose an operation',
     };
   });
 
-  expect(structure.uploaderTitleIsLevelTwo).toBe(true);
+  expect(structure.operationCtaHasClearLabel).toBe(true);
   for (let index = 1; index < structure.headings.length; index += 1) {
     expect(structure.headings[index], `heading ${index + 1} skips a level`).toBeLessThanOrEqual(structure.headings[index - 1] + 1);
   }
