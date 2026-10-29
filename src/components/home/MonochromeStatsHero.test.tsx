@@ -105,5 +105,87 @@ describe("CategoryFlipCard", () => {
     expect(liveLink).toBeDefined();
     expect(liveLink.getAttribute("href")).toBe("/merge-pdf");
   });
-});
 
+  it("manages keyboard focusability and inert attributes across flip states", () => {
+    const { container } = render(
+      <CategoryFlipCard category={CATEGORIES.pdf} tools={sampleTools} />
+    );
+
+    const region = screen.getByRole("region");
+    expect(region.getAttribute("aria-label")).toContain("Press Enter to flip for supported formats");
+
+    // Front face should be active and accessible to screen readers
+    const flipBtn = screen.getByRole("button", { name: /View supported formats for PDF Tools/i });
+    expect(flipBtn.getAttribute("tabindex")).toBe("0");
+
+    // Back face controls are hidden from screen readers without { hidden: true }
+    expect(screen.queryByRole("button", { name: /Flip back to front/i })).toBeNull();
+    const backFlipBtn = screen.getByRole("button", { name: /Flip back to front/i, hidden: true });
+    expect(backFlipBtn.getAttribute("tabindex")).toBe("-1");
+
+    expect(screen.queryByRole("link", { name: /→ Merge PDF Files/i })).toBeNull();
+    const liveLink = screen.getByRole("link", { name: /→ Merge PDF Files/i, hidden: true });
+    expect(liveLink.getAttribute("tabindex")).toBe("-1");
+
+    const viewAllBtn = screen.getByRole("link", { name: /View all 2 tools/i, hidden: true });
+    expect(viewAllBtn.getAttribute("tabindex")).toBe("-1");
+
+    const frontFace = container.querySelector(".backface-hidden:not(.rotate-y-180)");
+    const backFace = container.querySelector(".backface-hidden.rotate-y-180");
+    expect(frontFace?.hasAttribute("inert")).toBe(false);
+    expect(frontFace?.getAttribute("aria-hidden")).toBe("false");
+    expect(backFace?.hasAttribute("inert")).toBe(true);
+    expect(backFace?.getAttribute("aria-hidden")).toBe("true");
+
+    // Flip to back
+    fireEvent.click(flipBtn);
+
+    expect(region.getAttribute("aria-label")).toContain("Press Enter to flip back");
+
+    // Now front face is hidden, back face is active and accessible
+    expect(screen.queryByRole("button", { name: /View supported formats for PDF Tools/i })).toBeNull();
+    expect(flipBtn.getAttribute("tabindex")).toBe("-1");
+
+    const activeBackFlipBtn = screen.getByRole("button", { name: /Flip back to front/i });
+    expect(activeBackFlipBtn.getAttribute("tabindex")).toBe("0");
+
+    const activeLiveLink = screen.getByRole("link", { name: /→ Merge PDF Files/i });
+    expect(activeLiveLink.getAttribute("tabindex")).toBe("0");
+
+    const activeViewAllBtn = screen.getByRole("link", { name: /View all 2 tools/i });
+    expect(activeViewAllBtn.getAttribute("tabindex")).toBe("0");
+
+    expect(frontFace?.hasAttribute("inert")).toBe(true);
+    expect(frontFace?.getAttribute("aria-hidden")).toBe("true");
+    expect(backFace?.hasAttribute("inert")).toBe(false);
+    expect(backFace?.getAttribute("aria-hidden")).toBe("false");
+
+    // Flip back via back button
+    fireEvent.click(activeBackFlipBtn);
+
+    expect(region.getAttribute("aria-label")).toContain("Press Enter to flip for supported formats");
+    expect(flipBtn.getAttribute("tabindex")).toBe("0");
+    expect(backFlipBtn.getAttribute("tabindex")).toBe("-1");
+    expect(liveLink.getAttribute("tabindex")).toBe("-1");
+    expect(viewAllBtn.getAttribute("tabindex")).toBe("-1");
+    expect(frontFace?.hasAttribute("inert")).toBe(false);
+    expect(frontFace?.getAttribute("aria-hidden")).toBe("false");
+    expect(backFace?.hasAttribute("inert")).toBe(true);
+    expect(backFace?.getAttribute("aria-hidden")).toBe("true");
+  });
+
+  it("supports flipping via Enter and Space keyboard events on the card region", () => {
+    render(<CategoryFlipCard category={CATEGORIES.pdf} tools={sampleTools} />);
+    const region = screen.getByRole("region");
+
+    expect(region.getAttribute("aria-label")).toContain("Press Enter to flip for supported formats");
+
+    // Press Enter on region
+    fireEvent.keyDown(region, { key: "Enter" });
+    expect(region.getAttribute("aria-label")).toContain("Press Enter to flip back");
+
+    // Press Space on region
+    fireEvent.keyDown(region, { key: " " });
+    expect(region.getAttribute("aria-label")).toContain("Press Enter to flip for supported formats");
+  });
+});
