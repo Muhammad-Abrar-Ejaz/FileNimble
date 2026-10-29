@@ -6,9 +6,9 @@ import React from "react";
 import { getAllTools } from "@/lib/registry";
 import { ToolSearch } from "@/components/tools/ToolSearch";
 import { CategoryGrid } from "@/components/tools/CategoryGrid";
-import { ToolCard } from "@/components/tools/ToolCard";
 import { AdSlot } from "@/components/ads";
 import { MonochromeStatsHero } from "@/components/home/MonochromeStatsHero";
+import { HomepageToolCarousel } from "@/components/home/HomepageToolCarousel";
 import {
   ShieldCheck,
   Layers,
@@ -25,8 +25,11 @@ export const metadata = pageMetadata('/', 'FileNimble — Any file. Right format
 export default function HomePage() {
   const allTools = getAllTools();
 
-  // Featured sample tools for homepage showcase (first 8 high-utility tools)
-  const featuredTools = allTools.slice(0, 8);
+  // Feature only verified live tools; planned registry entries remain in search/categories with their status labels.
+  const featuredToolSlugs = ["merge-pdf", "png-to-jpg", "tar-to-zip", "zip-to-tar", "organize-pdf"];
+  const featuredTools = allTools.filter(
+    (tool) => featuredToolSlugs.includes(tool.slug) && tool.status === "live" && tool.indexable
+  );
 
   return (
     <div className="flex flex-col min-h-screen">
@@ -90,22 +93,18 @@ export default function HomePage() {
           <div>
             <div className="inline-flex items-center gap-1.5 text-xs font-bold uppercase tracking-wider text-primary mb-2">
               <Sparkles size={14} aria-hidden="true" />
-              <span>Catalog Highlights</span>
+              <span>Ready to Use</span>
             </div>
             <h2 className="text-2xl sm:text-3xl font-bold text-text-strong tracking-tight">
-              Featured Tools
+              Available Tools
             </h2>
             <p className="mt-1 text-sm text-text-muted">
-              Explore planned and live capabilities from our typed registry.
+              Choose a tool that&apos;s available now. Planned tools remain clearly marked elsewhere in the catalog.
             </p>
           </div>
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-          {featuredTools.map((tool) => (
-            <ToolCard key={tool.id} tool={tool} />
-          ))}
-        </div>
+        <HomepageToolCarousel tools={featuredTools} />
       </section>
 
       {/* Optional Ad slot between major editorial sections */}
