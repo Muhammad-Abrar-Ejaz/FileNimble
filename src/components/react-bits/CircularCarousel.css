@@ -162,11 +162,10 @@
   font-size: 12px;
   font-variant-numeric: tabular-nums;
   line-height: 1;
-  opacity: 0.5;
 }
 
 .circular-carousel__slash {
-  opacity: 0.6;
+  opacity: 1;
 }
 
 .circular-carousel__digits {
