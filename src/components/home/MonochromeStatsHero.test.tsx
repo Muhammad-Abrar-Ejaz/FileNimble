@@ -19,15 +19,17 @@ describe("MonochromeStatsHero", () => {
     expect(subcopy).toBeDefined();
   });
 
-  it("renders dual accessible CTAs leading to real sections", () => {
+  it("guides visitors to choose an operation before uploading files", () => {
     render(<MonochromeStatsHero />);
-    const primaryCta = screen.getByRole("link", { name: /Select or Drop Files/i });
+    const primaryCta = screen.getByRole("link", { name: /Choose an operation/i });
     expect(primaryCta).toBeDefined();
-    expect(primaryCta.getAttribute("href")).toBe("#uploader");
+    expect(primaryCta.getAttribute("href")).toBe("#search");
 
-    const secondaryCta = screen.getByRole("link", { name: /Explore All Tools/i });
+    const secondaryCta = screen.getByRole("link", { name: /Browse categories/i });
     expect(secondaryCta).toBeDefined();
-    expect(secondaryCta.getAttribute("href")).toBe("#search");
+    expect(secondaryCta.getAttribute("href")).toBe("#categories");
+
+    expect(screen.getByText(/Choose a tool first\. Its page will guide you through selecting files and converting them\./i)).toBeDefined();
   });
 
   it("renders integrated stats cards with real metrics", () => {
@@ -42,15 +44,6 @@ describe("MonochromeStatsHero", () => {
     expect(screen.getByText("Processing Transparency")).toBeDefined();
   });
 
-  it("renders child uploader slot within #uploader container", () => {
-    render(
-      <MonochromeStatsHero>
-        <div data-testid="test-uploader">Dropzone Child</div>
-      </MonochromeStatsHero>
-    );
-    expect(screen.getByTestId("test-uploader")).toBeDefined();
-    expect(document.getElementById("uploader")).toBeDefined();
-  });
 });
 
 describe("GlyphMatrixBackground", () => {
