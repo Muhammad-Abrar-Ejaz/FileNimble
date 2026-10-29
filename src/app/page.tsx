@@ -4,7 +4,6 @@ import { JsonLd } from '@/components/seo/PageSeo';
 import { canonicalUrl } from '@/lib/seo';
 import React from "react";
 import { getAllTools } from "@/lib/registry";
-import { UniversalUploader } from "@/components/uploader/UniversalUploader";
 import { ToolSearch } from "@/components/tools/ToolSearch";
 import { CategoryGrid } from "@/components/tools/CategoryGrid";
 import { ToolCard } from "@/components/tools/ToolCard";
@@ -35,13 +34,7 @@ export default function HomePage() {
       {/* 1. Hero Section */}
       <MonochromeStatsHero
         description="Convert images, organize PDF pages, and transform supported documents or data. Use ready browser tools for supported local conversions, or convert TAR to ZIP and ZIP to TAR with temporary server processing. Tools marked Planned are not available in this release; each available tool lists its processing method and limits."
-      >
-        <UniversalUploader
-          title="Drop files here to inspect & validate"
-          subtitle="Universal FileNimble dropzone — select any document, image, or archive to test validation"
-          privacyLabel="Files are validated locally in your browser. Choose a live tool below to convert."
-        />
-      </MonochromeStatsHero>
+      />
 
       {/* Optional Ad slot after hero */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full">
@@ -205,3 +198,4 @@ export default function HomePage() {
     </div>
   );
 }
+
