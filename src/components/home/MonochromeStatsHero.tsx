@@ -42,7 +42,9 @@ const STATS = [
   },
 ];
 
-export function MonochromeStatsHero({ description = DEFAULT_DESCRIPTION }: MonochromeStatsHeroProps) {
+export function MonochromeStatsHero({
+  description = DEFAULT_DESCRIPTION,
+}: MonochromeStatsHeroProps) {
   return (
     <section className="relative overflow-hidden pt-12 pb-16 sm:pt-20 sm:pb-24 bg-gradient-to-b from-surface via-background-app to-background-app border-b border-border-subtle/60">
       {/* Subtle Matrix Background */}
@@ -114,8 +116,8 @@ export function MonochromeStatsHero({ description = DEFAULT_DESCRIPTION }: Monoc
             })}
           </div>
         </div>
+
       </div>
     </section>
   );
 }
-
