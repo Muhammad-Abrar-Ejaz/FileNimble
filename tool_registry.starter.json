@@ -469,28 +469,67 @@
     "id": "jpg_to_pdf",
     "slug": "jpg-to-pdf",
     "category": "to_pdf",
-    "status": "planned",
-    "indexable": false,
-    "processingMode": "tbd",
-    "notes": "Set limits, engine, privacy label, formats and SEO metadata before enabling."
+    "status": "live",
+    "indexable": true,
+    "processingMode": "client",
+    "privacyLabel": "Runs in browser",
+    "title": "Convert JPG to PDF",
+    "description": "Convert JPG and JPEG photos into clean, paginated PDF documents with custom margins and page formats directly in your browser.",
+    "inputFormats": ["jpg", "jpeg"],
+    "outputFormats": ["pdf"],
+    "limits": {
+      "maxFileBytes": 52428800,
+      "maxBatchCount": 20,
+      "allowedExtensions": ["jpg", "jpeg"],
+      "allowedMimeTypes": ["image/jpeg"]
+    },
+    "relatedTools": ["png-to-pdf", "image-to-pdf", "pdf-to-jpg", "jpg-to-png"],
+    "seoTitle": "Convert JPG to PDF Online | FileNimble",
+    "seoDescription": "Convert JPG/JPEG images to PDF online. Merge multiple photos into one document or save each image as a page with custom margins in your browser."
   },
   {
     "id": "png_to_pdf",
     "slug": "png-to-pdf",
     "category": "to_pdf",
-    "status": "planned",
-    "indexable": false,
-    "processingMode": "tbd",
-    "notes": "Set limits, engine, privacy label, formats and SEO metadata before enabling."
+    "status": "live",
+    "indexable": true,
+    "processingMode": "client",
+    "privacyLabel": "Runs in browser",
+    "title": "Convert PNG to PDF",
+    "description": "Convert transparent or high-resolution PNG images into clean, printable PDF documents directly in your browser.",
+    "inputFormats": ["png"],
+    "outputFormats": ["pdf"],
+    "limits": {
+      "maxFileBytes": 52428800,
+      "maxBatchCount": 20,
+      "allowedExtensions": ["png"],
+      "allowedMimeTypes": ["image/png"]
+    },
+    "relatedTools": ["jpg-to-pdf", "image-to-pdf", "pdf-to-png", "png-to-jpg"],
+    "seoTitle": "Convert PNG to PDF Online | FileNimble",
+    "seoDescription": "Convert PNG graphics and screenshots into standard PDF files in your browser. Combine multiple PNG images into a single PDF document."
   },
   {
     "id": "webp_to_pdf",
     "slug": "webp-to-pdf",
     "category": "to_pdf",
-    "status": "planned",
-    "indexable": false,
-    "processingMode": "tbd",
-    "notes": "Set limits, engine, privacy label, formats and SEO metadata before enabling."
+    "status": "live",
+    "indexable": true,
+    "processingMode": "client",
+    "privacyLabel": "Runs in browser",
+    "title": "Convert WebP to PDF",
+    "description": "Convert modern WebP images into universal, printable PDF documents directly in your browser.",
+    "inputFormats": ["webp"],
+    "outputFormats": ["pdf"],
+    "limits": {
+      "maxFileBytes": 52428800,
+      "maxBatchCount": 20,
+      "allowedExtensions": ["webp"],
+      "allowedMimeTypes": ["image/webp"]
+    },
+    "relatedTools": ["jpg-to-pdf", "png-to-pdf", "image-to-pdf", "webp-to-jpg"],
+    "seoTitle": "Convert WebP to PDF Online | FileNimble",
+    "seoDescription": "Convert WebP images to PDF in your browser. Combine up to 20 WebP files into a clean, printable PDF with custom orientation and margins."
   },
   {
     "id": "heic_to_pdf",

@@ -597,5 +597,122 @@ export const IMAGE_TOOLS: ImageToolData[] = [
         "a": "No. Processing is 100% client-side in your browser; no images are uploaded to any server."
       }
     ]
+  },
+  {
+    "slug": "jpg-to-pdf",
+    "title": "Convert JPG to PDF",
+    "description": "Convert JPG and JPEG photos into clean, paginated PDF documents with custom margins and page formats directly in your browser.",
+    "features": [
+      "Combine up to 20 JPG photos into a single multi-page PDF document",
+      "Standard A4, US Letter, and Fit to Image page size options",
+      "Adjustable page margins (0pt, 20pt, 40pt) and orientation choices",
+      "Runs entirely in your browser; images are never uploaded"
+    ],
+    "steps": [
+      {
+        "name": "Upload JPG Photos",
+        "text": "Drag and drop or select up to 20 JPG files from your computer or phone."
+      },
+      {
+        "name": "Configure Layout",
+        "text": "Choose your page size (A4, Letter, Fit), orientation, margins, and whether to merge into 1 PDF."
+      },
+      {
+        "name": "Download PDF",
+        "text": "Click Convert to PDF to generate and download your PDF document instantly."
+      }
+    ],
+    "faqs": [
+      {
+        "q": "Can I combine multiple JPG photos into one PDF?",
+        "a": "Yes. You can select up to 20 JPG images and combine them into a single ordered multi-page PDF document, or choose to download them as separate PDF pages."
+      },
+      {
+        "q": "Are my JPG photos uploaded to a server?",
+        "a": "No. The entire PDF generation runs locally in your browser using pdf-lib. Your private photos never leave your device."
+      },
+      {
+        "q": "What page sizes and orientations are supported?",
+        "a": "FileNimble supports standard A4, US Letter, and Fit to Image page sizes, with Portrait, Landscape, or Auto orientation."
+      }
+    ]
+  },
+  {
+    "slug": "png-to-pdf",
+    "title": "Convert PNG to PDF",
+    "description": "Convert transparent or high-resolution PNG images into clean, printable PDF documents directly in your browser.",
+    "features": [
+      "Combine up to 20 PNG graphics into a single multi-page PDF document",
+      "Preserves crisp vector-like PNG detail and typography in PDF pages",
+      "Choice of A4, Letter, or Fit to Image page sizes with custom margins",
+      "Runs entirely in your browser; images are never uploaded"
+    ],
+    "steps": [
+      {
+        "name": "Upload PNG Files",
+        "text": "Drag and drop or select up to 20 PNG graphics or screenshots."
+      },
+      {
+        "name": "Configure Layout",
+        "text": "Select page dimensions (A4, Letter, or Fit), orientation, and margin spacing."
+      },
+      {
+        "name": "Download PDF",
+        "text": "Click Convert to PDF to compile and save your clean PDF document."
+      }
+    ],
+    "faqs": [
+      {
+        "q": "What happens to PNG transparency when converted to PDF?",
+        "a": "PNG images are embedded cleanly into PDF pages. You can choose whether pages match the image dimensions exactly or use standard A4/Letter margins."
+      },
+      {
+        "q": "Are my PNG files uploaded to FileNimble servers?",
+        "a": "No. All PDF generation is processed in your web browser using HTML5 Canvas and client-side pdf-lib. No files are uploaded."
+      },
+      {
+        "q": "Can I batch convert multiple PNGs into one PDF?",
+        "a": "Yes. Select up to 20 PNG images and toggle 'Combine into 1 PDF' to merge them into a single multi-page document."
+      }
+    ]
+  },
+  {
+    "slug": "webp-to-pdf",
+    "title": "Convert WebP to PDF",
+    "description": "Convert modern WebP images into universal, printable PDF documents directly in your browser.",
+    "features": [
+      "Combine up to 20 WebP images into a single multi-page PDF document",
+      "Full support for lossy and lossless WebP image encodings",
+      "Custom page sizes (A4, Letter, Fit to image) and margin options",
+      "Runs entirely in your browser; images are never uploaded"
+    ],
+    "steps": [
+      {
+        "name": "Upload WebP Files",
+        "text": "Select or drag and drop up to 20 WebP images."
+      },
+      {
+        "name": "Configure PDF Options",
+        "text": "Select page format (A4, Letter, or Fit), margins, and orientation."
+      },
+      {
+        "name": "Download PDF",
+        "text": "Click Convert to PDF and download your compiled PDF document."
+      }
+    ],
+    "faqs": [
+      {
+        "q": "Why convert WebP to PDF?",
+        "a": "While WebP is great for web browsers, PDF is the universal standard for printing, official document submissions, and multi-page document archiving."
+      },
+      {
+        "q": "Are my WebP images uploaded to any server?",
+        "a": "No. The entire conversion process occurs within your browser using local canvas decoding and pdf-lib."
+      },
+      {
+        "q": "Can I combine multiple WebP images into a single document?",
+        "a": "Yes. You can combine up to 20 WebP files into a single continuous PDF document in your chosen order."
+      }
+    ]
   }
 ];
