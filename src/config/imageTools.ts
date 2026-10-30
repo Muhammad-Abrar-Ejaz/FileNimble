@@ -441,5 +441,278 @@ export const IMAGE_TOOLS: ImageToolData[] = [
         "a": "No. The visual cropper and canvas pipeline process the selected image in your browser; FileNimble does not upload it for this conversion."
       }
     ]
+  },
+  {
+    "slug": "bmp-to-jpg",
+    "title": "Convert BMP to JPG",
+    "description": "Convert uncompressed Windows BMP bitmap images to lightweight, web-ready JPG format directly in your browser.",
+    "features": [
+      "Convert BMP bitmaps to standard JPEG with adjustable quality",
+      "Optional solid background color to flatten alpha or transparency keys",
+      "Batch convert up to 20 BMP images with instant ZIP export",
+      "Runs entirely in your browser; images are never uploaded"
+    ],
+    "steps": [
+      {
+        "name": "Upload BMP Files",
+        "text": "Select or drag and drop BMP bitmap images from your device."
+      },
+      {
+        "name": "Adjust Quality",
+        "text": "Select your desired JPEG quality and background color."
+      },
+      {
+        "name": "Convert & Download",
+        "text": "Click Convert to JPG to generate lightweight JPEG images instantly."
+      }
+    ],
+    "faqs": [
+      {
+        "q": "Why should I convert BMP to JPG?",
+        "a": "BMP files are uncompressed bitmap graphics that produce huge file sizes. Converting BMP to JPG drastically reduces file size by 80% to 95%, making them suitable for web sharing, email attachments, and storage."
+      },
+      {
+        "q": "Are my BMP images uploaded to a server?",
+        "a": "No. Conversion runs locally in your browser using HTML5 Canvas. Your images are never sent over the network."
+      },
+      {
+        "q": "Can I convert multiple BMP images at once?",
+        "a": "Yes. You can select up to 20 BMP images and convert them simultaneously, with single-click individual downloads or a bundled ZIP archive."
+      }
+    ]
+  },
+  {
+    "slug": "bmp-to-png",
+    "title": "Convert BMP to PNG",
+    "description": "Convert legacy BMP bitmap images into modern, lossless PNG format directly in your browser.",
+    "features": [
+      "Lossless pixel-perfect conversion from BMP to PNG",
+      "Supports 24-bit and 32-bit BMP bitmaps",
+      "Batch convert up to 20 BMP images with ZIP download",
+      "Runs entirely in your browser; images are never uploaded"
+    ],
+    "steps": [
+      {
+        "name": "Upload BMP Files",
+        "text": "Drag and drop or select your BMP files."
+      },
+      {
+        "name": "Convert to PNG",
+        "text": "Click Convert to encode your bitmap into compressed lossless PNG."
+      },
+      {
+        "name": "Download Files",
+        "text": "Save your PNG images individually or download all in a ZIP file."
+      }
+    ],
+    "faqs": [
+      {
+        "q": "Does converting BMP to PNG lose quality?",
+        "a": "No. Both BMP and PNG are lossless formats. PNG uses Deflate compression to reduce file size without discarding any pixel data."
+      },
+      {
+        "q": "Are my files uploaded to FileNimble?",
+        "a": "No. All image decoding and PNG encoding are performed client-side in your web browser."
+      },
+      {
+        "q": "Can I batch convert BMP files?",
+        "a": "Yes. FileNimble lets you convert up to 20 BMP files at once and export them as a single ZIP archive."
+      }
+    ]
+  },
+  {
+    "slug": "gif-to-jpg",
+    "title": "Convert GIF to JPG",
+    "description": "Convert GIF images and animations to compressed JPEG format in your browser.",
+    "features": [
+      "Convert GIF graphics or animation cover frames to JPEG",
+      "Custom background color for transparent GIF pixels",
+      "Batch convert up to 20 GIF files with ZIP export",
+      "Runs entirely in your browser; images are never uploaded"
+    ],
+    "steps": [
+      {
+        "name": "Upload GIF Files",
+        "text": "Select or drop your GIF files into the converter."
+      },
+      {
+        "name": "Set Quality & Color",
+        "text": "Choose your JPEG quality and solid background color."
+      },
+      {
+        "name": "Convert & Download",
+        "text": "Click Convert to JPG and download your images immediately."
+      }
+    ],
+    "faqs": [
+      {
+        "q": "Does converting GIF to JPG retain animation?",
+        "a": "No. JPEG is a static image format. Converting an animated GIF captures and saves the first frame as a high-quality static JPEG."
+      },
+      {
+        "q": "What happens to transparent GIF areas?",
+        "a": "JPEG does not support transparency. Transparent areas in your GIF are automatically filled with your chosen background color (white by default)."
+      },
+      {
+        "q": "Is GIF to JPG conversion private?",
+        "a": "Yes. All processing happens entirely within your web browser using HTML5 Canvas. Your files are not uploaded."
+      }
+    ]
+  },
+  {
+    "slug": "gif-to-png",
+    "title": "Convert GIF to PNG",
+    "description": "Convert 256-color GIF images into crisp 24-bit PNG images with full alpha channel support in your browser.",
+    "features": [
+      "Upgrade 8-bit indexed GIF graphics into full 24-bit/32-bit PNG",
+      "Full transparency preservation without color banding",
+      "Batch convert up to 20 GIF files with ZIP export",
+      "Runs entirely in your browser; images are never uploaded"
+    ],
+    "steps": [
+      {
+        "name": "Upload GIF Files",
+        "text": "Select or drop your GIF files."
+      },
+      {
+        "name": "Convert to PNG",
+        "text": "Click Convert to generate crisp PNG images locally."
+      },
+      {
+        "name": "Download PNG",
+        "text": "Download individual PNG files or download all files bundled in a ZIP."
+      }
+    ],
+    "faqs": [
+      {
+        "q": "Does GIF to PNG conversion preserve transparency?",
+        "a": "Yes. Transparent pixels in the original GIF are mapped directly to the PNG alpha channel, maintaining full transparency."
+      },
+      {
+        "q": "Does this convert animated GIFs to animated PNGs (APNG)?",
+        "a": "No. FileNimble converts the primary still frame of the GIF into a standard, widely compatible static PNG image."
+      },
+      {
+        "q": "Are my GIF files uploaded to a server?",
+        "a": "No. Processing is 100% client-side in your browser; no images are uploaded to any server."
+      }
+    ]
+  },
+  {
+    "slug": "jpg-to-pdf",
+    "title": "Convert JPG to PDF",
+    "description": "Convert JPG and JPEG photos into clean, paginated PDF documents with custom margins and page formats directly in your browser.",
+    "features": [
+      "Combine up to 20 JPG photos into a single multi-page PDF document",
+      "Standard A4, US Letter, and Fit to Image page size options",
+      "Adjustable page margins (0pt, 20pt, 40pt) and orientation choices",
+      "Runs entirely in your browser; images are never uploaded"
+    ],
+    "steps": [
+      {
+        "name": "Upload JPG Photos",
+        "text": "Drag and drop or select up to 20 JPG files from your computer or phone."
+      },
+      {
+        "name": "Configure Layout",
+        "text": "Choose your page size (A4, Letter, Fit), orientation, margins, and whether to merge into 1 PDF."
+      },
+      {
+        "name": "Download PDF",
+        "text": "Click Convert to PDF to generate and download your PDF document instantly."
+      }
+    ],
+    "faqs": [
+      {
+        "q": "Can I combine multiple JPG photos into one PDF?",
+        "a": "Yes. You can select up to 20 JPG images and combine them into a single ordered multi-page PDF document, or choose to download them as separate PDF pages."
+      },
+      {
+        "q": "Are my JPG photos uploaded to a server?",
+        "a": "No. The entire PDF generation runs locally in your browser using pdf-lib. Your private photos never leave your device."
+      },
+      {
+        "q": "What page sizes and orientations are supported?",
+        "a": "FileNimble supports standard A4, US Letter, and Fit to Image page sizes, with Portrait, Landscape, or Auto orientation."
+      }
+    ]
+  },
+  {
+    "slug": "png-to-pdf",
+    "title": "Convert PNG to PDF",
+    "description": "Convert transparent or high-resolution PNG images into clean, printable PDF documents directly in your browser.",
+    "features": [
+      "Combine up to 20 PNG graphics into a single multi-page PDF document",
+      "Preserves crisp vector-like PNG detail and typography in PDF pages",
+      "Choice of A4, Letter, or Fit to Image page sizes with custom margins",
+      "Runs entirely in your browser; images are never uploaded"
+    ],
+    "steps": [
+      {
+        "name": "Upload PNG Files",
+        "text": "Drag and drop or select up to 20 PNG graphics or screenshots."
+      },
+      {
+        "name": "Configure Layout",
+        "text": "Select page dimensions (A4, Letter, or Fit), orientation, and margin spacing."
+      },
+      {
+        "name": "Download PDF",
+        "text": "Click Convert to PDF to compile and save your clean PDF document."
+      }
+    ],
+    "faqs": [
+      {
+        "q": "What happens to PNG transparency when converted to PDF?",
+        "a": "PNG images are embedded cleanly into PDF pages. You can choose whether pages match the image dimensions exactly or use standard A4/Letter margins."
+      },
+      {
+        "q": "Are my PNG files uploaded to FileNimble servers?",
+        "a": "No. All PDF generation is processed in your web browser using HTML5 Canvas and client-side pdf-lib. No files are uploaded."
+      },
+      {
+        "q": "Can I batch convert multiple PNGs into one PDF?",
+        "a": "Yes. Select up to 20 PNG images and toggle 'Combine into 1 PDF' to merge them into a single multi-page document."
+      }
+    ]
+  },
+  {
+    "slug": "webp-to-pdf",
+    "title": "Convert WebP to PDF",
+    "description": "Convert modern WebP images into universal, printable PDF documents directly in your browser.",
+    "features": [
+      "Combine up to 20 WebP images into a single multi-page PDF document",
+      "Full support for lossy and lossless WebP image encodings",
+      "Custom page sizes (A4, Letter, Fit to image) and margin options",
+      "Runs entirely in your browser; images are never uploaded"
+    ],
+    "steps": [
+      {
+        "name": "Upload WebP Files",
+        "text": "Select or drag and drop up to 20 WebP images."
+      },
+      {
+        "name": "Configure PDF Options",
+        "text": "Select page format (A4, Letter, or Fit), margins, and orientation."
+      },
+      {
+        "name": "Download PDF",
+        "text": "Click Convert to PDF and download your compiled PDF document."
+      }
+    ],
+    "faqs": [
+      {
+        "q": "Why convert WebP to PDF?",
+        "a": "While WebP is great for web browsers, PDF is the universal standard for printing, official document submissions, and multi-page document archiving."
+      },
+      {
+        "q": "Are my WebP images uploaded to any server?",
+        "a": "No. The entire conversion process occurs within your browser using local canvas decoding and pdf-lib."
+      },
+      {
+        "q": "Can I combine multiple WebP images into a single document?",
+        "a": "Yes. You can combine up to 20 WebP files into a single continuous PDF document in your chosen order."
+      }
+    ]
   }
 ];

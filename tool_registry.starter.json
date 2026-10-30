@@ -469,28 +469,67 @@
     "id": "jpg_to_pdf",
     "slug": "jpg-to-pdf",
     "category": "to_pdf",
-    "status": "planned",
-    "indexable": false,
-    "processingMode": "tbd",
-    "notes": "Set limits, engine, privacy label, formats and SEO metadata before enabling."
+    "status": "live",
+    "indexable": true,
+    "processingMode": "client",
+    "privacyLabel": "Runs in browser",
+    "title": "Convert JPG to PDF",
+    "description": "Convert JPG and JPEG photos into clean, paginated PDF documents with custom margins and page formats directly in your browser.",
+    "inputFormats": ["jpg", "jpeg"],
+    "outputFormats": ["pdf"],
+    "limits": {
+      "maxFileBytes": 52428800,
+      "maxBatchCount": 20,
+      "allowedExtensions": ["jpg", "jpeg"],
+      "allowedMimeTypes": ["image/jpeg"]
+    },
+    "relatedTools": ["png-to-pdf", "image-to-pdf", "pdf-to-jpg", "jpg-to-png"],
+    "seoTitle": "Convert JPG to PDF Online | FileNimble",
+    "seoDescription": "Convert JPG/JPEG images to PDF online. Merge multiple photos into one document or save each image as a page with custom margins in your browser."
   },
   {
     "id": "png_to_pdf",
     "slug": "png-to-pdf",
     "category": "to_pdf",
-    "status": "planned",
-    "indexable": false,
-    "processingMode": "tbd",
-    "notes": "Set limits, engine, privacy label, formats and SEO metadata before enabling."
+    "status": "live",
+    "indexable": true,
+    "processingMode": "client",
+    "privacyLabel": "Runs in browser",
+    "title": "Convert PNG to PDF",
+    "description": "Convert transparent or high-resolution PNG images into clean, printable PDF documents directly in your browser.",
+    "inputFormats": ["png"],
+    "outputFormats": ["pdf"],
+    "limits": {
+      "maxFileBytes": 52428800,
+      "maxBatchCount": 20,
+      "allowedExtensions": ["png"],
+      "allowedMimeTypes": ["image/png"]
+    },
+    "relatedTools": ["jpg-to-pdf", "image-to-pdf", "pdf-to-png", "png-to-jpg"],
+    "seoTitle": "Convert PNG to PDF Online | FileNimble",
+    "seoDescription": "Convert PNG graphics and screenshots into standard PDF files in your browser. Combine multiple PNG images into a single PDF document."
   },
   {
     "id": "webp_to_pdf",
     "slug": "webp-to-pdf",
     "category": "to_pdf",
-    "status": "planned",
-    "indexable": false,
-    "processingMode": "tbd",
-    "notes": "Set limits, engine, privacy label, formats and SEO metadata before enabling."
+    "status": "live",
+    "indexable": true,
+    "processingMode": "client",
+    "privacyLabel": "Runs in browser",
+    "title": "Convert WebP to PDF",
+    "description": "Convert modern WebP images into universal, printable PDF documents directly in your browser.",
+    "inputFormats": ["webp"],
+    "outputFormats": ["pdf"],
+    "limits": {
+      "maxFileBytes": 52428800,
+      "maxBatchCount": 20,
+      "allowedExtensions": ["webp"],
+      "allowedMimeTypes": ["image/webp"]
+    },
+    "relatedTools": ["jpg-to-pdf", "png-to-pdf", "image-to-pdf", "webp-to-jpg"],
+    "seoTitle": "Convert WebP to PDF Online | FileNimble",
+    "seoDescription": "Convert WebP images to PDF in your browser. Combine up to 20 WebP files into a clean, printable PDF with custom orientation and margins."
   },
   {
     "id": "heic_to_pdf",
@@ -1125,19 +1164,45 @@
     "id": "bmp_to_jpg",
     "slug": "bmp-to-jpg",
     "category": "image",
-    "status": "planned",
-    "indexable": false,
-    "processingMode": "tbd",
-    "notes": "Set limits, engine, privacy label, formats and SEO metadata before enabling."
+    "status": "live",
+    "indexable": true,
+    "processingMode": "client",
+    "privacyLabel": "Runs in browser",
+    "title": "BMP to JPG Converter",
+    "description": "Convert Windows BMP bitmap images to compressed JPEG format directly in your browser.",
+    "inputFormats": ["bmp"],
+    "outputFormats": ["jpg"],
+    "limits": {
+      "maxFileBytes": 52428800,
+      "maxBatchCount": 20,
+      "allowedExtensions": ["bmp"],
+      "allowedMimeTypes": ["image/bmp", "image/x-ms-bmp"]
+    },
+    "relatedTools": ["bmp-to-png", "jpg-to-png", "png-to-jpg", "image-compress"],
+    "seoTitle": "BMP to JPG Converter – Convert BMP Images Online | FileNimble",
+    "seoDescription": "Convert Windows BMP bitmap images to compressed JPEG format in your browser. Fast, free, private client-side image processing with optional background color."
   },
   {
     "id": "bmp_to_png",
     "slug": "bmp-to-png",
     "category": "image",
-    "status": "planned",
-    "indexable": false,
-    "processingMode": "tbd",
-    "notes": "Set limits, engine, privacy label, formats and SEO metadata before enabling."
+    "status": "live",
+    "indexable": true,
+    "processingMode": "client",
+    "privacyLabel": "Runs in browser",
+    "title": "BMP to PNG Converter",
+    "description": "Convert legacy BMP bitmap images into modern, lossless PNG format directly in your browser.",
+    "inputFormats": ["bmp"],
+    "outputFormats": ["png"],
+    "limits": {
+      "maxFileBytes": 52428800,
+      "maxBatchCount": 20,
+      "allowedExtensions": ["bmp"],
+      "allowedMimeTypes": ["image/bmp", "image/x-ms-bmp"]
+    },
+    "relatedTools": ["bmp-to-jpg", "png-to-jpg", "jpg-to-png", "image-compress"],
+    "seoTitle": "BMP to PNG Converter – Convert BMP to Lossless PNG Online | FileNimble",
+    "seoDescription": "Convert Windows BMP bitmap images into modern lossless PNG format directly in your browser with zero server uploads."
   },
   {
     "id": "tiff_to_jpg",
@@ -1161,19 +1226,45 @@
     "id": "gif_to_jpg",
     "slug": "gif-to-jpg",
     "category": "image",
-    "status": "planned",
-    "indexable": false,
-    "processingMode": "tbd",
-    "notes": "Set limits, engine, privacy label, formats and SEO metadata before enabling."
+    "status": "live",
+    "indexable": true,
+    "processingMode": "client",
+    "privacyLabel": "Runs in browser",
+    "title": "GIF to JPG Converter",
+    "description": "Convert GIF images and animations to compressed JPEG format directly in your browser.",
+    "inputFormats": ["gif"],
+    "outputFormats": ["jpg"],
+    "limits": {
+      "maxFileBytes": 52428800,
+      "maxBatchCount": 20,
+      "allowedExtensions": ["gif"],
+      "allowedMimeTypes": ["image/gif"]
+    },
+    "relatedTools": ["gif-to-png", "jpg-to-png", "png-to-jpg", "image-compress"],
+    "seoTitle": "GIF to JPG Converter – Convert GIF to JPEG Online | FileNimble",
+    "seoDescription": "Convert GIF images and animations to compressed JPEG format directly in your browser. Choose custom background colors to replace transparent GIF areas."
   },
   {
     "id": "gif_to_png",
     "slug": "gif-to-png",
     "category": "image",
-    "status": "planned",
-    "indexable": false,
-    "processingMode": "tbd",
-    "notes": "Set limits, engine, privacy label, formats and SEO metadata before enabling."
+    "status": "live",
+    "indexable": true,
+    "processingMode": "client",
+    "privacyLabel": "Runs in browser",
+    "title": "GIF to PNG Converter",
+    "description": "Convert 256-color GIF images into crisp 24-bit PNG images with full alpha channel support in your browser.",
+    "inputFormats": ["gif"],
+    "outputFormats": ["png"],
+    "limits": {
+      "maxFileBytes": 52428800,
+      "maxBatchCount": 20,
+      "allowedExtensions": ["gif"],
+      "allowedMimeTypes": ["image/gif"]
+    },
+    "relatedTools": ["gif-to-jpg", "png-to-jpg", "jpg-to-png", "image-compress"],
+    "seoTitle": "GIF to PNG Converter – Convert GIF to Crisp PNG Online | FileNimble",
+    "seoDescription": "Convert 256-color GIF images into crisp 24-bit PNG images with full alpha transparency support in your browser with zero server uploads."
   },
   {
     "id": "webp_to_gif",
@@ -1919,37 +2010,89 @@
     "id": "xml_to_csv",
     "slug": "xml-to-csv",
     "category": "document_data",
-    "status": "planned",
-    "indexable": false,
-    "processingMode": "tbd",
-    "notes": "Set limits, engine, privacy label, formats and SEO metadata before enabling."
+    "status": "live",
+    "indexable": true,
+    "processingMode": "client",
+    "privacyLabel": "Runs in browser",
+    "title": "Convert XML to CSV Online",
+    "description": "Transform XML records and tabular data structures into clean RFC 4180 CSV spreadsheets locally in your browser.",
+    "inputFormats": ["xml"],
+    "outputFormats": ["csv"],
+    "limits": {
+      "maxFileBytes": 10485760,
+      "maxBatchCount": 1,
+      "allowedMimeTypes": ["application/xml", "text/xml", "text/plain"],
+      "allowedExtensions": ["xml"]
+    },
+    "relatedTools": ["xml-to-json", "json-to-xml", "json-to-csv", "csv-to-json"],
+    "seoTitle": "Convert XML to CSV Online | FileNimble",
+    "seoDescription": "Transform XML records and tabular data structures into clean RFC 4180 CSV spreadsheets locally in your browser."
   },
   {
     "id": "csv_to_tsv",
     "slug": "csv-to-tsv",
     "category": "document_data",
-    "status": "planned",
-    "indexable": false,
-    "processingMode": "tbd",
-    "notes": "Set limits, engine, privacy label, formats and SEO metadata before enabling."
+    "status": "live",
+    "indexable": true,
+    "processingMode": "client",
+    "privacyLabel": "Runs in browser",
+    "title": "Convert CSV to TSV Online",
+    "description": "Convert comma-separated values (CSV) into tab-separated values (TSV) directly in your browser with zero server uploads.",
+    "inputFormats": ["csv"],
+    "outputFormats": ["tsv"],
+    "limits": {
+      "maxFileBytes": 10485760,
+      "maxBatchCount": 1,
+      "allowedMimeTypes": ["text/csv", "text/plain"],
+      "allowedExtensions": ["csv"]
+    },
+    "relatedTools": ["tsv-to-csv", "csv-to-json", "json-to-csv", "xml-to-csv"],
+    "seoTitle": "Convert CSV to TSV Online | FileNimble",
+    "seoDescription": "Convert comma-separated values (CSV) into tab-separated values (TSV) directly in your browser with zero server uploads."
   },
   {
     "id": "tsv_to_csv",
     "slug": "tsv-to-csv",
     "category": "document_data",
-    "status": "planned",
-    "indexable": false,
-    "processingMode": "tbd",
-    "notes": "Set limits, engine, privacy label, formats and SEO metadata before enabling."
+    "status": "live",
+    "indexable": true,
+    "processingMode": "client",
+    "privacyLabel": "Runs in browser",
+    "title": "Convert TSV to CSV Online",
+    "description": "Transform tab-separated values (TSV) into standard RFC 4180 CSV with automatic formula injection protection.",
+    "inputFormats": ["tsv"],
+    "outputFormats": ["csv"],
+    "limits": {
+      "maxFileBytes": 10485760,
+      "maxBatchCount": 1,
+      "allowedMimeTypes": ["text/tab-separated-values", "text/plain"],
+      "allowedExtensions": ["tsv", "txt"]
+    },
+    "relatedTools": ["csv-to-tsv", "csv-to-json", "json-to-csv", "html-table-to-csv"],
+    "seoTitle": "Convert TSV to CSV Online | FileNimble",
+    "seoDescription": "Transform tab-separated values (TSV) into standard RFC 4180 CSV with automatic formula injection protection."
   },
   {
     "id": "html_table_to_csv",
     "slug": "html-table-to-csv",
     "category": "document_data",
-    "status": "planned",
-    "indexable": false,
-    "processingMode": "tbd",
-    "notes": "Set limits, engine, privacy label, formats and SEO metadata before enabling."
+    "status": "live",
+    "indexable": true,
+    "processingMode": "client",
+    "privacyLabel": "Runs in browser",
+    "title": "Convert HTML Table to CSV Online",
+    "description": "Extract data tables from HTML documents or web snippets into clean, standard CSV format in your browser.",
+    "inputFormats": ["html"],
+    "outputFormats": ["csv"],
+    "limits": {
+      "maxFileBytes": 10485760,
+      "maxBatchCount": 1,
+      "allowedMimeTypes": ["text/html", "text/plain"],
+      "allowedExtensions": ["html", "htm"]
+    },
+    "relatedTools": ["html-to-markdown", "csv-to-json", "csv-to-tsv", "xml-to-csv"],
+    "seoTitle": "Convert HTML Table to CSV Online | FileNimble",
+    "seoDescription": "Extract data tables from HTML documents or web snippets into clean, standard CSV format in your browser."
   },
   {
     "id": "epub_to_mobi",

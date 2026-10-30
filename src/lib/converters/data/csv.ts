@@ -401,3 +401,115 @@ export function jsonToCsv(
 
   throw new Error('Unsupported JSON structure. Expected a JSON array or object.');
 }
+
+/**
+ * Convert CSV text to clean Tab-Separated Values (TSV).
+ */
+export function csvToTsv(
+  csvText: string,
+  options: { delimiter?: string; newline?: '\r\n' | '\n' } = {}
+): string {
+  const rows = parseCsv(csvText, { delimiter: options.delimiter });
+  if (rows.length === 0) {
+    return '';
+  }
+  const newline = options.newline ?? '\r\n';
+  return rows
+    .map(row =>
+      row
+        .map(cell => cell.replace(/\t/g, ' ').replace(/[\r\n]+/g, ' '))
+        .join('\t')
+    )
+    .join(newline);
+}
+
+/**
+ * Convert Tab-Separated Values (TSV) to standard RFC 4180 CSV.
+ */
+export function tsvToCsv(
+  tsvText: string,
+  options: CsvSerializeOptions = {}
+): string {
+  const rows = parseCsv(tsvText, { delimiter: '\t' });
+  if (rows.length === 0) {
+    return '';
+  }
+  return serializeCsv(rows, {
+    delimiter: ',',
+    escapeFormulas: options.escapeFormulas ?? true,
+    newline: options.newline ?? '\r\n',
+  });
+}
+
+/**
+ * Extract HTML table rows into standard RFC 4180 CSV format.
+ */
+export function htmlTableToCsv(
+  htmlText: string,
+  options: CsvSerializeOptions = {}
+): string {
+  if (htmlText.length > MAX_CSV_SIZE_BYTES) {
+    throw new Error('HTML content exceeds maximum limit of 10 MiB.');
+  }
+
+  const rows: string[][] = [];
+
+  if (typeof DOMParser !== 'undefined') {
+    const parser = new DOMParser();
+    const doc = parser.parseFromString(htmlText, 'text/html');
+    const table = doc.querySelector('table');
+    if (!table) {
+      throw new Error('No <table> element found in HTML input.');
+    }
+    const trElements = table.querySelectorAll('tr');
+    trElements.forEach(tr => {
+      const cells: string[] = [];
+      const cellElements = tr.querySelectorAll('th, td');
+      cellElements.forEach(cell => {
+        cells.push((cell.textContent || '').trim());
+      });
+      if (cells.length > 0) {
+        rows.push(cells);
+      }
+    });
+  } else {
+    const tableMatch = htmlText.match(/<table[^>]*>([\s\S]*?)<\/table>/i);
+    if (!tableMatch) {
+      throw new Error('No <table> element found in HTML input.');
+    }
+    const trMatches = [...tableMatch[1].matchAll(/<tr[^>]*>([\s\S]*?)<\/tr>/gi)];
+    for (const tr of trMatches) {
+      const cells: string[] = [];
+      const cellMatches = [...tr[1].matchAll(/<(?:th|td)[^>]*>([\s\S]*?)<\/(?:th|td)>/gi)];
+      for (const cell of cellMatches) {
+        const text = cell[1]
+          .replace(/<[^>]+>/g, '')
+          .replace(/&nbsp;/g, ' ')
+          .replace(/&amp;/g, '&')
+          .replace(/&lt;/g, '<')
+          .replace(/&gt;/g, '>')
+          .replace(/&quot;/g, '"')
+          .replace(/&#39;/g, "'")
+          .trim();
+        cells.push(text);
+      }
+      if (cells.length > 0) {
+        rows.push(cells);
+      }
+    }
+  }
+
+  if (rows.length === 0) {
+    throw new Error('HTML table contains no rows or data cells.');
+  }
+
+  if (rows.length > DEFAULT_MAX_ROWS) {
+    throw new Error(`HTML table exceeds maximum limit of ${DEFAULT_MAX_ROWS} rows.`);
+  }
+
+  return serializeCsv(rows, {
+    delimiter: options.delimiter ?? ',',
+    escapeFormulas: options.escapeFormulas ?? true,
+    newline: options.newline ?? '\r\n',
+  });
+}

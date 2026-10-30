@@ -38,6 +38,22 @@ describe('Shared Image Engine - Signatures & Magic Bytes', () => {
     expect(await isValidImageFile(file, ['webp'])).toBe(true);
   });
 
+  it('detects GIF signature', async () => {
+    const gifBytes = new Uint8Array([0x47, 0x49, 0x46, 0x38, 0x39, 0x61, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]);
+    const file = new File([gifBytes], 'animation.gif', { type: 'image/gif' });
+    expect(await detectImageFormat(file)).toBe('gif');
+    expect(await isValidImageFile(file, ['gif'])).toBe(true);
+    expect(await isValidImageFile(file, ['png'])).toBe(false);
+  });
+
+  it('detects BMP signature', async () => {
+    const bmpBytes = new Uint8Array([0x42, 0x4d, 0x36, 0, 0, 0, 0, 0, 0, 0, 0x36, 0, 0, 0, 0x28, 0]);
+    const file = new File([bmpBytes], 'bitmap.bmp', { type: 'image/bmp' });
+    expect(await detectImageFormat(file)).toBe('bmp');
+    expect(await isValidImageFile(file, ['bmp'])).toBe(true);
+    expect(await isValidImageFile(file, ['jpg'])).toBe(false);
+  });
+
   it('detects HEIC signature', async () => {
     const heicBytes = new Uint8Array([
       0x00, 0x00, 0x00, 0x18,
@@ -129,8 +145,13 @@ describe('Shared Image Engine - Mock Canvas Conversion', () => {
           getContext: vi.fn().mockReturnValue(mockCtx),
           toBlob: (cb: (b: Blob | null) => void, mime = 'image/jpeg', quality?: number) => {
             expect(quality === undefined || (quality >= 0.1 && quality <= 1)).toBe(true);
-            const signatures = { 'image/png': [137,80,78,71,13,10,26,10], 'image/jpeg': [255,216,255], 'image/webp': [82,73,70,70,0,0,0,0,87,69,66,80] };
-            const fakeBlob = new Blob([new Uint8Array(signatures[mime as keyof typeof signatures])], { type: mime });
+            if (mime === 'image/png') {
+              const validPng = Uint8Array.from(atob('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg=='), (c) => c.charCodeAt(0));
+              cb(new Blob([validPng], { type: 'image/png' }));
+              return;
+            }
+            const signatures = { 'image/jpeg': [255,216,255], 'image/webp': [82,73,70,70,0,0,0,0,87,69,66,80] };
+            const fakeBlob = new Blob([new Uint8Array(signatures[mime as keyof typeof signatures] || [255,216,255])], { type: mime });
             cb(fakeBlob);
           },
         } as unknown as HTMLCanvasElement;
@@ -181,6 +202,46 @@ describe('Shared Image Engine - Mock Canvas Conversion', () => {
     expect(result.name).toBe('icon.jpg');
     expect(result.mimeType).toBe('image/jpeg');
   });
+
+  it('converts BMP to JPG and BMP to PNG', async () => {
+    const bmpBytes = new Uint8Array([0x42, 0x4d, 0x36, 0, 0, 0, 0, 0, 0, 0, 0x36, 0, 0, 0, 0x28, 0]);
+    const dummy = new File([bmpBytes], 'sample.bmp', { type: 'image/bmp' });
+
+    const toJpg = await convertSingleImage(dummy, 'sample.bmp', {
+      targetExtension: 'jpg',
+      targetMime: 'image/jpeg',
+      backgroundColor: '#FFFFFF',
+    });
+    expect(toJpg.name).toBe('sample.jpg');
+    expect(toJpg.mimeType).toBe('image/jpeg');
+
+    const toPng = await convertSingleImage(dummy, 'sample.bmp', {
+      targetExtension: 'png',
+      targetMime: 'image/png',
+    });
+    expect(toPng.name).toBe('sample.png');
+    expect(toPng.mimeType).toBe('image/png');
+  });
+
+  it('converts GIF to JPG and GIF to PNG', async () => {
+    const gifBytes = new Uint8Array([0x47, 0x49, 0x46, 0x38, 0x39, 0x61, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]);
+    const dummy = new File([gifBytes], 'sample.gif', { type: 'image/gif' });
+
+    const toJpg = await convertSingleImage(dummy, 'sample.gif', {
+      targetExtension: 'jpg',
+      targetMime: 'image/jpeg',
+      backgroundColor: '#FFFFFF',
+    });
+    expect(toJpg.name).toBe('sample.jpg');
+    expect(toJpg.mimeType).toBe('image/jpeg');
+
+    const toPng = await convertSingleImage(dummy, 'sample.gif', {
+      targetExtension: 'png',
+      targetMime: 'image/png',
+    });
+    expect(toPng.name).toBe('sample.png');
+    expect(toPng.mimeType).toBe('image/png');
+  });
 });
 
 describe('Shared Image Engine - Image to PDF', () => {
@@ -213,6 +274,32 @@ describe('Shared Image Engine - Image to PDF', () => {
     const bytes = new Uint8Array(arrayBuffer);
     const pdfHeader = String.fromCharCode(bytes[0], bytes[1], bytes[2], bytes[3], bytes[4]);
     expect(pdfHeader).toBe('%PDF-');
+  });
+
+  it('converts JPG and WebP files to PDF with Fit and Letter page sizing', async () => {
+    const jpgBytes = new Uint8Array([0xff, 0xd8, 0xff, 0xe0, 0, 0x10, 0x4a, 0x46, 0x49, 0x46, 0, 0, 0, 0, 0, 0]);
+    const webpBytes = new Uint8Array([0x52, 0x49, 0x46, 0x46, 0x24, 0, 0, 0, 0x57, 0x45, 0x42, 0x50, 0x56, 0x50, 0x38, 0x20]);
+
+    const jpgFile = new File([jpgBytes], 'photo.jpg', { type: 'image/jpeg' });
+    const webpFile = new File([webpBytes], 'graphic.webp', { type: 'image/webp' });
+
+    vi.stubGlobal('createImageBitmap', vi.fn().mockResolvedValue({
+      width: 400,
+      height: 300,
+      close: vi.fn(),
+    }));
+
+    const results = await convertImagesToPdf([jpgFile, webpFile], {
+      pageSize: 'letter',
+      margin: 40,
+      combine: false,
+    });
+
+    expect(results.length).toBe(2);
+    expect(results[0].name).toBe('photo.pdf');
+    expect(results[1].name).toBe('graphic.pdf');
+    expect(results[0].mimeType).toBe('application/pdf');
+    expect(results[1].mimeType).toBe('application/pdf');
   });
 });
 

@@ -10,6 +10,7 @@
  */
 
 import { XMLParser, XMLBuilder, XMLValidator } from 'fast-xml-parser';
+import { serializeCsv, type CsvSerializeOptions } from './csv';
 
 const MAX_XML_SIZE_BYTES = 10 * 1024 * 1024; // 10 MiB
 const MAX_NESTING_DEPTH = 25;
@@ -146,4 +147,89 @@ export function xmlToJson(
   checkDepth(parsed);
   const pretty = options.pretty ?? true;
   return JSON.stringify(parsed, null, pretty ? 2 : undefined);
+}
+
+function extractTabularRecords(obj: unknown): Array<Record<string, unknown>> {
+  if (Array.isArray(obj)) {
+    return obj.filter((item): item is Record<string, unknown> => item !== null && typeof item === 'object');
+  }
+  if (!obj || typeof obj !== 'object') return [];
+
+  const record = obj as Record<string, unknown>;
+  const validKeys = Object.keys(record).filter(k => !k.startsWith('?') && !k.startsWith('#'));
+
+  // First pass: check if any valid child is an array of objects
+  for (const key of validKeys) {
+    const val = record[key];
+    if (Array.isArray(val) && val.length > 0 && typeof val[0] === 'object') {
+      return val as Array<Record<string, unknown>>;
+    }
+  }
+
+  // Second pass: recursively inspect nested objects
+  for (const key of validKeys) {
+    const val = record[key];
+    if (val && typeof val === 'object' && !Array.isArray(val)) {
+      const nested = extractTabularRecords(val);
+      if (nested.length > 0) return nested;
+    }
+  }
+
+  // Fallback: if this object itself has valid data properties
+  if (validKeys.length > 0) {
+    const cleanRecord: Record<string, unknown> = {};
+    for (const key of validKeys) {
+      cleanRecord[key] = record[key];
+    }
+    return [cleanRecord];
+  }
+
+  return [];
+}
+
+/**
+ * Convert XML document to standard RFC 4180 CSV format.
+ */
+export function xmlToCsv(
+  xmlText: string,
+  options: CsvSerializeOptions = {}
+): string {
+  if (xmlText.length > MAX_XML_SIZE_BYTES) {
+    throw new Error('XML file exceeds maximum limit of 10 MiB.');
+  }
+
+  validateXmlSecurity(xmlText);
+
+  const validation = XMLValidator.validate(xmlText);
+  if (validation !== true) {
+    const errorMsg = typeof validation === 'object' && validation.err ? validation.err.msg : 'Invalid XML';
+    throw new Error(`Invalid XML structure: ${errorMsg}`);
+  }
+
+  const parser = new XMLParser({
+    ignoreAttributes: false,
+    attributeNamePrefix: '',
+    parseAttributeValue: true,
+    parseTagValue: true,
+    trimValues: true,
+  });
+
+  let parsed: unknown;
+  try {
+    parsed = parser.parse(xmlText);
+  } catch (err) {
+    throw new Error(`Invalid XML structure: ${(err as Error).message}`);
+  }
+
+  if (!parsed || (typeof parsed === 'object' && Object.keys(parsed).length === 0)) {
+    throw new Error('XML document is empty or contains no valid elements.');
+  }
+
+  checkDepth(parsed);
+  const records = extractTabularRecords(parsed);
+  if (records.length === 0) {
+    throw new Error('Could not extract tabular records from XML.');
+  }
+
+  return serializeCsv(records, options);
 }

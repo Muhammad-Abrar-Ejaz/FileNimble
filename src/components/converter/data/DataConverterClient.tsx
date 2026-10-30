@@ -13,6 +13,10 @@ import {
   xmlToJson,
   markdownToHtml,
   htmlToMarkdown,
+  csvToTsv,
+  tsvToCsv,
+  htmlTableToCsv,
+  xmlToCsv,
 } from '@/lib/converters/data';
 import {
   FileText,
@@ -108,6 +112,26 @@ export function DataConverterClient({ tool }: Props) {
           break;
         case 'html-to-markdown':
           result = htmlToMarkdown(contentToConvert);
+          break;
+        case 'csv-to-tsv':
+          result = csvToTsv(contentToConvert, {
+            delimiter: csvDelimiter === 'auto' ? undefined : csvDelimiter,
+          });
+          break;
+        case 'tsv-to-csv':
+          result = tsvToCsv(contentToConvert, {
+            escapeFormulas,
+          });
+          break;
+        case 'html-table-to-csv':
+          result = htmlTableToCsv(contentToConvert, {
+            escapeFormulas,
+          });
+          break;
+        case 'xml-to-csv':
+          result = xmlToCsv(contentToConvert, {
+            escapeFormulas,
+          });
           break;
         default:
           throw new Error(`Unsupported tool: ${tool.slug}`);

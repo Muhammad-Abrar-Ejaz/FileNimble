@@ -201,6 +201,102 @@ export const DATA_TOOLS: DataToolConfig[] = [
       { q: 'Are image tags and links preserved?', a: 'Yes. Standard image and anchor tags are converted to Markdown image and link syntax.' }
     ],
     related: ['markdown-to-html', 'markdown-to-pdf', 'markdown-to-docx', 'docx-to-markdown']
+  },
+  {
+    slug: 'csv-to-tsv',
+    title: 'Convert CSV to TSV Online',
+    description: 'Convert comma-separated values (CSV) into tab-separated values (TSV) directly in your browser with zero server uploads.',
+    inputFormat: 'csv',
+    outputFormat: 'tsv',
+    inputMime: 'text/csv',
+    outputMime: 'text/tab-separated-values',
+    outputFilename: 'converted.tsv',
+    heading: 'Instant, private CSV to TSV conversion',
+    explanation: 'Converts comma-delimited tabular records into clean, tab-delimited text. Automatically detects input delimiters and handles quotes, multiline fields, and Unicode characters locally in your browser.',
+    limitations: 'Maximum file size: 10 MiB, up to 50,000 rows and 1,000 columns. Embedded tab characters in fields are normalized to spaces so that tab columns remain intact.',
+    steps: [
+      'Upload a CSV file or paste your CSV content directly.',
+      'Configure auto-detection or select your source delimiter.',
+      'Download your converted TSV file or copy the text to your clipboard.'
+    ],
+    faqs: [
+      { q: 'Is my data uploaded to any server?', a: 'No. The conversion runs entirely on your device inside your web browser. FileNimble does not upload your files for this conversion.' },
+      { q: 'How are embedded tabs in CSV values handled?', a: 'Because tabs serve as column delimiters in TSV, embedded tab characters within values are safely replaced with spaces to prevent column misalignment.' },
+      { q: 'Can I paste CSV directly from Excel or Google Sheets?', a: 'Yes. You can paste spreadsheet text directly into the text editor tab and convert it to TSV instantly.' }
+    ],
+    related: ['tsv-to-csv', 'csv-to-json', 'json-to-csv', 'xml-to-csv']
+  },
+  {
+    slug: 'tsv-to-csv',
+    title: 'Convert TSV to CSV Online',
+    description: 'Transform tab-separated values (TSV) into standard RFC 4180 CSV with automatic formula injection protection.',
+    inputFormat: 'tsv',
+    outputFormat: 'csv',
+    inputMime: 'text/tab-separated-values',
+    outputMime: 'text/csv',
+    outputFilename: 'converted.csv',
+    heading: 'Accurate, private TSV to CSV conversion',
+    explanation: 'Parses tab-separated values and converts them to standard RFC 4180 compliant comma-separated values. Cells containing commas, quotes, or newlines are automatically quoted, and formula injection prefixes are neutralized.',
+    limitations: 'Maximum file size: 10 MiB, up to 50,000 rows and 1,000 columns. Lines with inconsistent column counts are safely parsed with padding or trimming.',
+    steps: [
+      'Select a TSV file or paste your tab-separated text.',
+      'Verify formula injection protection and formatting options.',
+      'Download the standard CSV file or copy the formatted text.'
+    ],
+    faqs: [
+      { q: 'Does TSV to CSV protect against spreadsheet formula injection?', a: 'Yes. Cells starting with dangerous characters (=, +, -, @) are automatically prefixed with a single quote to prevent code execution when opened in Excel or Google Sheets.' },
+      { q: 'Are my files uploaded to FileNimble servers?', a: 'No. The conversion runs locally in your browser; FileNimble does not upload the selected file for this conversion.' },
+      { q: 'How are fields with commas formatted in the CSV output?', a: 'Any field containing a comma, quotation mark, or newline is automatically enclosed in double quotes according to the RFC 4180 standard.' }
+    ],
+    related: ['csv-to-tsv', 'csv-to-json', 'json-to-csv', 'html-table-to-csv']
+  },
+  {
+    slug: 'html-table-to-csv',
+    title: 'Convert HTML Table to CSV Online',
+    description: 'Extract data tables from HTML documents or web snippets into clean, standard CSV format in your browser.',
+    inputFormat: 'html',
+    outputFormat: 'csv',
+    inputMime: 'text/html',
+    outputMime: 'text/csv',
+    outputFilename: 'table.csv',
+    heading: 'Extract structured data from HTML tables',
+    explanation: 'Finds and extracts tabular data from HTML table elements (table, tr, th, td). Automatically cleans nested markup, decodes HTML entities, and formats rows as RFC 4180 CSV with formula injection prevention.',
+    limitations: 'Maximum file size: 10 MiB, up to 50,000 rows. Extracts the primary table found in the HTML snippet. Nested tables within table cells are flattened to text.',
+    steps: [
+      'Upload an HTML file or paste raw HTML markup containing a table.',
+      'The parser automatically locates table rows, cleans tags, and formats cells.',
+      'Download the extracted CSV spreadsheet or copy the results.'
+    ],
+    faqs: [
+      { q: 'Can I paste HTML copied from Developer Tools (Inspect Element)?', a: 'Yes. You can copy an outerHTML table element directly from your browser developer tools and paste it into the editor.' },
+      { q: 'Does it support both table headers (th) and data cells (td)?', a: 'Yes. Header rows (th) become the header row in the CSV output, and data cells (td) become the data rows.' },
+      { q: 'Is my HTML transmitted to any server?', a: 'No. The extraction runs entirely in your local browser using client-side DOM parsing. Your data is not uploaded.' }
+    ],
+    related: ['html-to-markdown', 'csv-to-json', 'csv-to-tsv', 'xml-to-csv']
+  },
+  {
+    slug: 'xml-to-csv',
+    title: 'Convert XML to CSV Online',
+    description: 'Transform XML records and tabular data structures into clean RFC 4180 CSV spreadsheets locally in your browser.',
+    inputFormat: 'xml',
+    outputFormat: 'csv',
+    inputMime: 'application/xml',
+    outputMime: 'text/csv',
+    outputFilename: 'converted.csv',
+    heading: 'Secure, client-side XML to CSV conversion',
+    explanation: 'Parses XML documents, detects repeating entity nodes and attributes, and flattens them into a clean CSV spreadsheet. Includes strict preflight checks against XML External Entity (XXE) and recursive entity expansion attacks.',
+    limitations: 'Maximum file size: 10 MiB, up to 50,000 rows. External DTDs, SYSTEM entities, and excessive recursion are blocked. Complex nested sub-objects are serialized as text values.',
+    steps: [
+      'Upload an XML file or paste your XML markup.',
+      'The parser scans the structure, checks security, and extracts tabular records.',
+      'Download your RFC 4180 CSV document or copy the text.'
+    ],
+    faqs: [
+      { q: 'How does it protect against XML External Entity (XXE) vulnerabilities?', a: 'External entity declarations, SYSTEM/PUBLIC external DTDs, and recursive entity definitions are blocked during security preflight to guarantee safety.' },
+      { q: 'Are XML attributes converted into columns?', a: 'Yes. Both element attributes and child elements are mapped to spreadsheet columns in the CSV output.' },
+      { q: 'Is my XML data uploaded to any server?', a: 'No. All parsing and conversion takes place entirely inside your web browser. FileNimble does not upload your files for this conversion.' }
+    ],
+    related: ['xml-to-json', 'json-to-xml', 'json-to-csv', 'csv-to-json']
   }
 ];
 
