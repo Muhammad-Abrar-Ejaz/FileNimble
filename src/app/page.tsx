@@ -1,7 +1,6 @@
 import { pageMetadata } from '@/lib/seo';
 import { siteConfig } from '@/config/site';
-import { JsonLd } from '@/components/seo/PageSeo';
-import { canonicalUrl } from '@/lib/seo';
+import { JsonLd, homeGraph, getFeaturedToolsJsonLd } from '@/lib/jsonld';
 import React from "react";
 import { getAllTools } from "@/lib/registry";
 import { ToolSearch } from "@/components/tools/ToolSearch";
@@ -30,7 +29,7 @@ export default function HomePage() {
 
   return (
     <div className="flex flex-col min-h-screen">
-      <JsonLd data={{ '@context': 'https://schema.org', '@type': 'WebSite', name: 'FileNimble', url: canonicalUrl('/') }} />
+      <JsonLd data={homeGraph(getFeaturedToolsJsonLd())} />
       {/* 1. Hero Section */}
       <MonochromeStatsHero
         description="Convert images, organize PDF pages, and transform supported documents or data. Use ready browser tools for supported local conversions, or convert TAR to ZIP and ZIP to TAR with temporary server processing. Tools marked Planned are not available in this release; each available tool lists its processing method and limits."

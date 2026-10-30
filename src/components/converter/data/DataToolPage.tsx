@@ -1,5 +1,5 @@
 import { toolMetadata } from '@/lib/seo';
-import { ToolSeo } from '@/components/seo/PageSeo';
+import { ToolPageSeo } from '@/components/seo/PageSeo';
 import { getDataToolBySlug } from '@/config/dataTools';
 import { getToolBySlug } from '@/lib/registry';
 import { RelatedTools } from '@/components/tools/RelatedTools';
@@ -14,7 +14,7 @@ export function DataToolPage({ slug }: { slug: string }) {
 
   return (
     <div className="mx-auto max-w-6xl space-y-14 px-4 py-10 sm:px-6">
-      <ToolSeo slug={slug} />
+      <ToolPageSeo slug={slug} />
       <DataConverterClient tool={content} />
       <AdSlot placement="tool-after-converter" format="horizontal" tool={tool} />
 

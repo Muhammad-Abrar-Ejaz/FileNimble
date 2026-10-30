@@ -1,5 +1,5 @@
 import { toolMetadata } from '@/lib/seo';
-import { ToolSeo } from '@/components/seo/PageSeo';
+import { ToolPageSeo } from '@/components/seo/PageSeo';
 import { PDF_TOOL_PAGES } from '@/config/pdfTools';
 import { getToolBySlug } from '@/lib/registry';
 import { RelatedTools } from '@/components/tools/RelatedTools';
@@ -12,7 +12,7 @@ export function PdfToolPage({ slug }: { slug: string }) {
   const content = PDF_TOOL_PAGES.find(tool => tool.slug === slug)!;
   const tool = getToolBySlug(slug)!;
   return <div className="mx-auto max-w-6xl space-y-14 px-4 py-10 sm:px-6">
-    <ToolSeo slug={slug} />
+    <ToolPageSeo slug={slug} />
     <PdfConverterClient mode={content.mode} title={content.title} description={content.description} />
     <AdSlot placement="tool-after-converter" format="horizontal" tool={tool} />
     <section className="mx-auto max-w-4xl space-y-5"><h2 className="text-2xl font-bold">How to use {content.title}</h2><ol className="grid gap-4 sm:grid-cols-3">{content.steps.map((step, index) => <li key={step} className="rounded-2xl border border-border-subtle bg-surface p-5"><span className="mb-3 flex h-9 w-9 items-center justify-center rounded-xl bg-primary text-white font-bold">{index + 1}</span><p className="text-sm">{step}</p></li>)}</ol></section>

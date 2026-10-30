@@ -1,5 +1,5 @@
 import { toolMetadata } from '@/lib/seo';
-import { ToolSeo } from '@/components/seo/PageSeo';
+import { ToolPageSeo } from '@/components/seo/PageSeo';
 import { DOCUMENT_TOOLS } from '@/config/documentTools';
 import { getToolBySlug } from '@/lib/registry';
 import { RelatedTools } from '@/components/tools/RelatedTools';
@@ -20,7 +20,7 @@ export function DocumentToolPage({ slug }: { slug: string }) {
     <Link className="underline" href="/tools">Browse available tools</Link>
   </article>;
   return <div className="mx-auto max-w-6xl space-y-10 px-4 py-10 sm:px-6">
-    <ToolSeo slug={slug} />
+    <ToolPageSeo slug={slug} />
     <DocumentConverterClient tool={tool} />
     <AdSlot placement="tool-after-converter" format="horizontal" tool={registry} />
     {tool.ocr && <p className="mx-auto max-w-4xl text-sm">OCR limit: five PDF pages, four megapixels per page and sixteen megapixels total. OCR results require human review.</p>}
