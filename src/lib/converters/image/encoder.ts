@@ -1,7 +1,7 @@
 import { sanitizeFilename } from '@/lib/utils';
 import { decodeImage } from './decoder';
 import { calculateResizeDimensions, clampCropBounds } from './transforms';
-import { CommonImageConversionOptions, ConvertedImageResult } from './types';
+import { CommonImageConversionOptions, ConvertedImageResult, SupportedImageFormat } from './types';
 import { detectImageFormat } from './signatures';
 
 /**
@@ -26,7 +26,8 @@ export async function convertSingleImage(
   options: CommonImageConversionOptions
 ): Promise<ConvertedImageResult> {
   const detected = await detectImageFormat(file);
-  if (!detected || !['jpg', 'png', 'webp'].includes(detected)) {
+  const supportedInputs: SupportedImageFormat[] = ['jpg', 'jpeg', 'png', 'webp', 'gif', 'bmp'];
+  if (!detected || !supportedInputs.includes(detected as SupportedImageFormat)) {
     throw new Error(`Unsupported or invalid image: "${originalFilename}".`);
   }
   if (options.backgroundColor && typeof CSS !== 'undefined' && !CSS.supports('color', options.backgroundColor)) {

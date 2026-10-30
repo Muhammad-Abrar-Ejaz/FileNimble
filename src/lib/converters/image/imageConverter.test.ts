@@ -38,6 +38,22 @@ describe('Shared Image Engine - Signatures & Magic Bytes', () => {
     expect(await isValidImageFile(file, ['webp'])).toBe(true);
   });
 
+  it('detects GIF signature', async () => {
+    const gifBytes = new Uint8Array([0x47, 0x49, 0x46, 0x38, 0x39, 0x61, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]);
+    const file = new File([gifBytes], 'animation.gif', { type: 'image/gif' });
+    expect(await detectImageFormat(file)).toBe('gif');
+    expect(await isValidImageFile(file, ['gif'])).toBe(true);
+    expect(await isValidImageFile(file, ['png'])).toBe(false);
+  });
+
+  it('detects BMP signature', async () => {
+    const bmpBytes = new Uint8Array([0x42, 0x4d, 0x36, 0, 0, 0, 0, 0, 0, 0, 0x36, 0, 0, 0, 0x28, 0]);
+    const file = new File([bmpBytes], 'bitmap.bmp', { type: 'image/bmp' });
+    expect(await detectImageFormat(file)).toBe('bmp');
+    expect(await isValidImageFile(file, ['bmp'])).toBe(true);
+    expect(await isValidImageFile(file, ['jpg'])).toBe(false);
+  });
+
   it('detects HEIC signature', async () => {
     const heicBytes = new Uint8Array([
       0x00, 0x00, 0x00, 0x18,
@@ -180,6 +196,46 @@ describe('Shared Image Engine - Mock Canvas Conversion', () => {
 
     expect(result.name).toBe('icon.jpg');
     expect(result.mimeType).toBe('image/jpeg');
+  });
+
+  it('converts BMP to JPG and BMP to PNG', async () => {
+    const bmpBytes = new Uint8Array([0x42, 0x4d, 0x36, 0, 0, 0, 0, 0, 0, 0, 0x36, 0, 0, 0, 0x28, 0]);
+    const dummy = new File([bmpBytes], 'sample.bmp', { type: 'image/bmp' });
+
+    const toJpg = await convertSingleImage(dummy, 'sample.bmp', {
+      targetExtension: 'jpg',
+      targetMime: 'image/jpeg',
+      backgroundColor: '#FFFFFF',
+    });
+    expect(toJpg.name).toBe('sample.jpg');
+    expect(toJpg.mimeType).toBe('image/jpeg');
+
+    const toPng = await convertSingleImage(dummy, 'sample.bmp', {
+      targetExtension: 'png',
+      targetMime: 'image/png',
+    });
+    expect(toPng.name).toBe('sample.png');
+    expect(toPng.mimeType).toBe('image/png');
+  });
+
+  it('converts GIF to JPG and GIF to PNG', async () => {
+    const gifBytes = new Uint8Array([0x47, 0x49, 0x46, 0x38, 0x39, 0x61, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]);
+    const dummy = new File([gifBytes], 'sample.gif', { type: 'image/gif' });
+
+    const toJpg = await convertSingleImage(dummy, 'sample.gif', {
+      targetExtension: 'jpg',
+      targetMime: 'image/jpeg',
+      backgroundColor: '#FFFFFF',
+    });
+    expect(toJpg.name).toBe('sample.jpg');
+    expect(toJpg.mimeType).toBe('image/jpeg');
+
+    const toPng = await convertSingleImage(dummy, 'sample.gif', {
+      targetExtension: 'png',
+      targetMime: 'image/png',
+    });
+    expect(toPng.name).toBe('sample.png');
+    expect(toPng.mimeType).toBe('image/png');
   });
 });
 
