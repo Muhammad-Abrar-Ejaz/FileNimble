@@ -1,5 +1,5 @@
 import { toolMetadata } from '@/lib/seo';
-import { ToolSeo } from '@/components/seo/PageSeo';
+import { ToolPageSeo } from '@/components/seo/PageSeo';
 import { getToolBySlug } from '@/lib/registry';
 import { SharedImageConverterClient } from '@/components/converter';
 import { RelatedTools } from '@/components/tools/RelatedTools';
@@ -32,7 +32,7 @@ export default function WebpToJpgPage() {
 
   return (
     <div className="py-8 sm:py-12 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto space-y-16">
-      <ToolSeo slug="webp-to-jpg" />
+      <ToolPageSeo slug="webp-to-jpg" />
       <SharedImageConverterClient
         toolTitle="WebP to JPG Converter"
         toolDescription="Convert modern WebP images to universally compatible JPG/JPEG format directly in your browser."

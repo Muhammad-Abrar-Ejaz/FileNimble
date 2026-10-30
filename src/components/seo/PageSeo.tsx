@@ -1,12 +1,13 @@
 import Link from 'next/link';
 import { TOOLS_BY_SLUG } from '@/config/tools';
 import { canonicalUrl, isIndexableTool, serializeJsonLd } from '@/lib/seo';
+import { JsonLd as SchemaJsonLd, toolGraph, getToolJsonLd } from '@/lib/jsonld';
 
 export function JsonLd({ data }: { data: unknown }) {
   return <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: serializeJsonLd(data) }} />;
 }
 
-export function Breadcrumbs({ items }: { items: { name: string; path: string }[] }) {
+export function Breadcrumbs({ items, emitJsonLd = true }: { items: { name: string; path: string }[]; emitJsonLd?: boolean }) {
   return <>
     <nav aria-label="Breadcrumb" className="text-sm text-text-muted">
       <ol className="flex flex-wrap gap-2">{items.map((item, i) => <li key={item.path}>
@@ -14,7 +15,7 @@ export function Breadcrumbs({ items }: { items: { name: string; path: string }[]
         {i === items.length - 1 ? <span aria-current="page">{item.name}</span> : <Link className="underline focus-visible:outline-2 focus-visible:outline-primary" href={item.path}>{item.name}</Link>}
       </li>)}</ol>
     </nav>
-    <JsonLd data={{ '@context': 'https://schema.org', '@type': 'BreadcrumbList', itemListElement: items.map((item, i) => ({ '@type': 'ListItem', position: i + 1, name: item.name, item: canonicalUrl(item.path) })) }} />
+    {emitJsonLd && <JsonLd data={{ '@context': 'https://schema.org', '@type': 'BreadcrumbList', itemListElement: items.map((item, i) => ({ '@type': 'ListItem', position: i + 1, name: item.name, item: canonicalUrl(item.path) })) }} />}
   </>;
 }
 
@@ -24,5 +25,21 @@ export function ToolSeo({ slug }: { slug: string }) {
   return <>
     <Breadcrumbs items={[{ name: 'Home', path: '/' }, { name: 'Tools', path: '/tools' }, { name: tool.title!, path: `/${slug}` }]} />
     <JsonLd data={{ '@context': 'https://schema.org', '@type': 'WebApplication', '@id': canonicalUrl(`/${slug}`) + '#application', name: tool.title, description: tool.seoDescription, url: canonicalUrl(`/${slug}`), applicationCategory: 'UtilitiesApplication', operatingSystem: 'Web browser' }} />
+  </>;
+}
+
+/**
+ * Shared Tool Page SEO component.
+ * Emits the comprehensive Schema.org JSON-LD @graph (toolGraph) and visible Breadcrumb navigation.
+ * Emits null for planned or non-live tools.
+ */
+export function ToolPageSeo({ slug }: { slug: string }) {
+  const tool = TOOLS_BY_SLUG.get(slug);
+  if (!tool || tool.status !== 'live') return null;
+  const toolData = getToolJsonLd(slug);
+  const data = toolData ? toolGraph(toolData) : null;
+  return <>
+    {data && <SchemaJsonLd data={data} />}
+    <Breadcrumbs items={[{ name: 'Home', path: '/' }, { name: 'Tools', path: '/tools' }, { name: tool.title!, path: `/${slug}` }]} emitJsonLd={false} />
   </>;
 }

@@ -1,5 +1,5 @@
 import { toolMetadata } from '@/lib/seo';
-import { ToolSeo } from '@/components/seo/PageSeo';
+import { ToolPageSeo } from '@/components/seo/PageSeo';
 import { getToolBySlug } from '@/lib/registry';
 import { SharedImageConverterClient } from '@/components/converter';
 import { RelatedTools } from '@/components/tools/RelatedTools';
@@ -28,7 +28,7 @@ export default function PngToWebpPage() {
 
   return (
     <div className="py-8 sm:py-12 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto space-y-16">
-      <ToolSeo slug="png-to-webp" />
+      <ToolPageSeo slug="png-to-webp" />
       <SharedImageConverterClient
         toolTitle="PNG to WebP Converter"
         toolDescription="Convert PNG files to WebP with full transparency preservation and adjustable lossy quality."
