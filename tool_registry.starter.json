@@ -1919,37 +1919,89 @@
     "id": "xml_to_csv",
     "slug": "xml-to-csv",
     "category": "document_data",
-    "status": "planned",
-    "indexable": false,
-    "processingMode": "tbd",
-    "notes": "Set limits, engine, privacy label, formats and SEO metadata before enabling."
+    "status": "live",
+    "indexable": true,
+    "processingMode": "client",
+    "privacyLabel": "Runs in browser",
+    "title": "Convert XML to CSV Online",
+    "description": "Transform XML records and tabular data structures into clean RFC 4180 CSV spreadsheets locally in your browser.",
+    "inputFormats": ["xml"],
+    "outputFormats": ["csv"],
+    "limits": {
+      "maxFileBytes": 10485760,
+      "maxBatchCount": 1,
+      "allowedMimeTypes": ["application/xml", "text/xml", "text/plain"],
+      "allowedExtensions": ["xml"]
+    },
+    "relatedTools": ["xml-to-json", "json-to-xml", "json-to-csv", "csv-to-json"],
+    "seoTitle": "Convert XML to CSV Online | FileNimble",
+    "seoDescription": "Transform XML records and tabular data structures into clean RFC 4180 CSV spreadsheets locally in your browser."
   },
   {
     "id": "csv_to_tsv",
     "slug": "csv-to-tsv",
     "category": "document_data",
-    "status": "planned",
-    "indexable": false,
-    "processingMode": "tbd",
-    "notes": "Set limits, engine, privacy label, formats and SEO metadata before enabling."
+    "status": "live",
+    "indexable": true,
+    "processingMode": "client",
+    "privacyLabel": "Runs in browser",
+    "title": "Convert CSV to TSV Online",
+    "description": "Convert comma-separated values (CSV) into tab-separated values (TSV) directly in your browser with zero server uploads.",
+    "inputFormats": ["csv"],
+    "outputFormats": ["tsv"],
+    "limits": {
+      "maxFileBytes": 10485760,
+      "maxBatchCount": 1,
+      "allowedMimeTypes": ["text/csv", "text/plain"],
+      "allowedExtensions": ["csv"]
+    },
+    "relatedTools": ["tsv-to-csv", "csv-to-json", "json-to-csv", "xml-to-csv"],
+    "seoTitle": "Convert CSV to TSV Online | FileNimble",
+    "seoDescription": "Convert comma-separated values (CSV) into tab-separated values (TSV) directly in your browser with zero server uploads."
   },
   {
     "id": "tsv_to_csv",
     "slug": "tsv-to-csv",
     "category": "document_data",
-    "status": "planned",
-    "indexable": false,
-    "processingMode": "tbd",
-    "notes": "Set limits, engine, privacy label, formats and SEO metadata before enabling."
+    "status": "live",
+    "indexable": true,
+    "processingMode": "client",
+    "privacyLabel": "Runs in browser",
+    "title": "Convert TSV to CSV Online",
+    "description": "Transform tab-separated values (TSV) into standard RFC 4180 CSV with automatic formula injection protection.",
+    "inputFormats": ["tsv"],
+    "outputFormats": ["csv"],
+    "limits": {
+      "maxFileBytes": 10485760,
+      "maxBatchCount": 1,
+      "allowedMimeTypes": ["text/tab-separated-values", "text/plain"],
+      "allowedExtensions": ["tsv", "txt"]
+    },
+    "relatedTools": ["csv-to-tsv", "csv-to-json", "json-to-csv", "html-table-to-csv"],
+    "seoTitle": "Convert TSV to CSV Online | FileNimble",
+    "seoDescription": "Transform tab-separated values (TSV) into standard RFC 4180 CSV with automatic formula injection protection."
   },
   {
     "id": "html_table_to_csv",
     "slug": "html-table-to-csv",
     "category": "document_data",
-    "status": "planned",
-    "indexable": false,
-    "processingMode": "tbd",
-    "notes": "Set limits, engine, privacy label, formats and SEO metadata before enabling."
+    "status": "live",
+    "indexable": true,
+    "processingMode": "client",
+    "privacyLabel": "Runs in browser",
+    "title": "Convert HTML Table to CSV Online",
+    "description": "Extract data tables from HTML documents or web snippets into clean, standard CSV format in your browser.",
+    "inputFormats": ["html"],
+    "outputFormats": ["csv"],
+    "limits": {
+      "maxFileBytes": 10485760,
+      "maxBatchCount": 1,
+      "allowedMimeTypes": ["text/html", "text/plain"],
+      "allowedExtensions": ["html", "htm"]
+    },
+    "relatedTools": ["html-to-markdown", "csv-to-json", "csv-to-tsv", "xml-to-csv"],
+    "seoTitle": "Convert HTML Table to CSV Online | FileNimble",
+    "seoDescription": "Extract data tables from HTML documents or web snippets into clean, standard CSV format in your browser."
   },
   {
     "id": "epub_to_mobi",
